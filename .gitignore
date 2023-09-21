@@ -1,0 +1,12 @@
+# Compile targets
+*.elf
+*.o
+
+# Object dumps
+*.dump
+
+# Log files
+*.log
+
+# Editor specific
+.vscode
