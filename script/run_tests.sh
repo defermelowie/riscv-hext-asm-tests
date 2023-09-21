@@ -16,8 +16,8 @@ do
     i=$((i + 1));
     if  [ $i -gt 0 ]
     then
-        printf "[TEST] ${test%.elf}";
-        if timeout 5 $emulator $testdir/$test > $logdir/${test%.elf}.log 2>&1 && grep -q SUCCESS $logdir/${test%.elf}.log
+        printf "[TEST] ${test}";
+        if timeout 5 $emulator $testdir/$test.elf > $logdir/$test.log 2>&1 && grep -q SUCCESS $logdir/$test.log
         then
         printf " - \x1b[32mok\x1b[0m"
         else
