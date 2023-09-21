@@ -28,6 +28,7 @@ TARGETS += vs_csr_substitute_s_csr
 TARGETS += read_h_csr_from_U read_h_csr_from_VS read_h_csr_from_VU
 TARGETS += read_s_csr_from_U read_s_csr_from_VS read_s_csr_from_VU
 TARGETS += read_vs_csr_from_U read_vs_csr_from_VS read_vs_csr_from_VU
+TARGETS += AT_VU_independent_from_satp AT_U_independent_from_vsatp
 
 .PONY: all
 
