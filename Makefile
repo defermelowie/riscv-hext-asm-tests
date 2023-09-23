@@ -29,24 +29,28 @@ TARGETS += read_h_csr_from_U read_h_csr_from_VS read_h_csr_from_VU
 TARGETS += read_s_csr_from_U read_s_csr_from_VS read_s_csr_from_VU
 TARGETS += read_vs_csr_from_U read_vs_csr_from_VS read_vs_csr_from_VU
 TARGETS += at_VU_independent_from_satp at_U_independent_from_vsatp at_S_independent_from_vsatp at_VS_independent_from_satp
+TARGETS += vmem_template
 
 .PONY: all
-
 all: dump test
 
+.PONY: setup
 setup:
 	mkdir -p $(OBJDIR)
 	mkdir -p $(TARGETDIR)
 	mkdir -p $(LOGDIR)
 
+.PONY: clean
 clean:
 	rm -f $(OBJDIR)/*.o
 	rm -f $(TARGETDIR)/*.elf
 	rm -f $(TARGETDIR)/*.dump
 	rm -f $(LOGDIR)/*.log
 
+.PONY: dump
 dump: $(TARGETS:%=$(DUMPDIR)/%.dump)
 
+.PONY: log
 test: $(TARGETS:%=$(TARGETDIR)/%.elf)
 	./script/run_tests.sh $(EMULATOR) $(TARGETDIR) $(LOGDIR) $(TARGETS)
 
