@@ -60,8 +60,6 @@ la t1, pt0
 srl t1, t1, RISCV_PGSHIFT
 or t0, t0, t1
 csrw satp, t0
-li t0, HGATP_MODE_OFF * (HGATP_MODE & ~(HGATP_MODE<<1))
-csrw hgatp, t0
 # ---------------------------
 # Return into S-mode
 # ---------------------------

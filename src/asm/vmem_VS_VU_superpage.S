@@ -2,6 +2,7 @@
 #include "test_macros.h"
 
 #define PTESIZE 8
+#define VPNi_SIZE 9
 
 RVTEST_RV64M
 RVTEST_CODE_BEGIN
@@ -21,58 +22,42 @@ sd t1, 0(t0)
 la t0, pt0
 li t2, (0x1 << RISCV_PGSHIFT) - PTESIZE
 add t0, t0, t2
-la t1, pt3
+la t1, pt2
 srl t1, t1, RISCV_PGSHIFT
 sll t1, t1, PTE_PPN_SHIFT
 ori t1, t1, PTE_V
 sd t1, 0(t0)
 # ---------------------------
 la t0, pt1
-la t1, pt2
-srl t1, t1, RISCV_PGSHIFT
-sll t1, t1, PTE_PPN_SHIFT
-ori t1, t1, PTE_V
-sd t1, 0(t0)
-
-la t0, pt3
-li t2, (0x1 << RISCV_PGSHIFT) - PTESIZE
-add t0, t0, t2
-la t1, pt4
-srl t1, t1, RISCV_PGSHIFT
-sll t1, t1, PTE_PPN_SHIFT
-ori t1, t1, PTE_V
-sd t1, 0(t0)
-# ---------------------------
-la t0, pt2
 li t1, (DRAM_BASE >> RISCV_PGSHIFT << PTE_PPN_SHIFT)
 ori t1, t1, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U | PTE_D | PTE_A
 sd t1, 0(t0)
 
-la t0, pt4
+la t0, pt2
 li t2, (0x1 << RISCV_PGSHIFT) - PTESIZE
 add t0, t0, t2
 li t1, (DRAM_BASE >> RISCV_PGSHIFT << PTE_PPN_SHIFT)
 ori t1, t1, PTE_V | PTE_R | PTE_W | PTE_X | PTE_D | PTE_A
 sd t1, 0(t0)
 # ---------------------------
-li t0, SATP_MODE_SV39 * (SATP_MODE & ~(SATP_MODE<<1))
 la t1, pt0
 srl t1, t1, RISCV_PGSHIFT
+li t0, SATP_MODE_SV39 * (SATP_MODE & ~(SATP_MODE<<1))
 or t0, t0, t1
-csrw satp, t0
-li t0, HGATP_MODE_OFF * (HGATP_MODE & ~(HGATP_MODE<<1))
+csrw vsatp, t0
+li t0, HGATP_MODE_OFF * (HGATP_MODE & ~(SATP_MODE<<1))
 csrw hgatp, t0
 # ---------------------------
-# Return into S-mode
+# Return into VS-mode
 # ---------------------------
-li t0, MSTATUS_MPP
+li t0, MSTATUS_MPP | MSTATUS_MPV
 csrc mstatus, t0
-li t0, 0x00000800
+li t0, 0x8000000800
 csrs mstatus, t0
 la t0, scode
 li t1, 0xfff
 and t0, t0, t1
-li t1, (-1 << RISCV_PGSHIFT)
+li t1, (-1 << RISCV_PGSHIFT << VPNi_SIZE)
 or t0, t0, t1
 csrw mepc, t0
 mret
