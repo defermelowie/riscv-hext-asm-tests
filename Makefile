@@ -54,6 +54,9 @@ dump: $(TARGETS:%=$(DUMPDIR)/%.dump)
 test: $(TARGETS:%=$(TARGETDIR)/%.elf)
 	./script/run_tests.sh $(EMULATOR) $(TARGETDIR) $(LOGDIR) $(TARGETS)
 
+$(OBJDIR)/vmem.o: ./src/c/vmem.c
+	$(CC) -c $(CCFLAGS) -o $@ -c $<
+
 $(OBJDIR)/%.o: $(SCRDIR)/%.S
 	$(CC) -c $(CCFLAGS) -o $@ -c $<
 
@@ -62,8 +65,8 @@ $(DUMPDIR)/%.dump: $(TARGETDIR)/%.elf
 
 ifneq ($(ENV), v)
 # Link without support for virtual mem
-$(TARGETDIR)/%.elf: $(OBJDIR)/%.o
-	$(LD) $(LDFLAGS) -script $(ENVDIR)/link.ld -o $@ $<
+$(TARGETDIR)/%.elf: $(OBJDIR)/%.o $(OBJDIR)/vmem.o
+	$(LD) $(LDFLAGS) -script $(ENVDIR)/link.ld -o $@ $^
 else
 # Link with virtual memory support
 $(TARGETDIR)/%.elf: $(OBJDIR)/%.o vmem-helpers

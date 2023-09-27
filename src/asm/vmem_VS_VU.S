@@ -9,57 +9,66 @@ RVTEST_CODE_BEGIN
 .align 2
 
 # ---------------------------
+# Init stack
+# ---------------------------
+la sp, stack
+# ---------------------------
 # Setup page table
 # ---------------------------
-la t0, pt0
-la t1, pt1
-srl t1, t1, RISCV_PGSHIFT
-sll t1, t1, PTE_PPN_SHIFT
-ori t1, t1, PTE_V
-sd t1, 0(t0)
+# la t0, pt0
+# la t1, pt1
+# srl t1, t1, RISCV_PGSHIFT
+# sll t1, t1, PTE_PPN_SHIFT
+# ori t1, t1, PTE_V
+# sd t1, 0(t0)
 
-la t0, pt0
-li t2, (0x1 << RISCV_PGSHIFT) - PTESIZE
-add t0, t0, t2
-la t1, pt3
-srl t1, t1, RISCV_PGSHIFT
-sll t1, t1, PTE_PPN_SHIFT
-ori t1, t1, PTE_V
-sd t1, 0(t0)
-# ---------------------------
-la t0, pt1
-la t1, pt2
-srl t1, t1, RISCV_PGSHIFT
-sll t1, t1, PTE_PPN_SHIFT
-ori t1, t1, PTE_V
-sd t1, 0(t0)
+# la t0, pt0
+# li t2, (0x1 << RISCV_PGSHIFT) - PTESIZE
+# add t0, t0, t2
+# la t1, pt3
+# srl t1, t1, RISCV_PGSHIFT
+# sll t1, t1, PTE_PPN_SHIFT
+# ori t1, t1, PTE_V
+# sd t1, 0(t0)
+# # ---------------------------
+# la t0, pt1
+# la t1, pt2
+# srl t1, t1, RISCV_PGSHIFT
+# sll t1, t1, PTE_PPN_SHIFT
+# ori t1, t1, PTE_V
+# sd t1, 0(t0)
 
-la t0, pt3
-li t2, (0x1 << RISCV_PGSHIFT) - PTESIZE
-add t0, t0, t2
-la t1, pt4
-srl t1, t1, RISCV_PGSHIFT
-sll t1, t1, PTE_PPN_SHIFT
-ori t1, t1, PTE_V
-sd t1, 0(t0)
-# ---------------------------
-la t0, pt2
-li t1, (DRAM_BASE >> RISCV_PGSHIFT << PTE_PPN_SHIFT)
-ori t1, t1, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U | PTE_D | PTE_A
-sd t1, 0(t0)
+# la t0, pt3
+# li t2, (0x1 << RISCV_PGSHIFT) - PTESIZE
+# add t0, t0, t2
+# la t1, pt4
+# srl t1, t1, RISCV_PGSHIFT
+# sll t1, t1, PTE_PPN_SHIFT
+# ori t1, t1, PTE_V
+# sd t1, 0(t0)
+# # ---------------------------
+# la t0, pt2
+# li t1, (DRAM_BASE >> RISCV_PGSHIFT << PTE_PPN_SHIFT)
+# ori t1, t1, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U | PTE_D | PTE_A
+# sd t1, 0(t0)
 
-la t0, pt4
-li t2, (0x1 << RISCV_PGSHIFT) - PTESIZE
-add t0, t0, t2
-li t1, (DRAM_BASE >> RISCV_PGSHIFT << PTE_PPN_SHIFT)
-ori t1, t1, PTE_V | PTE_R | PTE_W | PTE_X | PTE_D | PTE_A
-sd t1, 0(t0)
+# la t0, pt4
+# li t2, (0x1 << RISCV_PGSHIFT) - PTESIZE
+# add t0, t0, t2
+# li t1, (DRAM_BASE >> RISCV_PGSHIFT << PTE_PPN_SHIFT)
+# ori t1, t1, PTE_V | PTE_R | PTE_W | PTE_X | PTE_D | PTE_A
+# sd t1, 0(t0)
 # ---------------------------
-la t1, pt0
+la a0, spt0
+li a1, DRAM_BASE
+jal setup_pt
+# ---------------------------
+la t1, spt0
 srl t1, t1, RISCV_PGSHIFT
 li t0, SATP_MODE_SV39 * (SATP_MODE & ~(SATP_MODE<<1))
 or t0, t0, t1
 csrw vsatp, t0
+# ---------------------------
 li t0, HGATP_MODE_OFF * (HGATP_MODE & ~(SATP_MODE<<1))
 csrw hgatp, t0
 # ---------------------------
@@ -101,11 +110,15 @@ RVTEST_CODE_END
 # Page table data (empty)
 # ---------------------------
 .align RISCV_PGSHIFT
-pt0: .zero 1 << RISCV_PGSHIFT
-pt1: .zero 1 << RISCV_PGSHIFT
-pt2: .zero 1 << RISCV_PGSHIFT
-pt3: .zero 1 << RISCV_PGSHIFT
-pt4: .zero 1 << RISCV_PGSHIFT
+spt0: .zero 1 << RISCV_PGSHIFT
+spt1: .zero 1 << RISCV_PGSHIFT
+spt2: .zero 1 << RISCV_PGSHIFT
+spt3: .zero 1 << RISCV_PGSHIFT
+spt4: .zero 1 << RISCV_PGSHIFT
+
+.zero 1 << RISCV_PGSHIFT
+stack:
+
 
 # Output data section.
 RVTEST_DATA_BEGIN
