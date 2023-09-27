@@ -14,14 +14,14 @@
 typedef unsigned long pte_t;
 
 /**
- * @brief Setup of page table
+ * @brief Setup of (V)S-level page table
  * @details
  * Sets up a page table where:
  * - 0x000_0000_0000_0xxx is mapped to paddr_base as user page
  * - 0xfff_ffff_ffff_fxxx is mapped to paddr_base as supervisor page
  * @param pt_base Page table base address
  */
-void setup_pt(pte_t pt[PAGECOUNT][PTECOUNT], unsigned long paddr_base)
+void setup_spt(pte_t pt[PAGECOUNT][PTECOUNT], unsigned long paddr_base)
 {
   pt[0][0] = ((pte_t)pt[1] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
   pt[1][0] = ((pte_t)pt[2] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;

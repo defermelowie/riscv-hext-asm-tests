@@ -16,10 +16,10 @@ la sp, stack
 # ---------------------------
 # Setup page table
 # ---------------------------
-la a0, spt0
+la a0, spt
 li a1, DRAM_BASE
-jal setup_pt
-la t1, spt0
+jal setup_spt
+la t1, spt
 srl t1, t1, RISCV_PGSHIFT
 li t0, SATP_MODE_SV39 * (SATP_MODE & ~(SATP_MODE<<1))
 or t0, t0, t1
@@ -69,11 +69,7 @@ RVTEST_CODE_END
 # Page table data (empty)
 # ---------------------------
 .align RISCV_PGSHIFT
-spt0: .zero RISCV_PGSIZE
-spt1: .zero RISCV_PGSIZE
-spt2: .zero RISCV_PGSIZE
-spt3: .zero RISCV_PGSIZE
-spt4: .zero RISCV_PGSIZE
+spt: .zero (RISCV_PGSIZE * 5)
 
 # Output data section.
 RVTEST_DATA_BEGIN
