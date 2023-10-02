@@ -1,5 +1,6 @@
 #include "riscv_test.h"
 #include "test_macros.h"
+#include "vmem_common.h"
 
 #define PTESIZE 8
 
@@ -7,7 +8,7 @@ RVTEST_RV64M
 RVTEST_CODE_BEGIN
 
 .align 2
-
+li TESTNUM, 1
 # ---------------------------
 # Init stack
 # ---------------------------
@@ -17,20 +18,29 @@ la sp, stack
 # Setup page table
 # ---------------------------
 la a0, spt
-li a1, DRAM_BASE
+li a1, 0x0
 jal setup_spt
-la t1, spt
-srl t1, t1, RISCV_PGSHIFT
-li t0, SATP_MODE_SV39 * (SATP_MODE & ~(SATP_MODE<<1))
-or t0, t0, t1
-csrw vsatp, t0
+la a0, spt
+SPA2GPA_ASM(a0)
+srl a0, a0, RISCV_PGSHIFT
+li a1, SATP_MODE_SV39 * (SATP_MODE & ~(SATP_MODE<<1))
+or a0, a0, a1
+csrw vsatp, a0
 
 li t0, SSTATUS_SUM
 csrs vsstatus, t0
-# ---------------------------
-li t0, HGATP_MODE_OFF * (HGATP_MODE & ~(SATP_MODE<<1))
+# ------------------------
+la a0, gpt
+li a1, DRAM_BASE
+jal setup_gpt
+la t1, gpt
+srl t1, t1, RISCV_PGSHIFT
+li t0, HGATP_MODE_SV39X4 * (HGATP_MODE & ~(HGATP_MODE<<1))
+or t0, t0, t1
 csrw hgatp, t0
 
+li t0, SSTATUS_SUM
+csrs sstatus, t0
 # ---------------------------
 # Return into VS-mode
 # ---------------------------
@@ -83,6 +93,18 @@ ld t0, 0(t0)
 # Test passed
 j pass
 
+# ---------------------------
+# Machine trap vector
+# ---------------------------
+mtvec_handler:
+  # Load CSRs so their value is visible in the traces
+  csrr t0, mcause
+  csrr t0, mepc
+  csrr t0, mtval
+  csrr t0, mtval2
+  csrr t0, mtinst
+  j fail
+
 TEST_PASSFAIL
 RVTEST_CODE_END
 
@@ -92,6 +114,7 @@ RVTEST_CODE_END
 # ---------------------------
 .align RISCV_PGSHIFT
 spt: .zero (RISCV_PGSIZE * 5)
+gpt: .zero (RISCV_PGSIZE * 5)
 
 # ---------------------------
 # Output data section.
