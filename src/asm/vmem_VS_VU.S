@@ -2,8 +2,6 @@
 #include "test_macros.h"
 #include "vmem_common.h"
 
-#define PTESIZE 8
-
 RVTEST_RV64M
 RVTEST_CODE_BEGIN
 
@@ -18,7 +16,7 @@ la sp, stack
 # Setup page table
 # ---------------------------
 la a0, spt
-li a1, 0x0
+li a1, GPA_BASE
 jal setup_spt
 la a0, spt
 SPA2GPA_ASM(a0)
