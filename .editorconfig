@@ -2,11 +2,16 @@
 root = true
 
 [*]
-indent_style = space            # Block-level indentation uses two spaces
-indent_size = 2                 # Block-level indentation uses two spaces
-end_of_line = lf                # Unix-style line endings should be used
-insert_final_newline = true     # All files should end with a newline character
-trim_trailing_whitespace = true # There should be no trailing spaces on any lines
+# Block-level indentation uses two spaces
+indent_style = space
+indent_size = 2
+# Unix-style line endings should be used
+end_of_line = lf
+# All files should end with a newline character
+insert_final_newline = true
+# There should be no trailing spaces on any lines
+trim_trailing_whitespace = true
 
+# Follow Makefile spec.
 [Makefile]
-indent_style = tab              # Follow Makefile spec.
+indent_style = tab
