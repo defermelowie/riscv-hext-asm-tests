@@ -4,8 +4,16 @@
 #define RISCV_PGLEVEL_BITS 9
 #endif
 
-#define G_STAGE_AT // Debug only
+#define PTESIZE 8
+#define PTECOUNT (RISCV_PGSIZE / PTESIZE)
 
+#define RISCV_L1_SPGSHIFT (RISCV_PGSHIFT + RISCV_PGLEVEL_BITS)
+#define RISCV_L2_SPGSHIFT (RISCV_L1_SPGSHIFT + RISCV_PGLEVEL_BITS)
+
+//-----------------------------------------------------------------------------
+// G-stage address translation
+//-----------------------------------------------------------------------------
+// #define G_STAGE_AT // For debugging
 #ifdef G_STAGE_AT
 #define GPA_BASE 0x0
 /**
@@ -37,12 +45,6 @@
 #define C_SPA2GPA(spa, base, mask) (spa)
 #endif
 
-#define PTESIZE 8
-#define PTECOUNT (RISCV_PGSIZE / PTESIZE)
-
-#define RISCV_L1_SPGSHIFT (RISCV_PGSHIFT + RISCV_PGLEVEL_BITS)
-#define RISCV_L2_SPGSHIFT (RISCV_L1_SPGSHIFT + RISCV_PGLEVEL_BITS)
-
 #define ASM_SPA2GPA_VCODE(spa_reg) ASM_SPA2GPA(spa_reg, 0x0000, 0xfff)
 #define ASM_SPA2GPA_HCODE(spa_reg) ASM_SPA2GPA(spa_reg, 0x1000, 0xfff)
 #define ASM_SPA2GPA_HDATA(spa_reg) ASM_SPA2GPA(spa_reg, 0x2000, 0xfff)
@@ -55,7 +57,18 @@
 #define C_SPA2GPA_VDATA(spa) C_SPA2GPA(spa, 0x3000, 0xfff)
 #define C_SPA2GPA_SLAT(spa) C_SPA2GPA(spa, 0x200000, 0x1fffff)
 
-#define ASM_GPA2VA_UCODE(gpa_reg) ASM_SPA2GPA(gpa_reg, 0x0000, 0xfff)
-#define ASM_GPA2VA_UDATA(gpa_reg) ASM_SPA2GPA(gpa_reg, 0x1000, 0xfff)
-#define ASM_GPA2VA_SCODE(gpa_reg) ASM_SPA2GPA(gpa_reg, 0xfffffffffffff000, 0xfff)
-#define ASM_GPA2VA_SDATA(gpa_reg) ASM_SPA2GPA(gpa_reg, 0xffffffffffffe000, 0xfff)
+//-----------------------------------------------------------------------------
+// VS-stage address translation
+//-----------------------------------------------------------------------------
+#define ASM_GPA2VA(gpa_reg, base, mask) \
+  li t0, mask;                          \
+  li t1, base;                          \
+  and gpa_reg, gpa_reg, t0;             \
+  or gpa_reg, gpa_reg, t1;
+
+#define ASM_GPA2VA_UCODE(gpa_reg) ASM_GPA2VA(gpa_reg, 0x0000, 0xfff)
+#define ASM_GPA2VA_UDATA(gpa_reg) ASM_GPA2VA(gpa_reg, 0x1000, 0xfff)
+#define ASM_GPA2VA_SCODE(gpa_reg) ASM_GPA2VA(gpa_reg, 0xfffffffffffff000, 0xfff)
+#define ASM_GPA2VA_SDATA(gpa_reg) ASM_GPA2VA(gpa_reg, 0xffffffffffffe000, 0xfff)
+
+

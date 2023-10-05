@@ -31,7 +31,7 @@ la a2, .data
 jal setup_gpt
 la t1, gpt
 srl t1, t1, RISCV_PGSHIFT
-li t0, HGATP_MODE_SV39X4 * (HGATP_MODE & ~(HGATP_MODE<<1))
+li t0, HGATP_MODE_OFF * (HGATP_MODE & ~(HGATP_MODE<<1))
 or t0, t0, t1
 csrw hgatp, t0
 csrw satp, t0 # Reuse G-stage pages for S-stage AT
@@ -91,15 +91,15 @@ ASM_GPA2VA_SCODE(a0)
 csrw sepc, a0
 li TESTNUM, 5 #-> Virtual supervisor fetch SLAT
 # --- DEBUG START ---
-li a0, SSTATUS_SUM
-csrs sstatus, a0
-la t1, 0x201ff8
-la t2, 0x204ff8
-la t3, 0x205ff8
-ld t0, 0(t1)
-ld t0, 0(t2)
-ld t0, 0(t3)
-csrc sstatus, a0
+# li a0, SSTATUS_SUM
+# csrs sstatus, a0
+# la t1, 0x201ff8
+# la t2, 0x204ff8
+# la t3, 0x205ff8
+# ld t0, 0(t1)
+# ld t0, 0(t2)
+# ld t0, 0(t3)
+# csrc sstatus, a0
 # ---- DEBUG END ----
 sret
 
@@ -109,18 +109,26 @@ sret
 vscode:
 nop
 li TESTNUM, 6 #-> Virtual supervisor load/store SLAT
-# Todo: test vsdata access
+la t3, vsdata
+ASM_GPA2VA_SDATA(t3)
+li t1, 0xc0ffee
+sd t1, 0(t3)
+ld t3, 0(t3)
 li TESTNUM, 7 #-> Virtual supervisor load/store SLAT of virtual user page
 li a0, SSTATUS_SUM
 csrs sstatus, a0
-# Todo: test vudata access
+la t3, vudata
+ASM_GPA2VA_UDATA(t3)
+li t1, 0xc0ffee
+sd t1, 0(t3)
+ld t3, 0(t3)
 csrc sstatus, a0
 # Return into VU-mode
 li t0, SSTATUS_SPP
 csrc sstatus, t0
-la t0, vucode
-# Fixme: transform vucode address
-csrw sepc, t0
+la a0, vucode
+ASM_GPA2VA_UCODE(a0)
+csrw sepc, a0
 li TESTNUM, 8 #-> Virtual user fetch SLAT
 sret
 
@@ -130,11 +138,11 @@ sret
 vucode:
 nop
 li TESTNUM, 9 #-> Virtual user load/store SLAT
-la t0, vudata
-# Fixme: transform vudata address
+la t3, vudata
+ASM_GPA2VA_UDATA(t3)
 li t1, 0xc0ffee
-sd t1, 0(t0)
-ld t0, 0(t0)
+sd t1, 0(t3)
+ld t3, 0(t3)
 j pass
 
 # ---------------------------
