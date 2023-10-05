@@ -4,6 +4,8 @@
 #define RISCV_PGLEVEL_BITS 9
 #endif
 
+#define G_STAGE_AT // Debug only
+
 #ifdef G_STAGE_AT
 #define GPA_BASE 0x0
 /**

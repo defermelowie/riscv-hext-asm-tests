@@ -1,7 +1,5 @@
 #include "riscv_test.h"
 #include "test_macros.h"
-
-#define G_STAGE_AT
 #include "vmem_common.h"
 
 
@@ -89,7 +87,6 @@ csrs hstatus, t0
 la a0, vscode
 li a1, 1
 # Fixme: transform vscode address
-ASM_SPA2GPA_VCODE(a0)
 ASM_GPA2VA_SCODE(a0)
 csrw sepc, a0
 li TESTNUM, 5 #-> Virtual supervisor fetch SLAT

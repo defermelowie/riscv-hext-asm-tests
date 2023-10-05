@@ -1,5 +1,4 @@
 #include "../encoding.h"
-#define G_STAGE_AT
 #include "vmem_common.h"
 
 /**
@@ -22,13 +21,13 @@ void setup_spt(pte_t pt[5][PTECOUNT], unsigned long paddr_base)
 {
   pt[0][0] = (C_SPA2GPA_SLAT((pte_t)pt[1]) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
   pt[1][0] = (C_SPA2GPA_SLAT((pte_t)pt[2]) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  pt[2][0] = (C_SPA2GPA_SLAT((pte_t)paddr_base + 0x0000) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_X | PTE_U | PTE_D | PTE_A;
-  pt[2][1] = (C_SPA2GPA_SLAT((pte_t)paddr_base + 0x3000) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A;
+  pt[2][0] = (C_SPA2GPA_SLAT((pte_t)paddr_base + 0x0000) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | 0x000 | PTE_X | PTE_U | PTE_D | PTE_A;
+  pt[2][1] = (C_SPA2GPA_SLAT((pte_t)paddr_base + 0x3000) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | 0x000 | PTE_U | PTE_D | PTE_A;
 
   pt[0][PTECOUNT-1] = (C_SPA2GPA_SLAT((pte_t)pt[3]) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
   pt[3][PTECOUNT-1] = (C_SPA2GPA_SLAT((pte_t)pt[4]) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  pt[4][PTECOUNT-1] = (C_SPA2GPA_SLAT((pte_t)paddr_base + 0x0000) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_X | PTE_D | PTE_A;
-  pt[4][PTECOUNT-2] = (C_SPA2GPA_SLAT((pte_t)paddr_base + 0x3000) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_D | PTE_A;
+  pt[4][PTECOUNT-1] = (C_SPA2GPA_SLAT((pte_t)paddr_base + 0x0000) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | 0x000 | PTE_X | PTE_D | PTE_A;
+  pt[4][PTECOUNT-2] = (C_SPA2GPA_SLAT((pte_t)paddr_base + 0x3000) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | 0x000 | PTE_D | PTE_A;
 }
 
 /**
