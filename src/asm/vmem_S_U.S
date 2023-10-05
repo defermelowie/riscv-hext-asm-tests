@@ -41,7 +41,7 @@ li TESTNUM, 1 #-> Supervisor fetch AT
 mret
 
 # ---------------------------
-# Supervisor code
+# S-mode code
 # ---------------------------
 scode:
 nop
@@ -66,7 +66,7 @@ li t1, 0xdeadbeef
 sd t1, 0(t0)
 ld t0, 0(t0)
 csrc sstatus, a0
-# Setup return into U-mode
+# Return into U-mode
 li t0, MSTATUS_MPP
 csrc sstatus, t0
 la t0, ucode
@@ -121,12 +121,6 @@ udata: .dword 0x0
 sdata: .dword 0x0
 
 # ---------------------------
-# Page table data (empty)
-# ---------------------------
-.align RISCV_PGSHIFT
-spt: .zero (RISCV_PGSIZE * 5)
-
-# ---------------------------
 # Output data section.
 # ---------------------------
 RVTEST_DATA_BEGIN
@@ -135,6 +129,12 @@ RVTEST_DATA_BEGIN
 result:
         .dword -1
 RVTEST_DATA_END
+
+# ---------------------------
+# Page table data (empty)
+# ---------------------------
+.align RISCV_PGSHIFT
+spt: .zero (RISCV_PGSIZE * 5)
 
 # ---------------------------
 # "Stack" of size PGSIZE

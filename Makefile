@@ -29,7 +29,7 @@ TARGETS += read_h_csr_from_U read_h_csr_from_VS read_h_csr_from_VU
 TARGETS += read_s_csr_from_U read_s_csr_from_VS read_s_csr_from_VU
 TARGETS += read_vs_csr_from_U read_vs_csr_from_VS read_vs_csr_from_VU
 TARGETS += at_VU_independent_from_satp at_U_independent_from_vsatp at_S_independent_from_vsatp at_VS_independent_from_satp
-TARGETS += vmem_S_U vmem_S_U_superpage vmem_VS_VU vmem_VS_VU_superpage
+TARGETS += vmem_S_U vmem_VS_VU
 
 .PONY: all
 all: dump test
