@@ -1,8 +1,8 @@
 build-spike:
   stage: tooling
-  image: ubuntu
+  image: ubuntu-latest
   script:
-    - apt install git
+    - apt-get update && apt-get install git
     - git clone https://github.com/riscv-software-src/riscv-isa-sim.git
     - cd riscv-isa-sim
     - mkdir build
