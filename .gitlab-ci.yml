@@ -12,11 +12,11 @@ build_spike:
     - mkdir build && cd build
     - ../configure
     - make
-  artifacts:
+  cache:
+    key: spike
     paths:
-      - "build/spike"
+      - build/spike
     when: on_success
-    expire_in: 1 day
 
 build_tests:
   stage: build
@@ -35,7 +35,7 @@ run_tests:
   stage: test
   image: ubuntu:latest
   script:
-    - make test
+    - ./riscv-isa-sim/build/spike -l --log-commits --log=log/slat_VS_VU.spike.log --isa=RV64gh target/slat_VS_VU.elf
   artifacts:
     paths:
       - log/
