@@ -14,7 +14,8 @@ install_spike:
     - export PATH=$PATH:$RISCV
     - make install
   artifacts:
-    paths: $RISCV
+    paths: 
+      - $RISCV
 
 install_clang:
   stage: tooling
