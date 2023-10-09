@@ -20,6 +20,7 @@ build_tests:
   script:
     - apt-get update
     - apt-get install gcc-riscv64-unknown-elf make -y
+    - make setup
     - make dump
   artifacts:
     paths:
