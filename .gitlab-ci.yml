@@ -1,18 +1,22 @@
 variables:
   RISCV: /usr/local/rv/
 
-install_spike:
+build_spike:
   stage: build
   image: ubuntu:latest
   script:
-    - apt-get update && apt-get install git gcc -y
-    - apt-get install build-essential device-tree-compiler -y
+    - apt-get update
+    - apt-get install gcc make git build-essential device-tree-compiler -y
     - git clone https://github.com/riscv-software-src/riscv-isa-sim.git
     - cd riscv-isa-sim
     - mkdir build && cd build
-    - ../configure --prefix=$RISCV
-    - make install
-    - export PATH=$PATH:$RISCV
+    - ../configure --prefix=.
+    - make
+  artifacts:
+    paths:
+      - "build/spike"
+    when: on_success
+    expire_in: 1 day
 
 build_tests:
   stage: build
@@ -25,7 +29,6 @@ build_tests:
   artifacts:
     paths:
       - target/
-    when: on_success
     expire_in: 30 days
   
 run_tests:
@@ -36,11 +39,9 @@ run_tests:
   artifacts:
     paths:
       - log/
-    when: on_failure
     expire_in: 30 days
 
 stages:
-- tooling
 - build
 - test
 
