@@ -19,7 +19,8 @@ build_tests:
   image: ubuntu:latest
   script:
     - apt-get update
-    - apt-get install gcc-riscv64-unknown-elf clang make -y
+    - apt-get install gcc-riscv64-unknown-elf clang make git -y
+    - git submodule init && git submodule update
     - make setup dump
   artifacts:
     paths:
