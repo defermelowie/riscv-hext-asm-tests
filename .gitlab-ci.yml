@@ -1,4 +1,7 @@
-build-spike:
+variables:
+  RISCV: /usr/local/rv/
+
+install_spike:
   stage: tooling
   image: ubuntu:latest
   script:
@@ -7,8 +10,17 @@ build-spike:
     - git clone https://github.com/riscv-software-src/riscv-isa-sim.git
     - cd riscv-isa-sim
     - mkdir build && cd build
-    - ../configure --prefix=/usr/local
+    - ../configure --prefix=$RISCV
+    - export PATH=$PATH:$RISCV
     - make install
+  artifacts:
+    paths: $RISCV
+
+install_clang:
+  stage: tooling
+  image: ubuntu:latest
+  script:
+    - apt-get update && apt-get install git clang -y
 
 stages:
 - tooling
