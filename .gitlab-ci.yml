@@ -12,14 +12,16 @@ build_spike:
     - mkdir build && cd build
     - ../configure
     - make
+    - cd ../../ && mkdir spike/
+    - mv riscv-isa-sim/build/spike spike/spike
   cache:
     key: spike
     paths:
-      - riscv-isa-sim/build/spike
+      - spike/spike
     when: on_success
   artifacts:
     paths:
-      - riscv-isa-sim/build/spike
+      - spike/spike
     when: on_success
 
 build_tests:
@@ -40,7 +42,7 @@ run_tests:
   image: ubuntu:latest
   script:
     - make setup
-    - ./riscv-isa-sim/build/spike -l --log-commits --log=log/slat_VS_VU.spike.log --isa=RV64gh target/slat_VS_VU.elf
+    - ./spike/spike -l --log-commits --log=log/slat_VS_VU.spike.log --isa=RV64gh target/slat_VS_VU.elf
   artifacts:
     paths:
       - log/
