@@ -11,9 +11,8 @@ install_spike:
     - cd riscv-isa-sim
     - mkdir build && cd build
     - ../configure --prefix=$RISCV
-    - export PATH=$PATH:$RISCV
     - make install
-    - cd ~ && spike
+    - export PATH=$PATH:$RISCV
 
 install_gcc_riscv:
   stage: tooling
@@ -22,11 +21,27 @@ install_gcc_riscv:
     - apt-get update
     - apt-get install gcc-riscv64-unknown-elf -y
 
+build_tests:
+  stage: build
+  image: ubuntu:latest
+  script:
+    - make dump
+  artifacts:
+    paths:
+      - target/
+    when: on_success
+    expire_in: 30 days
+  
 run_tests:
   stage: test
   image: ubuntu:latest
   script:
-    - make
+    - make test
+  artifacts:
+    paths:
+      - log/
+    when: on_failure
+    expire_in: 30 days
 
 stages:
 - tooling
