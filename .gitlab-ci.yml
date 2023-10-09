@@ -10,7 +10,7 @@ build_spike:
     - git clone https://github.com/riscv-software-src/riscv-isa-sim.git
     - cd riscv-isa-sim
     - mkdir build && cd build
-    - ../configure --prefix=.
+    - ../configure
     - make
   artifacts:
     paths:
