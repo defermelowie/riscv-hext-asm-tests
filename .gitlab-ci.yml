@@ -13,9 +13,7 @@ install_spike:
     - ../configure --prefix=$RISCV
     - export PATH=$PATH:$RISCV
     - make install
-  artifacts:
-    paths: 
-      - $RISCV
+    - cd ~ && spike
 
 install_clang:
   stage: tooling
@@ -23,6 +21,7 @@ install_clang:
   script:
     - apt-get update
     - apt-get install clang llvm lld -y
+    - spike
 
 stages:
 - tooling
