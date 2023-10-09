@@ -2,6 +2,7 @@ build-spike:
   stage: tooling
   image: ubuntu
   script:
+    - sudo apt get git
     - git clone https://github.com/riscv-software-src/riscv-isa-sim.git
     - cd riscv-isa-sim
     - mkdir build
