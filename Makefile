@@ -19,17 +19,20 @@ LOGDIR = ./log
 
 EMULATOR = $(CSIM)
 
-TARGETS += h_ext_enabled h_ext_csr_defined
-TARGETS += mret_M_to_HS mret_M_to_U mret_M_to_VS mret_M_to_VU
-TARGETS += sret_HS_to_U sret_HS_to_VS sret_HS_to_VU sret_VS_to_VU
-TARGETS += ecall_HS_to_M ecall_VS_to_M ecall_VS_to_HS
-TARGETS += ecall_U_to_M ecall_U_to_HS ecall_VU_to_M ecall_VU_to_HS ecall_VU_to_VS
-TARGETS += vs_csr_substitute_s_csr
-TARGETS += read_h_csr_from_U read_h_csr_from_VS read_h_csr_from_VU
-TARGETS += read_s_csr_from_U read_s_csr_from_VS read_s_csr_from_VU
-TARGETS += read_vs_csr_from_U read_vs_csr_from_VS read_vs_csr_from_VU
-TARGETS += at_VU_independent_from_satp at_U_independent_from_vsatp at_S_independent_from_vsatp at_VS_independent_from_satp
-TARGETS += vmem_S_U vmem_VS_VU
+TARGETS_P += h_ext_enabled h_ext_csr_defined
+TARGETS_P += mret_M_to_HS mret_M_to_U mret_M_to_VS mret_M_to_VU
+TARGETS_P += sret_HS_to_U sret_HS_to_VS sret_HS_to_VU sret_VS_to_VU
+TARGETS_P += ecall_HS_to_M ecall_VS_to_M ecall_VS_to_HS
+TARGETS_P += ecall_U_to_M ecall_U_to_HS ecall_VU_to_M ecall_VU_to_HS ecall_VU_to_VS
+TARGETS_P += vs_csr_substitute_s_csr
+TARGETS_P += read_h_csr_from_U read_h_csr_from_VS read_h_csr_from_VU
+TARGETS_P += read_s_csr_from_U read_s_csr_from_VS read_s_csr_from_VU
+TARGETS_P += read_vs_csr_from_U read_vs_csr_from_VS read_vs_csr_from_VU
+TARGETS_P += at_VU_independent_from_satp at_U_independent_from_vsatp at_S_independent_from_vsatp at_VS_independent_from_satp
+
+TARGETS_AT += at_S_U
+
+TARGETS_SLAT += slat_VS_VU
 
 .PONY: all
 all: dump test
@@ -48,11 +51,11 @@ clean:
 	rm -f $(LOGDIR)/*.log
 
 .PONY: dump
-dump: $(TARGETS:%=$(DUMPDIR)/%.dump)
+dump: $(TARGETS_P:%=$(DUMPDIR)/%.dump) $(TARGETS_AT:%=$(DUMPDIR)/%.dump) $(TARGETS_SLAT:%=$(DUMPDIR)/%.dump)
 
 .PONY: log
-test: $(TARGETS:%=$(TARGETDIR)/%.elf)
-	./script/run_tests.sh $(EMULATOR) $(TARGETDIR) $(LOGDIR) $(TARGETS)
+test: $(TARGETS_P:%=$(TARGETDIR)/%.elf) $(TARGETS_AT:%=$(TARGETDIR)/%.elf) $(TARGETS_SLAT:%=$(TARGETDIR)/%.elf)
+	./script/run_tests.sh $(EMULATOR) $(TARGETDIR) $(LOGDIR) $(TARGETS_P) $(TARGETS_AT) $(TARGETS_SLAT)
 
 $(OBJDIR)/vmem.o: ./src/c/vmem.c
 	$(CC) -c $(CCFLAGS) -o $@ -c $<

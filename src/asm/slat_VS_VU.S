@@ -17,7 +17,7 @@ la sp, stack
 # ---------------------------
 la a0, spt
 li a1, GPA_BASE
-jal setup_spt
+jal setup_vspt
 la a0, spt
 ASM_SPA2GPA_SLAT(a0)
 srl a0, a0, RISCV_PGSHIFT
@@ -26,12 +26,13 @@ or a0, a0, a1
 csrw vsatp, a0
 # ------------------------
 la a0, gpt
-li a1, DRAM_BASE
+la a1, .text.init
 la a2, .data
+la a3, .data.pt # AT structure superpage
 jal setup_gpt
 la t1, gpt
 srl t1, t1, RISCV_PGSHIFT
-li t0, HGATP_MODE_OFF * (HGATP_MODE & ~(HGATP_MODE<<1))
+li t0, HGATP_MODE_SV39X4 * (HGATP_MODE & ~(HGATP_MODE<<1))
 or t0, t0, t1
 csrw hgatp, t0
 csrw satp, t0 # Reuse G-stage pages for S-stage AT
@@ -85,22 +86,13 @@ csrs sstatus, t0
 li t0, HSTATUS_SPV
 csrs hstatus, t0
 la a0, vscode
-li a1, 1
-# Fixme: transform vscode address
-ASM_GPA2VA_SCODE(a0)
+ASM_PA2VA_SCODE(a0)
 csrw sepc, a0
-li TESTNUM, 5 #-> Virtual supervisor fetch SLAT
 # --- DEBUG START ---
-# li a0, SSTATUS_SUM
-# csrs sstatus, a0
-# la t1, 0x201ff8
-# la t2, 0x204ff8
-# la t3, 0x205ff8
-# ld t0, 0(t1)
-# ld t0, 0(t2)
-# ld t0, 0(t3)
-# csrc sstatus, a0
-# ---- DEBUG END ----
+li TESTNUM, 99 #-> DEBUG
+li t0, 0x200ff8
+ld t1, 0(t0)
+li TESTNUM, 5 #-> Virtual supervisor fetch SLAT
 sret
 
 # ---------------------------
@@ -110,7 +102,7 @@ vscode:
 nop
 li TESTNUM, 6 #-> Virtual supervisor load/store SLAT
 la t3, vsdata
-ASM_GPA2VA_SDATA(t3)
+ASM_PA2VA_SDATA(t3)
 li t1, 0xc0ffee
 sd t1, 0(t3)
 ld t3, 0(t3)
@@ -118,7 +110,7 @@ li TESTNUM, 7 #-> Virtual supervisor load/store SLAT of virtual user page
 li a0, SSTATUS_SUM
 csrs sstatus, a0
 la t3, vudata
-ASM_GPA2VA_UDATA(t3)
+ASM_PA2VA_UDATA(t3)
 li t1, 0xc0ffee
 sd t1, 0(t3)
 ld t3, 0(t3)
@@ -127,7 +119,7 @@ csrc sstatus, a0
 li t0, SSTATUS_SPP
 csrc sstatus, t0
 la a0, vucode
-ASM_GPA2VA_UCODE(a0)
+ASM_PA2VA_UCODE(a0)
 csrw sepc, a0
 li TESTNUM, 8 #-> Virtual user fetch SLAT
 sret
@@ -139,7 +131,7 @@ vucode:
 nop
 li TESTNUM, 9 #-> Virtual user load/store SLAT
 la t3, vudata
-ASM_GPA2VA_UDATA(t3)
+ASM_PA2VA_UDATA(t3)
 li t1, 0xc0ffee
 sd t1, 0(t3)
 ld t3, 0(t3)
@@ -171,7 +163,7 @@ TEST_PASSFAIL
 RVTEST_CODE_END
 
 .data
-.align RISCV_L1_SPGSHIFT # Align on superpage
+.align RISCV_PGSHIFT # Align data section on page
 #----------------------------
 # Test data
 #----------------------------
@@ -190,13 +182,16 @@ result:
 RVTEST_DATA_END
 
 # ---------------------------
-# Page table data (empty)
-# ---------------------------
-.align RISCV_PGSHIFT
-spt: .zero (RISCV_PGSIZE * 5)
-gpt: .zero (RISCV_PGSIZE * 3)
-
-# ---------------------------
 # "Stack" of size PGSIZE
 # ---------------------------
 .skip RISCV_PGSIZE; stack:
+
+# ---------------------------
+# Page table data (empty)
+# ---------------------------
+.section ".data.pt"
+.align RISCV_L1_SPGSHIFT # Align pt section on superpage
+spt: .zero (RISCV_PGSIZE * 5)
+.align (RISCV_PGSHIFT + 2) # Sv*x4 root table is 4 times bigger and should be aligned accordingly
+gpt: .zero (RISCV_PGSIZE * 3)
+
