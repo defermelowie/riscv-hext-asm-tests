@@ -16,6 +16,12 @@ build_spike:
     key: spike
     paths:
       - build/spike
+      - riscv-isa-sim/build/spike
+    when: on_success
+  artifacts:
+    paths:
+      - build/spike
+      - riscv-isa-sim/build/spike
     when: on_success
 
 build_tests:
