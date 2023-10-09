@@ -19,7 +19,7 @@ build_tests:
   image: ubuntu:latest
   script:
     - apt-get update
-    - apt-get install gcc-riscv64-unknown-elf -y
+    - apt-get install gcc-riscv64-unknown-elf make -y
     - make dump
   artifacts:
     paths:
