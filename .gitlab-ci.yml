@@ -21,7 +21,8 @@ install_clang:
   stage: tooling
   image: ubuntu:latest
   script:
-    - apt-get update && apt-get install git clang -y
+    - apt-get update
+    - apt-get install clang llvm lld -y
 
 stages:
 - tooling
