@@ -1,6 +1,3 @@
-variables:
-  RISCV: /usr/local/rv/
-
 build_spike:
   stage: build
   image: ubuntu:latest
