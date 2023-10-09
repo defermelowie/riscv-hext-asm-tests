@@ -2,6 +2,7 @@ RV = riscv64-unknown-elf
 ENV = p
 
 CC = $(RV)-gcc
+CC = clang --target=riscv64
 CCFLAGS = -march=rv64g -mabi=lp64 -mcmodel=medany -I$(ENVDIR) -I$(MACROS)
 LD = $(RV)-ld
 LDFLAGS = -static -nostdlib

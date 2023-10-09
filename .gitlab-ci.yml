@@ -2,7 +2,7 @@ variables:
   RISCV: /usr/local/rv/
 
 install_spike:
-  stage: tooling
+  stage: build
   image: ubuntu:latest
   script:
     - apt-get update && apt-get install git gcc -y
@@ -14,17 +14,12 @@ install_spike:
     - make install
     - export PATH=$PATH:$RISCV
 
-install_gcc_riscv:
-  stage: tooling
-  image: ubuntu:latest
-  script:
-    - apt-get update
-    - apt-get install gcc-riscv64-unknown-elf -y
-
 build_tests:
   stage: build
   image: ubuntu:latest
   script:
+    - apt-get update
+    - apt-get install gcc-riscv64-unknown-elf -y
     - make dump
   artifacts:
     paths:
