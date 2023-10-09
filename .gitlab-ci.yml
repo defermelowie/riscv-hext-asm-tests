@@ -23,6 +23,7 @@ build_spike:
     paths:
       - spike/spike
     when: on_success
+    expire_in: 7 days
 
 build_tests:
   stage: build
@@ -35,7 +36,7 @@ build_tests:
   artifacts:
     paths:
       - target/
-    expire_in: 30 days
+    expire_in: 7 days
   
 run_tests:
   stage: test
@@ -46,7 +47,7 @@ run_tests:
   artifacts:
     paths:
       - log/
-    expire_in: 30 days
+    expire_in: 7 days
 
 stages:
 - build
