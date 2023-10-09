@@ -15,7 +15,7 @@ install_spike:
     - make install
     - cd ~ && spike
 
-install_clang:
+install_gcc_riscv:
   stage: tooling
   image: ubuntu:latest
   script:
