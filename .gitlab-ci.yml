@@ -20,8 +20,13 @@ install_clang:
   image: ubuntu:latest
   script:
     - apt-get update
-    - apt-get install clang llvm lld -y
-    - spike
+    - apt-get install gcc-riscv64-unknown-elf -y
+
+run_tests:
+  stage: test
+  image: ubuntu:latest
+  script:
+    - make
 
 stages:
 - tooling
