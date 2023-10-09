@@ -39,7 +39,7 @@ run_tests:
   stage: test
   image: ubuntu:latest
   script:
-    - make setup
+    - mkdir -p log/
     - ./spike/spike -l --log-commits --log=log/slat_VS_VU.spike.log --isa=RV64gh target/slat_VS_VU.elf
   artifacts:
     paths:
