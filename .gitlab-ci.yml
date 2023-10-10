@@ -9,13 +9,8 @@ build_spike:
     - mkdir build && cd build
     - ../configure
     - make
-    - cd ../../ && mkdir spike/
+    - cd ../../ && mkdir -p spike/
     - mv riscv-isa-sim/build/spike spike/spike
-  cache:
-    key: spike
-    paths:
-      - spike/spike
-    when: on_success
   artifacts:
     paths:
       - spike/spike
