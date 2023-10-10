@@ -53,6 +53,8 @@ run_tests:
     - apt-get update
     - apt-get install make device-tree-compiler -y
     - ls -al spike/build
+    - ls -al target/
+    - ls -al log/
     - make setup verify
   artifacts:
     paths:
