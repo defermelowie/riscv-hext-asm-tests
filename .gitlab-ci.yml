@@ -41,9 +41,7 @@ build_tests:
   
 run_tests:
   stage: test
-  needs:
-    - build_tests
-    - build_spike
+  needs: [build_tests]
   image: ubuntu:latest
   script:
     - apt-get update
