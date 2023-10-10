@@ -27,9 +27,6 @@ build_spike:
 
 build_tests:
   stage: build
-  needs:
-    - build_tests
-    - build_spike
   image: ubuntu:latest
   script:
     - apt-get update
@@ -43,6 +40,9 @@ build_tests:
   
 run_tests:
   stage: test
+  needs:
+    - build_tests
+    - build_spike
   image: ubuntu:latest
   script:
     - apt-get update
