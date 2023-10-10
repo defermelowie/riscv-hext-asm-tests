@@ -1,8 +1,8 @@
 RV = riscv64-unknown-elf
 ENV = p
 
-CC = $(RV)-gcc
-CC = clang --target=riscv64
+# CC = $(RV)-gcc
+CC = clang --target=riscv64 # LLVM assembler supports hypervisor-specific instructions
 CCFLAGS = -march=rv64g -mabi=lp64 -mcmodel=medany -I$(ENVDIR) -I$(MACROS)
 LD = $(RV)-ld
 LDFLAGS = -static -nostdlib
@@ -33,7 +33,7 @@ TARGETS += at_VU_independent_from_satp at_U_independent_from_vsatp at_S_independ
 TARGETS += at_S_U
 TARGETS += slat_VS_VU
 
-TARGETS += infinite_loop
+TARGETS += infinite_loop direct_fail # For debugging CI
 
 .PONY: all
 all: dump test
