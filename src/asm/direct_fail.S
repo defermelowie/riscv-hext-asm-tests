@@ -7,8 +7,7 @@ RVTEST_CODE_BEGIN
 .align 2
 li TESTNUM, 1
 
-loop:
-  j loop
+j fail
 
 TEST_PASSFAIL
 RVTEST_CODE_END
