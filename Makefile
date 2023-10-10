@@ -59,7 +59,7 @@ test: $(TARGETS:%=$(TARGETDIR)/%.elf)
 	./script/run_tests.sh $(EMULATOR) $(TARGETDIR) $(LOGDIR) $(TARGETS)
 
 .PONY: verify
-verify: $(TARGETS:%=$(TARGETDIR)/%.elf)
+verify: # $(TARGETS:%=$(TARGETDIR)/%.elf)
 	./script/verify_tests.sh ./spike/build/spike $(TARGETDIR) $(LOGDIR) $(TARGETS)
 
 $(OBJDIR)/vmem.o: ./src/c/vmem.c
