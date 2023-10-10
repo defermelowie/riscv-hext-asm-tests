@@ -2,6 +2,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
 build_spike:
+  when: manual
   stage: build
   image: ubuntu:latest
   script:
@@ -37,11 +38,6 @@ build_tests:
       - target/*.elf
       - target/*.dump
     expire_in: 7 days
-  cache:
-    policy: pull-push
-    unprotect: false
-    untracked: false
-    when: on_success
   
 run_tests:
   stage: test
@@ -52,10 +48,11 @@ run_tests:
   script:
     - apt-get update
     - apt-get install make device-tree-compiler -y
+    - make setup
     - ls -al spike/build
     - ls -al target/
     - ls -al log/
-    - make setup verify
+    - make verify
   artifacts:
     paths:
       - "log/"
