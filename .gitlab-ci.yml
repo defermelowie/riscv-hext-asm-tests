@@ -16,10 +16,12 @@ build_spike:
     when: on_success
     expire_in: 7 days
   cache:
+    key: spike
     paths:
       - "spike/build/*.o"
       - "spike/build/*.cc"
       - "spike/build/*.d"
+      - "spike/build/*.a"
     when: on_success
 
 
@@ -48,12 +50,10 @@ run_tests:
     - build_spike
   image: ubuntu:latest
   script:
-    - mkdir -p log/
-    - pwd
-    - ls -al
-    - ls -al spike
+    - apt-get update
+    - apt-get install make device-tree-compiler -y
     - ls -al spike/build
-    - ./spike/build/spike -l --log-commits --log=log/slat_VS_VU.spike.log --isa=RV64gh target/slat_VS_VU.elf
+    - make setup verify
   artifacts:
     paths:
       - "log/"
