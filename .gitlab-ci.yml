@@ -7,18 +7,21 @@ build_spike:
   script:
     - apt-get update
     - apt-get install gcc make git build-essential device-tree-compiler -y
-    - git clone https://github.com/riscv-software-src/riscv-isa-sim.git
-    - cd riscv-isa-sim
-    - mkdir build && cd build
+    - mkdir -p spike/build && cd spike/build
     - ../configure
     - make
-    - cd ../../ && mkdir -p spike/
-    - mv riscv-isa-sim/build/spike spike/spike
   artifacts:
     paths:
-      - spike/spike
+      - "spike/build/spike"
     when: on_success
     expire_in: 7 days
+  cache:
+    paths:
+      - "spike/build/*.o"
+      - "spike/build/*.cc"
+      - "spike/build/*.d"
+    when: on_success
+
 
 build_tests:
   stage: build
@@ -31,6 +34,11 @@ build_tests:
     paths:
       - target/
     expire_in: 7 days
+  cache:
+    policy: pull-push
+    unprotect: false
+    untracked: false
+    when: on_success
   
 run_tests:
   stage: test
@@ -39,10 +47,10 @@ run_tests:
     - mkdir -p log/
     - pwd
     - ls -al
-    - ./spike/spike -l --log-commits --log=log/slat_VS_VU.spike.log --isa=RV64gh target/slat_VS_VU.elf
+    - ./spike/build/spike -l --log-commits --log=log/slat_VS_VU.spike.log --isa=RV64gh target/slat_VS_VU.elf
   artifacts:
     paths:
-      - log/
+      - "log/"
     expire_in: 7 days
 
 stages:
