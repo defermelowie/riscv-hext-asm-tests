@@ -42,6 +42,9 @@ build_tests:
   
 run_tests:
   stage: test
+  needs:
+    - build_tests
+    - build_spike
   image: ubuntu:latest
   script:
     - mkdir -p log/
