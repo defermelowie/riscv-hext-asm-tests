@@ -35,6 +35,8 @@ run_tests:
   image: ubuntu:latest
   script:
     - mkdir -p log/
+    - pwd
+    - ls -al
     - ./spike/spike -l --log-commits --log=log/slat_VS_VU.spike.log --isa=RV64gh target/slat_VS_VU.elf
   artifacts:
     paths:
