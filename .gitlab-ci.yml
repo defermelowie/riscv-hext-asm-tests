@@ -1,5 +1,6 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
+  SPIKE_REPO: https://github.com/riscv-software-src/riscv-isa-sim.git
 
 build_spike:
   stage: build
@@ -7,6 +8,7 @@ build_spike:
   script:
     - apt-get update
     - apt-get install gcc make git build-essential device-tree-compiler -y
+    - git clone $SPIKE_REPO spike
     - mkdir -p spike/build && cd spike/build
     - ../configure
     - make
@@ -15,14 +17,6 @@ build_spike:
       - "spike/build/spike"
     when: on_success
     expire_in: 7 days
-  cache:
-    key: spike
-    paths:
-      - "spike/build/*.o"
-      - "spike/build/*.cc"
-      - "spike/build/*.d"
-      - "spike/build/*.a"
-    when: on_success
 
 
 build_tests:
@@ -37,7 +31,7 @@ build_tests:
       - target/*.elf
       - target/*.dump
     expire_in: 7 days
-  
+
 run_tests:
   stage: test
   needs:

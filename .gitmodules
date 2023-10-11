@@ -1,6 +1,3 @@
 [submodule "env"]
 	path = env
 	url = https://github.com/defermelowie/riscv-test-env.git
-[submodule "spike"]
-	path = spike
-	url = https://github.com/riscv-software-src/riscv-isa-sim.git
