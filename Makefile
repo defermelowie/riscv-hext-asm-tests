@@ -9,6 +9,7 @@ LDFLAGS = -static -nostdlib
 OBJDUMP = $(RV)-objdump
 OSIM = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 -enable-hext"
 CSIM = "./../sail-riscv/c_emulator/riscv_sim_RV64"
+SPIKE = "./../riscv-isa-sim/build/spike"
 
 SCRDIR = ./src/asm
 MACROS = ./src/macro
@@ -70,6 +71,12 @@ $(OBJDIR)/%.o: $(SCRDIR)/%.S
 
 $(DUMPDIR)/%.dump: $(TARGETDIR)/%.elf
 	$(OBJDUMP) -D $< > $@
+
+$(LOGDIR)/%.verif.log: $(TARGETDIR)/%.elf
+	$(SPIKE) -l --isa=RV64gh $< 2> $@
+
+$(LOGDIR)/%.test.log: $(TARGETDIR)/%.elf
+	$(EMULATOR) $< > $@
 
 ifneq ($(ENV), v)
 # Link without support for virtual mem
