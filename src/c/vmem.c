@@ -29,7 +29,7 @@ void setup_spt(pte_t pt[5][PTECOUNT], unsigned long paddr_code_base, unsigned lo
 
   // Root page
   pt[0][0] = ((pte_t)pt[upp] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  pt[0][PTECOUNT - 1] = ((pte_t)pt[3] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  pt[0][PTECOUNT - 1] = ((pte_t)pt[spp] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
 
   // Ptr pages
   for (int i = upp; i < ulp; i++)
