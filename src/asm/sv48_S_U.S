@@ -17,6 +17,7 @@ la sp, stack
 la a0, spt
 la a1, .text.init
 la a2, .data
+li a3, 4
 jal setup_spt
 la a0, spt
 srl a0, a0, RISCV_PGSHIFT
@@ -121,7 +122,7 @@ RVTEST_DATA_END
 # Page table data (empty)
 # ---------------------------
 .align RISCV_PGSHIFT
-spt: .zero (RISCV_PGSIZE * 5)
+spt: .zero (RISCV_PGSIZE * 7)
 
 # ---------------------------
 # "Stack" of size PGSIZE

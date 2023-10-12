@@ -17,18 +17,31 @@ typedef unsigned long pte_t;
  * @param pt Page table base address
  * @param paddr_code_base Physical base address of code
  * @param paddr_data_base Physical base address of data
+ * @param levels Amount of levels in page walk
  */
-void setup_spt(pte_t pt[5][PTECOUNT], unsigned long paddr_code_base, unsigned long paddr_data_base)
+void setup_spt(pte_t pt[5][PTECOUNT], unsigned long paddr_code_base, unsigned long paddr_data_base, unsigned int levels)
 {
-  pt[0][0] = ((pte_t)pt[1] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  pt[1][0] = ((pte_t)pt[2] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  pt[2][0] = ((pte_t)paddr_code_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | 0x000 | PTE_X | PTE_U | PTE_D | PTE_A;
-  pt[2][1] = ((pte_t)paddr_data_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | 0x000 | PTE_U | PTE_D | PTE_A;
+  unsigned int rp = 0;                  // Root page
+  unsigned int upp = rp + 1;            // First user pointer page
+  unsigned int ulp = levels - 1;        // User leaf page
+  unsigned int spp = ulp + 1;           // First supervisor pointer page
+  unsigned int slp = 2 * (levels - 1);  // Supervisor leaf page
 
-  pt[0][PTECOUNT-1] = ((pte_t)pt[3] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  pt[3][PTECOUNT-1] = ((pte_t)pt[4] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  pt[4][PTECOUNT-1] = ((pte_t)paddr_code_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | 0x000 | PTE_X | PTE_D | PTE_A;
-  pt[4][PTECOUNT-2] = ((pte_t)paddr_data_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | 0x000 | PTE_D | PTE_A;
+  // Root page
+  pt[0][0] = ((pte_t)pt[upp] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  pt[0][PTECOUNT - 1] = ((pte_t)pt[3] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+
+  // Ptr pages
+  for (int i = upp; i < ulp; i++)
+    pt[i][0] = ((pte_t)pt[i + 1] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  for (int i = spp; i < slp; i++)
+    pt[i][PTECOUNT - 1] = ((pte_t)pt[i+1] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+
+  // Leaf pages
+  pt[ulp][0] = ((pte_t)paddr_code_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | 0x000 | PTE_X | PTE_U | PTE_D | PTE_A;
+  pt[ulp][1] = ((pte_t)paddr_data_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | 0x000 | PTE_U | PTE_D | PTE_A;
+  pt[slp][PTECOUNT - 1] = ((pte_t)paddr_code_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | 0x000 | PTE_X | PTE_D | PTE_A;
+  pt[slp][PTECOUNT - 2] = ((pte_t)paddr_data_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | 0x000 | PTE_D | PTE_A;
 }
 
 /**
@@ -49,10 +62,10 @@ void setup_vspt(pte_t pt[5][PTECOUNT], unsigned long paddr_base)
   pt[2][0] = (C_SPA2GPA_VCODE((pte_t)paddr_base) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | 0x000 | PTE_X | PTE_U | PTE_D | PTE_A;
   pt[2][1] = (C_SPA2GPA_VDATA((pte_t)paddr_base) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | 0x000 | PTE_U | PTE_D | PTE_A;
 
-  pt[0][PTECOUNT-1] = (C_SPA2GPA_SLAT((pte_t)pt[3]) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  pt[3][PTECOUNT-1] = (C_SPA2GPA_SLAT((pte_t)pt[4]) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  pt[4][PTECOUNT-1] = (C_SPA2GPA_VCODE((pte_t)paddr_base) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | 0x000 | PTE_X | PTE_D | PTE_A;
-  pt[4][PTECOUNT-2] = (C_SPA2GPA_VDATA((pte_t)paddr_base) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | 0x000 | PTE_D | PTE_A;
+  pt[0][PTECOUNT - 1] = (C_SPA2GPA_SLAT((pte_t)pt[3]) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  pt[3][PTECOUNT - 1] = (C_SPA2GPA_SLAT((pte_t)pt[4]) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  pt[4][PTECOUNT - 1] = (C_SPA2GPA_VCODE((pte_t)paddr_base) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | 0x000 | PTE_X | PTE_D | PTE_A;
+  pt[4][PTECOUNT - 2] = (C_SPA2GPA_VDATA((pte_t)paddr_base) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | 0x000 | PTE_D | PTE_A;
 }
 
 /**

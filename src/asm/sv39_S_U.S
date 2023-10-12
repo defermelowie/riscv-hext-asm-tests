@@ -17,6 +17,7 @@ la sp, stack
 la a0, spt
 la a1, .text.init
 la a2, .data
+li a3, 3
 jal setup_spt
 la a0, spt
 srl a0, a0, RISCV_PGSHIFT
@@ -126,4 +127,4 @@ spt: .zero (RISCV_PGSIZE * 5)
 # ---------------------------
 # "Stack" of size PGSIZE
 # ---------------------------
-.skip RISCV_PGSIZE; stack:
+.skip RISCV_PGSIZE; stack: .word 0X0
