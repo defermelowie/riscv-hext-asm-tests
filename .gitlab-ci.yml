@@ -14,7 +14,7 @@ build_spike:
     - make
   artifacts:
     paths:
-      - "spike/build/spike"
+      - "./spike/build/spike"
     when: on_success
     expire_in: 7 days
 
@@ -45,7 +45,7 @@ run_tests:
     - ls -al spike/build
     - ls -al target/
     - ls -al log/
-    - make verify
+    - make verify SPIKE='./spike/build/spike'
   artifacts:
     paths:
       - "log/"

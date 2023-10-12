@@ -9,7 +9,7 @@ LDFLAGS = -static -nostdlib
 OBJDUMP = $(RV)-objdump
 OSIM = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 -enable-hext"
 CSIM = "./../sail-riscv/c_emulator/riscv_sim_RV64"
-SPIKE = "./../riscv-isa-sim/build/spike"
+SPIKE ?= "./../riscv-isa-sim/build/spike"
 
 SCRDIR = ./src/asm
 MACROS = ./src/macro
@@ -31,8 +31,8 @@ TARGETS += read_h_csr_from_U read_h_csr_from_VS read_h_csr_from_VU
 TARGETS += read_s_csr_from_U read_s_csr_from_VS read_s_csr_from_VU
 TARGETS += read_vs_csr_from_U read_vs_csr_from_VS read_vs_csr_from_VU
 TARGETS += at_VU_independent_from_satp at_U_independent_from_vsatp at_S_independent_from_vsatp at_VS_independent_from_satp
-TARGETS += at_S_U
-TARGETS += slat_VS_VU
+TARGETS += sv39_S_U sv48_S_U
+TARGETS += sv39_HS_VS_VU sv48_HS_VS_VU
 
 # TARGETS += infinite_loop direct_fail # Only for CI debug
 
@@ -61,7 +61,7 @@ test: $(TARGETS:%=$(TARGETDIR)/%.elf)
 
 .PONY: verify
 verify: # $(TARGETS:%=$(TARGETDIR)/%.elf)
-	./script/verify_tests.sh ./spike/build/spike $(TARGETDIR) $(LOGDIR) $(TARGETS)
+	./script/verify_tests.sh $(SPIKE) $(TARGETDIR) $(LOGDIR) $(TARGETS)
 
 $(OBJDIR)/vmem.o: ./src/c/vmem.c
 	$(CC) -c $(CCFLAGS) -o $@ -c $<
