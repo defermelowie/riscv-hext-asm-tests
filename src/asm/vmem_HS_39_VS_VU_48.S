@@ -17,11 +17,12 @@ la sp, stack
 # ---------------------------
 la a0, spt
 li a1, GPA_BASE
+li a2, 4
 jal setup_vspt
 la a0, spt
 ASM_SPA2GPA_SLAT(a0)
 srl a0, a0, RISCV_PGSHIFT
-li a1, SATP_MODE_SV39 * (SATP_MODE & ~(SATP_MODE<<1))
+li a1, SATP_MODE_SV48 * (SATP_MODE & ~(SATP_MODE<<1))
 or a0, a0, a1
 csrw vsatp, a0
 # ------------------------
@@ -32,7 +33,7 @@ la a3, .data.pt # AT structure superpage
 jal setup_gpt
 la t1, gpt
 srl t1, t1, RISCV_PGSHIFT
-li t0, HGATP_MODE_SV39X4 * (HGATP_MODE & ~(HGATP_MODE<<1))
+li t0, HGATP_MODE_SV48X4 * (HGATP_MODE & ~(HGATP_MODE<<1))
 or t0, t0, t1
 csrw hgatp, t0
 csrw satp, t0 # Reuse G-stage pages for S-stage AT

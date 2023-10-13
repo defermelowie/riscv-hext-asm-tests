@@ -19,10 +19,24 @@ csrr t1, hvip
 csrr t1, htinst
 csrr t1, hgeip
 csrr t1, henvcfg
-# csrr t1, henvcfgh
+#if __riscv_xlen == 32
+  csrr t1, henvcfgh
+#endif
 csrr t1, hgatp
 csrr t1, htimedelta
-# csrr t1, htimedeltah
+#if __riscv_xlen == 32
+  csrr t1, htimedeltah
+#endif
+li TESTNUM, 2
+csrr t1, vsstatus
+csrr t1, vsie
+csrr t1, vstvec
+csrr t1, vsscratch
+csrr t1, vsepc
+csrr t1, vscause
+csrr t1, vstval
+csrr t1, vsip
+csrr t1, vsatp
 RVTEST_PASS
 
 fail:
