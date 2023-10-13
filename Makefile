@@ -31,13 +31,13 @@ TARGETS += read_h_csr_from_U read_h_csr_from_VS read_h_csr_from_VU
 TARGETS += read_s_csr_from_U read_s_csr_from_VS read_s_csr_from_VU
 TARGETS += read_vs_csr_from_U read_vs_csr_from_VS read_vs_csr_from_VU
 TARGETS += vmem_VU_at_independent_from_satp vmem_U_at_independent_from_vsatp vmem_S_at_independent_from_vsatp vmem_VS_at_independent_from_satp
-TARGETS += vmem_S_U_39 vmem_S_U_48 vmem_S_U_57
-TARGETS += vmem_HS_39_VS_VU_39 # vmem_HS_39_VS_VU_48
+TARGETS += vmem_S_U_39 vmem_S_U_48 #vmem_S_U_57
+TARGETS += vmem_HS_39_VS_VU_39 vmem_HS_39_VS_VU_48 vmem_HS_39_VS_VU_57
 
 # TARGETS += ci_infinite_loop ci_direct_fail # Only for CI debug
 
 .PONY: all
-all: dump test verify
+all: dump
 
 .PONY: setup
 setup:

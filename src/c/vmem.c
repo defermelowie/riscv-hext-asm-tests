@@ -19,7 +19,7 @@ typedef unsigned long pte_t;
  * @param paddr_data_base Physical base address of data
  * @param levels Amount of levels in page walk
  */
-void setup_spt(pte_t pt[5][PTECOUNT], unsigned long paddr_code_base, unsigned long paddr_data_base, unsigned int levels)
+void setup_spt(pte_t pt[9][PTECOUNT], unsigned long paddr_code_base, unsigned long paddr_data_base, unsigned int levels)
 {
   unsigned int rp = 0;                  // Root page
   unsigned int upp = rp + 1;            // First user pointer page
@@ -56,7 +56,7 @@ void setup_spt(pte_t pt[5][PTECOUNT], unsigned long paddr_code_base, unsigned lo
  * @param paddr_base Guest physical base address
  * @param levels Amount of levels in page walk
  */
-void setup_vspt(pte_t pt[5][PTECOUNT], unsigned long paddr_base, unsigned int levels)
+void setup_vspt(pte_t pt[9][PTECOUNT], unsigned long paddr_base, unsigned int levels)
 {
   unsigned int rp = 0;                  // Root page
   unsigned int upp = rp + 1;            // First user pointer page
@@ -65,8 +65,8 @@ void setup_vspt(pte_t pt[5][PTECOUNT], unsigned long paddr_base, unsigned int le
   unsigned int slp = 2 * (levels - 1);  // Supervisor leaf page
 
   // Root page
-  pt[0][0] = (C_SPA2GPA_SLAT((pte_t)pt[upp]) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  pt[0][PTECOUNT - 1] = (C_SPA2GPA_SLAT((pte_t)pt[spp]) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  pt[rp][0] = (C_SPA2GPA_SLAT((pte_t)pt[upp]) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  pt[rp][PTECOUNT - 1] = (C_SPA2GPA_SLAT((pte_t)pt[spp]) >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
 
   // Ptr pages
   for (int i = upp; i < ulp; i++)
