@@ -1,3 +1,9 @@
 [submodule "env"]
 	path = env
 	url = https://gitlab.kuleuven.be/u0165022/riscv-test-env.git
+[submodule "ci/spike"]
+	path = ci/spike
+	url = https://github.com/riscv-software-src/riscv-isa-sim.git
+[submodule "ci/rocket"]
+	path = ci/rocket
+	url = https://github.com/chipsalliance/rocket-chip.git
