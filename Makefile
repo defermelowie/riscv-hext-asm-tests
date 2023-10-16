@@ -9,7 +9,7 @@ LDFLAGS = -static -nostdlib
 OBJDUMP = $(RV)-objdump
 OSIM = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 -enable-hext"
 CSIM = "./../sail-riscv/c_emulator/riscv_sim_RV64"
-SPIKE ?= "./../riscv-isa-sim/build/spike"
+SPIKE ?= "./ci/bin/spike"
 
 SCRDIR = ./src/asm
 MACROS = ./src/macro
@@ -37,7 +37,7 @@ TARGETS += vmem_HS_39_VS_VU_39 vmem_HS_39_VS_VU_48 #vmem_HS_39_VS_VU_57
 # TARGETS += ci_infinite_loop ci_direct_fail # Only for CI debug
 
 .PONY: all
-all: dump
+all: dump test
 
 .PONY: setup
 setup:
