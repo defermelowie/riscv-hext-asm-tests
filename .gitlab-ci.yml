@@ -1,51 +1,26 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  SPIKE_REPO: https://github.com/riscv-software-src/riscv-isa-sim.git
-
-build_spike:
-  stage: build
-  image: ubuntu:latest
-  script:
-    - apt-get update
-    - apt-get install gcc make git build-essential device-tree-compiler -y
-    - git clone $SPIKE_REPO spike
-    - mkdir -p spike/build && cd spike/build
-    - ../configure
-    - make
-  artifacts:
-    paths:
-      - "./spike/build/spike"
-    when: on_success
-    expire_in: 7 days
-
 
 build_tests:
   stage: build
-  image: ubuntu:latest
+  image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env:latest
   script:
-    - apt-get update
-    - apt-get install gcc-riscv64-unknown-elf clang make -y
-    - make setup dump
+    - make setup
+    - make dump
   artifacts:
     paths:
       - target/*.elf
       - target/*.dump
     expire_in: 7 days
 
-run_tests:
+verif_tests_spike:
   stage: test
+  image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env:latest
   needs:
     - build_tests
-    - build_spike
-  image: ubuntu:latest
   script:
-    - apt-get update
-    - apt-get install make device-tree-compiler -y
     - make setup
-    - ls -al spike/build
-    - ls -al target/
-    - ls -al log/
-    - make verify SPIKE='./spike/build/spike'
+    - make spike
   artifacts:
     paths:
       - "log/"

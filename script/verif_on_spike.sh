@@ -17,7 +17,7 @@ do
     if  [ $i -gt 0 ]
     then
         printf "[TEST] ${test}";
-        if timeout --foreground 5 ${emulator} -l --log-commits --isa=RV64gh ${testdir}/${test}.elf 2> ${logdir}/${test}.verif.log
+        if timeout --foreground 5 ${emulator} -l --log-commits --isa=RV64gh ${testdir}/${test}.elf 2> ${logdir}/${test}.spike.log
         then
           printf " - \x1b[32mok\x1b[0m"
         else

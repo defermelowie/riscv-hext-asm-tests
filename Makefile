@@ -9,7 +9,6 @@ LDFLAGS = -static -nostdlib
 OBJDUMP = $(RV)-objdump
 OSIM = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 -enable-hext"
 CSIM = "./../sail-riscv/c_emulator/riscv_sim_RV64"
-SPIKE ?= "./ci/bin/spike"
 
 SCRDIR = ./src/asm
 MACROS = ./src/macro
@@ -59,9 +58,9 @@ dump: $(TARGETS:%=$(DUMPDIR)/%.dump)
 test: $(TARGETS:%=$(TARGETDIR)/%.elf)
 	./script/run_tests.sh $(EMULATOR) $(TARGETDIR) $(LOGDIR) $(TARGETS)
 
-.PONY: verify
-verify: # $(TARGETS:%=$(TARGETDIR)/%.elf)
-	./script/verify_tests.sh $(SPIKE) $(TARGETDIR) $(LOGDIR) $(TARGETS)
+.PONY: spike
+spike:
+	./script/verif_on_spike.sh spike $(TARGETDIR) $(LOGDIR) $(TARGETS)
 
 $(OBJDIR)/vmem.o: ./src/c/vmem.c
 	$(CC) -c $(CCFLAGS) -o $@ -c $<
