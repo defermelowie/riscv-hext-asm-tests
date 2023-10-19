@@ -6,6 +6,8 @@
 
 This repo hosts the unit tests that are used for verifying the RISC-V hypervisor extension [sail model](https://github.com/defermelowie/sail-riscv)
 
+## Test verification
+
 These unit tests are verified using the following H-extension capable emulators/models:
 - [x] [spike](https://github.com/riscv-software-src/riscv-isa-sim/tree/master)
 - [ ] [minho-pulp/cva6](https://github.com/minho-pulp/cva6) fork of [openhwgroup/cva6](https://github.com/openhwgroup/cva6)
