@@ -17,11 +17,11 @@ la sp, stack
 la a0, spt
 la a1, .text.init
 la a2, .data
-li a3, 5
+li a3, 4
 jal setup_spt
 la a0, spt
 srl a0, a0, RISCV_PGSHIFT
-li a1, SATP_MODE_SV57 * (SATP_MODE & ~(SATP_MODE<<1))
+li a1, SATP_MODE_SV48 * (SATP_MODE & ~(SATP_MODE<<1))
 or a0, a0, a1
 csrw satp, a0
 
@@ -117,14 +117,3 @@ RVTEST_DATA_BEGIN
 result:
         .dword -1
 RVTEST_DATA_END
-
-# ---------------------------
-# Page table data (empty)
-# ---------------------------
-.align RISCV_PGSHIFT
-spt: .zero (RISCV_PGSIZE * 9)
-
-# ---------------------------
-# "Stack" of size PGSIZE
-# ---------------------------
-.skip RISCV_PGSIZE; stack:

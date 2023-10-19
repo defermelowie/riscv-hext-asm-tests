@@ -17,12 +17,12 @@ la sp, stack
 # ---------------------------
 la a0, spt
 li a1, GPA_BASE
-li a2, 5
+li a2, 4
 jal setup_vspt
 la a0, spt
 ASM_SPA2GPA_SLAT(a0)
 srl a0, a0, RISCV_PGSHIFT
-li a1, SATP_MODE_SV57 * (SATP_MODE & ~(SATP_MODE<<1))
+li a1, SATP_MODE_SV48 * (SATP_MODE & ~(SATP_MODE<<1))
 or a0, a0, a1
 csrw vsatp, a0
 # ------------------------
@@ -181,18 +181,3 @@ RVTEST_DATA_BEGIN
 result:
         .dword -1
 RVTEST_DATA_END
-
-# ---------------------------
-# "Stack" of size PGSIZE
-# ---------------------------
-.skip RISCV_PGSIZE; stack:
-
-# ---------------------------
-# Page table data (empty)
-# ---------------------------
-.section ".data.pt"
-.align RISCV_L1_SPGSHIFT # Align pt section on superpage
-spt: .zero (RISCV_PGSIZE * 9)
-.align (RISCV_PGSHIFT + 2) # Sv*x4 root table is 4 times bigger and should be aligned accordingly
-gpt: .zero (RISCV_PGSIZE * 3)
-

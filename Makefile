@@ -11,8 +11,9 @@ OSIM = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 -enable-hext"
 CSIM = "./../sail-riscv/c_emulator/riscv_sim_RV64"
 EMULATOR = $(CSIM)
 
-ENVDIR = ./env/gv
+ENVDIR = ./env/slat
 SCRDIR = ./src
+
 OBJDIR = ./target
 TARGETDIR = ./target
 DUMPDIR = ./target
@@ -32,8 +33,10 @@ TARGETS += read_h_csr_from_U read_h_csr_from_VS read_h_csr_from_VU
 TARGETS += read_s_csr_from_U read_s_csr_from_VS read_s_csr_from_VU
 TARGETS += read_vs_csr_from_U read_vs_csr_from_VS read_vs_csr_from_VU
 TARGETS += vmem_VU_at_independent_from_satp vmem_U_at_independent_from_vsatp vmem_S_at_independent_from_vsatp vmem_VS_at_independent_from_satp
-TARGETS += vmem_S_U_39 vmem_S_U_48 vmem_S_U_57
-TARGETS += vmem_HS_39_VS_VU_39 vmem_HS_39_VS_VU_48 vmem_HS_39_VS_VU_57
+TARGETS += at_S_U_39 at_S_U_48 at_S_U_57
+TARGETS += slat_HS_39_VS_VU_39 slat_HS_39_VS_VU_48 slat_HS_39_VS_VU_57
+# TODO: TARGETS += slat_HS_48_VS_VU_39 slat_HS_48_VS_VU_48 slat_HS_48_VS_VU_57
+TARGETS += slat_HS_39_gpage_fault
 
 # TARGETS += ci_infinite_loop ci_direct_fail # Only for CI debug
 
@@ -42,26 +45,30 @@ TARGETS += vmem_HS_39_VS_VU_39 vmem_HS_39_VS_VU_48 vmem_HS_39_VS_VU_57
 #-------------------------------------------------#
 
 .PONY: all
-all: setup clean dump test
+all: setup clean build dump test
 
 .PONY: setup
 setup:
 	mkdir -p $(OBJDIR)
 	mkdir -p $(TARGETDIR)
+	mkdir -p $(DUMPDIR)
 	mkdir -p $(LOGDIR)
 
 .PONY: clean
 clean:
 	rm -f $(OBJDIR)/*.o
 	rm -f $(TARGETDIR)/*.elf
-	rm -f $(TARGETDIR)/*.dump
+	rm -f $(DUMPDIR)/*.dump
 	rm -f $(LOGDIR)/*.log
+
+.PONY: build
+build: $(TARGETS:%=$(TARGETDIR)/%.elf)
 
 .PONY: dump
 dump: $(TARGETS:%=$(DUMPDIR)/%.dump)
 
 .PONY: test
-test: $(TARGETS:%=$(TARGETDIR)/%.elf)
+test: dump
 	./script/run_tests.sh $(EMULATOR) $(TARGETDIR) $(LOGDIR) $(TARGETS)
 
 # Support for G-stage virtual memory
