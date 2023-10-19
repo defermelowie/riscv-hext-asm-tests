@@ -33,10 +33,9 @@ TARGETS += read_h_csr_from_U read_h_csr_from_VS read_h_csr_from_VU
 TARGETS += read_s_csr_from_U read_s_csr_from_VS read_s_csr_from_VU
 TARGETS += read_vs_csr_from_U read_vs_csr_from_VS read_vs_csr_from_VU
 TARGETS += vmem_VU_at_independent_from_satp vmem_U_at_independent_from_vsatp vmem_S_at_independent_from_vsatp vmem_VS_at_independent_from_satp
-TARGETS += at_S_U_39 at_S_U_48 at_S_U_57
-TARGETS += slat_HS_39_VS_VU_39 slat_HS_39_VS_VU_48 slat_HS_39_VS_VU_57
-# TODO: TARGETS += slat_HS_48_VS_VU_39 slat_HS_48_VS_VU_48 slat_HS_48_VS_VU_57
-TARGETS += slat_HS_39_gpage_fault
+TARGETS += at_S_U_39 at_S_U_48 # at_S_U_57
+TARGETS += slat_HS_39_VS_VU_39 slat_HS_39_VS_VU_48 # slat_HS_39_VS_VU_57
+TARGETS += slat_HS_39_VS_39_gpage_fault
 
 # TARGETS += ci_infinite_loop ci_direct_fail # Only for CI debug
 

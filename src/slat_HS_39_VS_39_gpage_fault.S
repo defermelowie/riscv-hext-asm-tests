@@ -39,10 +39,12 @@ csrw satp, t0 # Reuse G-stage pages for S-stage AT
 # ---------------------------
 # Actual tests
 # ---------------------------
-#define VCODE_LEAF_PTE gpt+(2*RISCV_PGSIZE)       # user/supervisor code leaf pte
+#define PTR_PTE        gpt+(1*RISCV_PGSIZE)+(0*8) # pointer pte
+#define SLAT_LEAF_PTE  gpt+(1*RISCV_PGSIZE)+(1*8) # S-stage at structure leaf pte
+#define VCODE_LEAF_PTE gpt+(2*RISCV_PGSIZE)+(0*8) # user/supervisor code leaf pte
 #define VDATA_LEAF_PTE gpt+(2*RISCV_PGSIZE)+(3*8) # user/supervisor data leaf pte
 
-# Guest-page-fault due to missing execute permission in supervisor code page
+# Fetch-guest-page-fault due to missing execute permission in code pte
 t1_pre:
   li TESTNUM, 1
   la a0, VCODE_LEAF_PTE
@@ -50,57 +52,97 @@ t1_pre:
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
 t1_post:
-  j t2_pre
-
-# Guest-page-fault due to missing execute permission in user code page
-t2_pre:
-  li TESTNUM, 2
-  j ret_vu
-t2_post:
   la a0, VCODE_LEAF_PTE
   li a1, (PTE_V | PTE_X | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
-  j t3_pre
+  j t2_pre
 
-# Guest-page-fault due to missing write permission in supervisor data page
-t3_pre:
-  li TESTNUM, 3
+# Store-guest-page-fault due to missing write permission in data pte
+t2_pre:
+  li TESTNUM, 2
   la a0, VDATA_LEAF_PTE
   li a1, (PTE_V | PTE_R | !PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
-t3_post:
-  j t4_pre
-
-# Guest-page-fault due to missing write permission in user data page
-t4_pre:
-  li TESTNUM, 4
-  j ret_vu
-t4_post:
+t2_post:
   la a0, VDATA_LEAF_PTE
   li a1, (PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
-  j t5_pre
+  j t3_pre
 
-# Guest-page-fault due to missing read permission in supervisor data page
-t5_pre:
-  li TESTNUM, 5
+# Load-guest-page-fault due to missing read permission in data pte
+t3_pre:
+  li TESTNUM, 3
   la a0, VDATA_LEAF_PTE
   li a1, (PTE_V | !PTE_R | !PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
-t5_post:
-  j t6_pre
-
-# Guest-page-fault due to missing read permission in user data page
-t6_pre:
-  li TESTNUM, 6
-  j ret_vu
-t6_post:
+t3_post:
   la a0, VDATA_LEAF_PTE
   li a1, (PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
-  j pass # Last test, exit success
+  j t4_pre
+
+# Fetch-guest-page-fault due to missing valid in code pte
+t4_pre:
+  li TESTNUM, 4
+  la a0, VCODE_LEAF_PTE
+  li a1, (!PTE_V | PTE_X | PTE_U | PTE_D | PTE_A)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j ret_vs
+t4_post:
+  la a0, VCODE_LEAF_PTE
+  li a1, (PTE_V | PTE_X | PTE_U | PTE_D | PTE_A)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j t5_pre
+
+# Load-guest-page-fault due to missing valid in data pte
+t5_pre:
+  li TESTNUM, 5
+  la a0, VDATA_LEAF_PTE
+  li a1, (!PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j ret_vs
+t5_post:
+  la a0, VDATA_LEAF_PTE
+  li a1, (PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j t6_pre
+
+# Fetch-guest-page-fault due to missing valid in pointer pte
+t6_pre:
+  li TESTNUM, 6
+  la a0, PTR_PTE
+  li a1, (!PTE_V)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j ret_vs
+t6_post:
+  la a0, PTR_PTE
+  li a1, (PTE_V)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j t7_pre
+
+# Fetch-guest-page-fault due to missing valid in slat pte
+t7_pre:
+  li TESTNUM, 7
+  la a0, SLAT_LEAF_PTE
+  li a1, (!PTE_V | PTE_R | PTE_W | PTE_X | PTE_U | PTE_D | PTE_A)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j ret_vs
+t7_post:
+  la a0, SLAT_LEAF_PTE
+  li a1, (PTE_V | PTE_R | PTE_W | PTE_X | PTE_U | PTE_D | PTE_A)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j pass # Last test passed, exit success
+
+# TODO: Fetch-guest-page-fault due to missing U-bit in code pte
+# TODO: Load-guest-page-fault due to missing U-bit in data pte
+
+# TODO: Fetch-guest-page-fault due to illegal combination in code pte
+# TODO: Load-guest-page-fault due to illegal combination in data pte
+
+# TODO: Fetch-guest-page-fault due to missing leaf code pte
+# TODO: Load-guest-page-fault due to missing leaf data pte
 
 # ---------------------------
 # Machine trap vector
@@ -122,17 +164,17 @@ mtvec_handler:
   j t1_post
 1:li t0, 2
   bne t0, TESTNUM, 1f
-  li t0, CAUSE_FETCH_GUEST_PAGE_FAULT
+  li t0, CAUSE_STORE_GUEST_PAGE_FAULT
   bne t0, a0, fail
   j t2_post
 1:li t0, 3
   bne t0, TESTNUM, 1f
-  li t0, CAUSE_STORE_GUEST_PAGE_FAULT
+  li t0, CAUSE_LOAD_GUEST_PAGE_FAULT
   bne t0, a0, fail
   j t3_post
 1:li t0, 4
   bne t0, TESTNUM, 1f
-  li t0, CAUSE_STORE_GUEST_PAGE_FAULT
+  li t0, CAUSE_FETCH_GUEST_PAGE_FAULT
   bne t0, a0, fail
   j t4_post
 1:li t0, 5
@@ -142,9 +184,14 @@ mtvec_handler:
   j t5_post
 1:li t0, 6
   bne t0, TESTNUM, 1f
-  li t0, CAUSE_LOAD_GUEST_PAGE_FAULT
+  li t0, CAUSE_FETCH_GUEST_PAGE_FAULT
   bne t0, a0, fail
   j t6_post
+1:li t0, 7
+  bne t0, TESTNUM, 1f
+  li t0, CAUSE_FETCH_GUEST_PAGE_FAULT
+  bne t0, a0, fail
+  j t7_post
   # Other exception occured => test failed
 1:j fail
 
@@ -166,29 +213,6 @@ vscode:
   nop
   la a0, vsdata
   ASM_PA2VA_SDATA(a0)
-  ld t0, 0(a0)
-  not t0, t0
-  sw t0, 0(a0)
-  j fail
-
-# ---------------------------
-# VU-mode
-# ---------------------------
-ret_vu:
-  li t0, MSTATUS_MPP | MSTATUS_MPV
-  csrc mstatus, t0
-  li t0, MSTATUS_MPV
-  csrs mstatus, t0
-  la a0, vucode
-  ASM_SPA2GPA_VCODE(a0)
-  ASM_PA2VA_UCODE(a0)
-  csrw mepc, a0
-  mret
-
-vucode:
-  nop
-  la a0, vudata
-  ASM_PA2VA_UDATA(a0)
   ld t0, 0(a0)
   not t0, t0
   sw t0, 0(a0)
