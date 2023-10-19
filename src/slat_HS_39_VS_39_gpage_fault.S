@@ -133,10 +133,46 @@ t7_post:
   la a0, SLAT_LEAF_PTE
   li a1, (PTE_V | PTE_R | PTE_W | PTE_X | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
-  j pass # Last test passed, exit success
+  j t8_pre
 
-# TODO: Fetch-guest-page-fault due to missing U-bit in code pte
-# TODO: Load-guest-page-fault due to missing U-bit in data pte
+# Fetch-guest-page-fault due to missing U-bit in code pte
+t8_pre:
+  li TESTNUM, 8
+  la a0, VCODE_LEAF_PTE
+  li a1, (PTE_V | PTE_X | !PTE_U | PTE_D | PTE_A)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j ret_vs
+t8_post:
+  la a0, VCODE_LEAF_PTE
+  li a1, (PTE_V | PTE_X | PTE_U | PTE_D | PTE_A)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j t9_pre
+
+# Load-guest-page-fault due to missing U-bit in data pte
+t9_pre:
+  li TESTNUM, 9
+  la a0, VDATA_LEAF_PTE
+  li a1, (PTE_V | PTE_X | !PTE_U | PTE_D | PTE_A)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j ret_vs
+t9_post:
+  la a0, VDATA_LEAF_PTE
+  li a1, (PTE_V | PTE_X | PTE_U | PTE_D | PTE_A)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j t10_pre
+
+# Fetch-guest-page-fault due to missing U-bit in slat pte
+t10_pre:
+  li TESTNUM, 10
+  la a0, SLAT_LEAF_PTE
+  li a1, (PTE_V | PTE_X | !PTE_U | PTE_D | PTE_A)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j ret_vs
+t10_post:
+  la a0, SLAT_LEAF_PTE
+  li a1, (PTE_V | PTE_X | PTE_U | PTE_D | PTE_A)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j pass # Last test passed, exit success
 
 # TODO: Fetch-guest-page-fault due to illegal combination in code pte
 # TODO: Load-guest-page-fault due to illegal combination in data pte
@@ -192,6 +228,21 @@ mtvec_handler:
   li t0, CAUSE_FETCH_GUEST_PAGE_FAULT
   bne t0, a0, fail
   j t7_post
+1:li t0, 8
+  bne t0, TESTNUM, 1f
+  li t0, CAUSE_FETCH_GUEST_PAGE_FAULT
+  bne t0, a0, fail
+  j t8_post
+1:li t0, 9
+  bne t0, TESTNUM, 1f
+  li t0, CAUSE_LOAD_GUEST_PAGE_FAULT
+  bne t0, a0, fail
+  j t9_post
+1:li t0, 10
+  bne t0, TESTNUM, 1f
+  li t0, CAUSE_FETCH_GUEST_PAGE_FAULT
+  bne t0, a0, fail
+  j t10_post
   # Other exception occured => test failed
 1:j fail
 
