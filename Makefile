@@ -1,6 +1,6 @@
 # CC = $(RV)-gcc
 CC = clang --target=riscv64 # LLVM assembler supports hypervisor-specific instructions
-CCFLAGS = -march=rv64g -mabi=lp64 -mcmodel=medany -I$(ENVDIR) -I$(MACROS)
+CCFLAGS = -march=rv64g -mabi=lp64 -mcmodel=medany -I$(ENVDIR)
 
 LD = riscv64-unknown-elf-ld
 LDFLAGS = -static -nostdlib
@@ -11,9 +11,8 @@ OSIM = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 -enable-hext"
 CSIM = "./../sail-riscv/c_emulator/riscv_sim_RV64"
 EMULATOR = $(CSIM)
 
-SCRDIR = ./src/asm
-MACROS = ./src/macro
-ENVDIR = ./env/p
+ENVDIR = ./env/gv
+SCRDIR = ./src
 OBJDIR = ./target
 TARGETDIR = ./target
 DUMPDIR = ./target
@@ -65,7 +64,8 @@ dump: $(TARGETS:%=$(DUMPDIR)/%.dump)
 test: $(TARGETS:%=$(TARGETDIR)/%.elf)
 	./script/run_tests.sh $(EMULATOR) $(TARGETDIR) $(LOGDIR) $(TARGETS)
 
-$(OBJDIR)/vmem.o: ./src/c/vmem.c
+# Support for G-stage virtual memory
+$(OBJDIR)/vmem.o: $(ENVDIR)/vmem.c
 	$(CC) -c $(CCFLAGS) -o $@ -c $<
 
 $(OBJDIR)/%.o: $(SCRDIR)/%.S
