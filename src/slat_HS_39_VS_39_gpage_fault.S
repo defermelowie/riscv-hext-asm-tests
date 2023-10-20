@@ -246,10 +246,41 @@ t12_post:
   ld t0, 0(t1)
   la a0, VDATA_LEAF_PTE
   sd t0, 0(a0)
-  j pass # Last test passed, exit success
+  j t13_pre
 
-# TODO: Fetch-guest-page-fault due to missing leaf code pte
-# TODO: Load-guest-page-fault due to missing leaf data pte
+# Fetch-guest-page-fault due to missing leaf code pte
+t13_pre:
+  li TESTNUM, 13
+  la a0, VCODE_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
+  li a1, (PTE_V)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j ret_vs
+t13_post:
+  la t1, pte_data
+  ld t0, 0(t1)
+  la a0, VCODE_LEAF_PTE
+  sd t0, 0(a0)
+  j t14_pre
+
+# Load-guest-page-fault due to missing leaf data pte
+t14_pre:
+  li TESTNUM, 14
+  la a0, VDATA_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
+  li a1, (PTE_V)
+  ASM_UPDATE_PTE_BITS(a0, a1)
+  j ret_vs
+t14_post:
+  la t1, pte_data
+  ld t0, 0(t1)
+  la a0, VDATA_LEAF_PTE
+  sd t0, 0(a0)
+  j pass # Last test passed, exit success
 
 # ---------------------------
 # Machine trap vector
@@ -324,6 +355,16 @@ mtvec_handler:
   li t0, CAUSE_LOAD_GUEST_PAGE_FAULT
   bne t0, a0, fail
   j t12_post
+1:li t0, 13
+  bne t0, TESTNUM, 1f
+  li t0, CAUSE_FETCH_GUEST_PAGE_FAULT
+  bne t0, a0, fail
+  j t13_post
+1:li t0, 14
+  bne t0, TESTNUM, 1f
+  li t0, CAUSE_LOAD_GUEST_PAGE_FAULT
+  bne t0, a0, fail
+  j t14_post
   # Other exception occured => test failed
 1:j fail
 
