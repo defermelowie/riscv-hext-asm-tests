@@ -48,156 +48,204 @@ csrw satp, t0 # Reuse G-stage pages for S-stage AT
 t1_pre:
   li TESTNUM, 1
   la a0, VCODE_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
   li a1, (PTE_V | !PTE_X | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
 t1_post:
+  la t1, pte_data
+  ld t0, 0(t1)
   la a0, VCODE_LEAF_PTE
-  li a1, (PTE_V | PTE_X | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  sd t0, 0(a0)
   j t2_pre
 
 # Store-guest-page-fault due to missing write permission in data pte
 t2_pre:
   li TESTNUM, 2
   la a0, VDATA_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
   li a1, (PTE_V | PTE_R | !PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
 t2_post:
+  la t1, pte_data
+  ld t0, 0(t1)
   la a0, VDATA_LEAF_PTE
-  li a1, (PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  sd t0, 0(a0)
   j t3_pre
 
 # Load-guest-page-fault due to missing read permission in data pte
 t3_pre:
   li TESTNUM, 3
   la a0, VDATA_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
   li a1, (PTE_V | !PTE_R | !PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
 t3_post:
+  la t1, pte_data
+  ld t0, 0(t1)
   la a0, VDATA_LEAF_PTE
-  li a1, (PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  sd t0, 0(a0)
   j t4_pre
 
 # Fetch-guest-page-fault due to missing valid in code pte
 t4_pre:
   li TESTNUM, 4
   la a0, VCODE_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
   li a1, (!PTE_V | PTE_X | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
 t4_post:
+  la t1, pte_data
+  ld t0, 0(t1)
   la a0, VCODE_LEAF_PTE
-  li a1, (PTE_V | PTE_X | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  sd t0, 0(a0)
   j t5_pre
 
 # Load-guest-page-fault due to missing valid in data pte
 t5_pre:
   li TESTNUM, 5
   la a0, VDATA_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
   li a1, (!PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
 t5_post:
+  la t1, pte_data
+  ld t0, 0(t1)
   la a0, VDATA_LEAF_PTE
-  li a1, (PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  sd t0, 0(a0)
   j t6_pre
 
 # Fetch-guest-page-fault due to missing valid in pointer pte
 t6_pre:
   li TESTNUM, 6
   la a0, PTR_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
   li a1, (!PTE_V)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
 t6_post:
+  la t1, pte_data
+  ld t0, 0(t1)
   la a0, PTR_PTE
-  li a1, (PTE_V)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  sd t0, 0(a0)
   j t7_pre
 
 # Fetch-guest-page-fault due to missing valid in slat pte
 t7_pre:
   li TESTNUM, 7
   la a0, SLAT_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
   li a1, (!PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
 t7_post:
+  la t1, pte_data
+  ld t0, 0(t1)
   la a0, SLAT_LEAF_PTE
-  li a1, (PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  sd t0, 0(a0)
   j t8_pre
 
 # Fetch-guest-page-fault due to missing U-bit in code pte
 t8_pre:
   li TESTNUM, 8
   la a0, VCODE_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
   li a1, (PTE_V | PTE_X | !PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
 t8_post:
+  la t1, pte_data
+  ld t0, 0(t1)
   la a0, VCODE_LEAF_PTE
-  li a1, (PTE_V | PTE_X | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  sd t0, 0(a0)
   j t9_pre
 
 # Load-guest-page-fault due to missing U-bit in data pte
 t9_pre:
   li TESTNUM, 9
   la a0, VDATA_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
   li a1, (PTE_V | PTE_R | PTE_W | PTE_X | !PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
 t9_post:
+  la t1, pte_data
+  ld t0, 0(t1)
   la a0, VDATA_LEAF_PTE
-  li a1, (PTE_V | PTE_R | PTE_W | PTE_X | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  sd t0, 0(a0)
   j t10_pre
 
 # Fetch-guest-page-fault due to missing U-bit in slat pte
 t10_pre:
   li TESTNUM, 10
   la a0, SLAT_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
   li a1, (PTE_V | PTE_R | PTE_W | PTE_X | !PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
 t10_post:
+  la t1, pte_data
+  ld t0, 0(t1)
   la a0, SLAT_LEAF_PTE
-  li a1, (PTE_V | PTE_R | PTE_W | PTE_X | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  sd t0, 0(a0)
   j t11_pre
 
 # Fetch-guest-page-fault due to illegal combination in code pte
 t11_pre:
   li TESTNUM, 11
   la a0, VCODE_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
   li a1, (PTE_V | !PTE_R | PTE_W | PTE_X | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
 t11_post:
+  la t1, pte_data
+  ld t0, 0(t1)
   la a0, VCODE_LEAF_PTE
-  li a1, (PTE_V | !PTE_R | !PTE_W | PTE_X | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  sd t0, 0(a0)
   j t12_pre
 
 # Load-guest-page-fault due to illegal combination in data pte
 t12_pre:
   li TESTNUM, 12
   la a0, VDATA_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, pte_data
+  sd t0, 0(t1)
   li a1, (PTE_V | !PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
   j ret_vs
 t12_post:
+  la t1, pte_data
+  ld t0, 0(t1)
   la a0, VDATA_LEAF_PTE
-  li a1, (PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  sd t0, 0(a0)
   j pass # Last test passed, exit success
 
 # TODO: Fetch-guest-page-fault due to missing leaf code pte
@@ -310,9 +358,8 @@ RVTEST_CODE_END
 #----------------------------
 # Test data
 #----------------------------
-vudata: .dword 0x0
 vsdata: .dword 0x0
-hsdata: .dword 0x0
+pte_data: .dword 0x0
 
 # ---------------------------
 # Output data section.
