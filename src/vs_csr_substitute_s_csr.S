@@ -15,15 +15,8 @@ test_setup:
     la t1, test_check
     csrw mtvec, t1
     # Return into HS-mode
-    csrr t1, mstatus
-    li t2, 0xffffff7fffffe7ff
-    and t1, t1, t2
-    li t2, 0x0000000000000800
-    or t1, t1, t2
-    csrw mstatus, t1
-    la t1, hscode
-    csrw mepc, t1
-    mret
+    la a0, hscode
+    RVTEST_MRET_HS(a0)
     unimp
 
 hscode:

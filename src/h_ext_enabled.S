@@ -1,3 +1,8 @@
+/**
+ * File: h_ext_enabled.S
+ * Description: Verify that the hypervisor extension is enabled
+ */
+
 #include "riscv_test.h"
 #include "test_macros.h"
 
@@ -8,13 +13,11 @@ RVTEST_CODE_BEGIN
 
 li TESTNUM, 1
 csrr t1, misa       # Read misa
-andi t1, t1, 0x80   # Extract H bit
+andi t1, t1, 0x80   # Mask H bit
 beqz t1, fail       # Failure if H bit is 0
-RVTEST_PASS
+j pass
 
-fail:
-    RVTEST_FAIL
-
+TEST_PASSFAIL
 RVTEST_CODE_END
 
 .data

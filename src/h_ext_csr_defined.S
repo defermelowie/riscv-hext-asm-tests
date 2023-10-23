@@ -1,3 +1,8 @@
+/**
+ * File: h_ext_csr_defined.S
+ * Description: Attempt to read all CSRs defined by the hypervisor extension
+ */
+
 #include "riscv_test.h"
 #include "test_macros.h"
 
@@ -7,6 +12,9 @@ RVTEST_CODE_BEGIN
 .align 2
 
 li TESTNUM, 1
+csrr t1, mtval2
+csrr t1, mtinst
+li TESTNUM, 2
 csrr t1, hstatus
 csrr t1, hedeleg
 csrr t1, hideleg
@@ -27,7 +35,7 @@ csrr t1, htimedelta
 #if __riscv_xlen == 32
   csrr t1, htimedeltah
 #endif
-li TESTNUM, 2
+li TESTNUM, 3
 csrr t1, vsstatus
 csrr t1, vsie
 csrr t1, vstvec
@@ -37,11 +45,9 @@ csrr t1, vscause
 csrr t1, vstval
 csrr t1, vsip
 csrr t1, vsatp
-RVTEST_PASS
+j pass
 
-fail:
-    RVTEST_FAIL
-
+TEST_PASSFAIL
 RVTEST_CODE_END
 
 .data

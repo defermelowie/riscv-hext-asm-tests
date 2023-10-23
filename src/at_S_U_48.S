@@ -28,15 +28,10 @@ csrw satp, a0
 # ---------------------------
 # Return into S-mode
 # ---------------------------
-li t0, MSTATUS_MPP
-csrc mstatus, t0
-li t0, 0x800
-csrs mstatus, t0
+li TESTNUM, 1 #-> Supervisor fetch AT
 la a0, scode
 PA2VA_SCODE(a0)
-csrw mepc, a0
-li TESTNUM, 1 #-> Supervisor fetch AT
-mret
+RVTEST_MRET_HS(a0)
 
 # ---------------------------
 # S-mode code

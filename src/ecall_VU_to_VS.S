@@ -14,18 +14,9 @@ li t1, 0x100
 csrw medeleg, t1
 csrw hedeleg, t1
 
-# Set MPP to User (0b00) & MPV to 0b1
-csrr t1, mstatus
-li t2, 0xffffff7fffffe7ff
-and t1, t1, t2
-li t2, 0x0000008000000000
-or t1, t1, t2
-csrw mstatus, t1
-# Load address into exception program counter
-la t1, do_ecall
-csrw mepc, t1
 # Return into VU-mode
-mret
+la a0, do_ecall
+RVTEST_MRET_VU(a0)
 unimp
 
 do_ecall:

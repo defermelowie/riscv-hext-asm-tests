@@ -384,19 +384,11 @@ mtvec_handler:
   # Other exception occured => test failed
 1:j fail
 
-# ---------------------------
-# VS-mode
-# ---------------------------
 ret_vs:
-  li t0, MSTATUS_MPP | MSTATUS_MPV
-  csrc mstatus, t0
-  li t0, 0x800 | MSTATUS_MPV
-  csrs mstatus, t0
   la a0, vscode
   SPA2GPA_VCODE(a0)
   PA2VA_SCODE(a0)
-  csrw mepc, a0
-  mret
+  RVTEST_MRET_VS(a0)
 
 vscode:
   nop

@@ -10,18 +10,9 @@ RVTEST_CODE_BEGIN
 la t1, trap_vector_overwrite
 csrw mtvec, t1
 
-# Set MPP to Supervisor (0b01) & MPV to 0b1
-csrr t1, mstatus
-li t2, 0xffffff7fffffe7ff
-and t1, t1, t2
-li t2, 0x0000008000000800
-or t1, t1, t2
-csrw mstatus, t1
-# Load address into exception program counter
-la t1, do_ecall
-csrw mepc, t1
 # Return into VS-mode
-mret
+la a0, do_ecall
+RVTEST_MRET_VS(a0)
 unimp
 
 do_ecall:

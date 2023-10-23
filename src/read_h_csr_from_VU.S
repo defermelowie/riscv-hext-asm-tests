@@ -11,15 +11,8 @@ la t1, trap_vector_overwrite
 csrw mtvec, t1
 
 # Go to VU-mode
-csrr t1, mstatus
-li t2, 0xffffff7fffffe7ff
-and t1, t1, t2
-li t2, 0x0000008000000000
-or t1, t1, t2
-csrw mstatus, t1
 la t1, vucode
-csrw mepc, t1
-mret
+RVTEST_MRET_VU(t1)
 unimp
 
 vucode:

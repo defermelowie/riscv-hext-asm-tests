@@ -7,15 +7,8 @@ RVTEST_CODE_BEGIN
 .align 2
 
 # Go to HS-mode
-csrr t1, mstatus
-li t2, 0xffffff7fffffe7ff
-and t1, t1, t2
-li t2, 0x0000000000000800
-or t1, t1, t2
-csrw mstatus, t1
 la t1, hscode
-csrw mepc, t1
-mret
+RVTEST_MRET_HS(t1)
 unimp
 
 hscode:

@@ -41,16 +41,10 @@ csrw satp, t0 # Reuse G-stage pages for S-stage AT
 # ---------------------------
 # Return into HS-mode
 # ---------------------------
-li t0, MSTATUS_MPP | MSTATUS_MPV
-csrc mstatus, t0
-li t0, 0x800
-csrs mstatus, t0
-la a0, hscode
-li a1, 0
-SPA2GPA_HCODE(a0)
-csrw mepc, a0
 li TESTNUM, 1 #-> Supervisor fetch AT
-mret
+la a0, hscode
+SPA2GPA_HCODE(a0)
+RVTEST_MRET_HS(a0)
 
 # ---------------------------
 # HS-mode code
@@ -89,10 +83,6 @@ csrs hstatus, t0
 la a0, vscode
 PA2VA_SCODE(a0)
 csrw sepc, a0
-# --- DEBUG START ---
-li TESTNUM, 99 #-> DEBUG
-li t0, 0x200ff8
-ld t1, 0(t0)
 li TESTNUM, 5 #-> Virtual supervisor fetch SLAT
 sret
 

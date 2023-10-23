@@ -7,20 +7,12 @@ RVTEST_CODE_BEGIN
 .align 2
 
 li TESTNUM, 1
-# Set mstatus.MPP to User (0b00) & mstatus.MPV to 0b0
-csrr t1, mstatus
-li t2, 0xffffff7fffffe7ff # Reset
-and t1, t1, t2
-li t2, 0x0000000000000000 # Set
-or t1, t1, t2
-csrw mstatus, t1
-# Load address of 'ucode' into the machine exception program counter
-la t1, ucode
-csrw mepc, t1
 # Tamper with VS-mode address translation
 li t1, ((SATP_MODE_SV39 << 60) | (0xaaaa << 44) | 0xfffffffffff)
 csrw vsatp, t1
-mret              # Go to U-mode
+# Go to U-mode
+la a0, ucode
+RVTEST_MRET_U(a0)
 unimp
 
 ucode:
