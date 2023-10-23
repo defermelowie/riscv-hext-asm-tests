@@ -3,9 +3,11 @@ CC = clang --target=riscv64 # LLVM assembler supports hypervisor-specific instru
 CCFLAGS = -march=rv64g -mabi=lp64 -mcmodel=medany -I$(ENVDIR)
 
 LD = riscv64-unknown-elf-ld
+# LD = ld.lld
 LDFLAGS = -static -nostdlib
 
 OBJDUMP = riscv64-unknown-elf-objdump
+# OBJDUMP = llvm-objdump
 
 OSIM = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 -enable-hext"
 CSIM = "./../sail-riscv/c_emulator/riscv_sim_RV64"
@@ -92,5 +94,4 @@ $(TARGETDIR)/%.elf: $(OBJDIR)/%.o $(OBJDIR)/vmem.o
 
 .PONY: spike
 spike:
-	rm -f $(LOGDIR)/*.log
 	./script/verif_on_spike.sh spike $(TARGETDIR) $(LOGDIR) $(TARGETS)

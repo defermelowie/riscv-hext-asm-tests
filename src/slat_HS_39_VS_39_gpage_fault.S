@@ -53,6 +53,7 @@ t1_pre:
   sd t0, 0(t1)
   li a1, (PTE_V | !PTE_X | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
   j ret_vs
 t1_post:
   la t1, pte_data
@@ -70,6 +71,7 @@ t2_pre:
   sd t0, 0(t1)
   li a1, (PTE_V | PTE_R | !PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
   j ret_vs
 t2_post:
   la t1, pte_data
@@ -87,6 +89,7 @@ t3_pre:
   sd t0, 0(t1)
   li a1, (PTE_V | !PTE_R | !PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
   j ret_vs
 t3_post:
   la t1, pte_data
@@ -104,6 +107,7 @@ t4_pre:
   sd t0, 0(t1)
   li a1, (!PTE_V | PTE_X | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
   j ret_vs
 t4_post:
   la t1, pte_data
@@ -121,6 +125,7 @@ t5_pre:
   sd t0, 0(t1)
   li a1, (!PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
   j ret_vs
 t5_post:
   la t1, pte_data
@@ -138,6 +143,7 @@ t6_pre:
   sd t0, 0(t1)
   li a1, (!PTE_V)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
   j ret_vs
 t6_post:
   la t1, pte_data
@@ -155,6 +161,8 @@ t7_pre:
   sd t0, 0(t1)
   li a1, (!PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
+  hfence.vvma # hfence.vvma since VS-stage page walk has to happen in order to access slat pte
   j ret_vs
 t7_post:
   la t1, pte_data
@@ -172,6 +180,7 @@ t8_pre:
   sd t0, 0(t1)
   li a1, (PTE_V | PTE_X | !PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
   j ret_vs
 t8_post:
   la t1, pte_data
@@ -189,6 +198,7 @@ t9_pre:
   sd t0, 0(t1)
   li a1, (PTE_V | PTE_R | PTE_W | PTE_X | !PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
   j ret_vs
 t9_post:
   la t1, pte_data
@@ -206,6 +216,7 @@ t10_pre:
   sd t0, 0(t1)
   li a1, (PTE_V | PTE_R | PTE_W | PTE_X | !PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
   j ret_vs
 t10_post:
   la t1, pte_data
@@ -223,6 +234,7 @@ t11_pre:
   sd t0, 0(t1)
   li a1, (PTE_V | !PTE_R | PTE_W | PTE_X | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
   j ret_vs
 t11_post:
   la t1, pte_data
@@ -240,6 +252,7 @@ t12_pre:
   sd t0, 0(t1)
   li a1, (PTE_V | !PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
   j ret_vs
 t12_post:
   la t1, pte_data
@@ -257,6 +270,7 @@ t13_pre:
   sd t0, 0(t1)
   li a1, (PTE_V)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
   j ret_vs
 t13_post:
   la t1, pte_data
@@ -274,6 +288,7 @@ t14_pre:
   sd t0, 0(t1)
   li a1, (PTE_V)
   ASM_UPDATE_PTE_BITS(a0, a1)
+  hfence.gvma
   j ret_vs
 t14_post:
   la t1, pte_data
@@ -286,7 +301,8 @@ t14_post:
 # Machine trap vector
 # ---------------------------
 mtvec_handler:
-  # Load CSRs so their value is visible in debug traces
+  # Load regs & CSRs so their value is visible in traces
+  addi TESTNUM, TESTNUM, 0
   csrr a0, mcause
   csrr a1, mepc
   csrr t0, mtval
