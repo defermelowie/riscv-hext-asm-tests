@@ -1,6 +1,6 @@
-# CC = $(RV)-gcc
-CC = clang --target=riscv64 # LLVM assembler supports hypervisor-specific instructions
-CCFLAGS = -march=rv64g -mabi=lp64 -mcmodel=medany -I$(ENVDIR)
+# CC = $(RV)-gcc -march=rv64g
+CC = clang --target=riscv64 -march=rv64gh # LLVM assembler supports hypervisor-specific instructions
+CCFLAGS = -mabi=lp64 -mcmodel=medany -I$(ENVDIR)
 
 LD = riscv64-unknown-elf-ld
 # LD = ld.lld
