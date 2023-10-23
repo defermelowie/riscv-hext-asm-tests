@@ -33,7 +33,7 @@ csrc mstatus, t0
 li t0, 0x800
 csrs mstatus, t0
 la a0, scode
-ASM_PA2VA_SCODE(a0)
+PA2VA_SCODE(a0)
 csrw mepc, a0
 li TESTNUM, 1 #-> Supervisor fetch AT
 mret
@@ -45,7 +45,7 @@ scode:
 nop
 li TESTNUM, 2 #-> Supervisor load/store AT
 la a0, sdata
-ASM_PA2VA_SDATA(a0)
+PA2VA_SDATA(a0)
 li t1, 0xdeadbeef
 sd t1, 0(a0)
 ld t0, 0(a0)
@@ -53,7 +53,7 @@ li TESTNUM, 3 #-> Supervisor load/store AT of user page
 li a0, SSTATUS_SUM
 csrs sstatus, a0
 la a1, udata
-ASM_PA2VA_UDATA(a1)
+PA2VA_UDATA(a1)
 li t1, 0xdeadbeef
 sd t1, 0(a1)
 ld t0, 0(a1)
@@ -62,7 +62,7 @@ csrc sstatus, a0
 li t0, MSTATUS_MPP
 csrc sstatus, t0
 la a0, ucode
-ASM_PA2VA_UCODE(a0)
+PA2VA_UCODE(a0)
 csrw sepc, a0
 li TESTNUM, 4 #-> User fetch AT
 sret
@@ -74,7 +74,7 @@ ucode:
 nop
 li TESTNUM, 5 #-> User load/store AT
 la a0, udata
-ASM_PA2VA_UDATA(a0)
+PA2VA_UDATA(a0)
 li t1, 0xc0ffee
 sd t1, 0(a0)
 ld t0, 0(a0)

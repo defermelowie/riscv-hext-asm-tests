@@ -20,7 +20,7 @@ li a1, GPA_BASE
 li a2, 5
 jal setup_vspt
 la a0, spt
-ASM_SPA2GPA_SLAT(a0)
+SPA2GPA_SLAT(a0)
 srl a0, a0, RISCV_PGSHIFT
 li a1, SATP_MODE_SV57 * (SATP_MODE & ~(SATP_MODE<<1))
 or a0, a0, a1
@@ -47,7 +47,7 @@ li t0, 0x800
 csrs mstatus, t0
 la a0, hscode
 li a1, 0
-ASM_SPA2GPA_HCODE(a0)
+SPA2GPA_HCODE(a0)
 csrw mepc, a0
 li TESTNUM, 1 #-> Supervisor fetch AT
 mret
@@ -59,7 +59,7 @@ hscode:
 nop
 li TESTNUM, 2 #-> Supervisor load/store AT
 la t3, hsdata
-ASM_SPA2GPA_HDATA(t3)
+SPA2GPA_HDATA(t3)
 li t1, 0xdeadbeef
 sd t1, 0(t3)
 ld t3, 0(t3)
@@ -67,7 +67,7 @@ li TESTNUM, 3 #-> Supervisor load/store SLAT of virtual supervisor page
 li a0, SSTATUS_SUM
 csrs sstatus, a0
 la t3, vsdata
-ASM_SPA2GPA_VDATA(t3)
+SPA2GPA_VDATA(t3)
 li t1, 0xdeadbeef
 sd t1, 0(t3)
 ld t3, 0(t3)
@@ -76,7 +76,7 @@ li TESTNUM, 4 #-> Supervisor load/store SLAT of virtual user page
 li a0, SSTATUS_SUM
 csrs sstatus, a0
 la t3, vudata
-ASM_SPA2GPA_VDATA(t3)
+SPA2GPA_VDATA(t3)
 li t1, 0xdeadbeef
 sd t1, 0(t3)
 ld t3, 0(t3)
@@ -87,7 +87,7 @@ csrs sstatus, t0
 li t0, HSTATUS_SPV
 csrs hstatus, t0
 la a0, vscode
-ASM_PA2VA_SCODE(a0)
+PA2VA_SCODE(a0)
 csrw sepc, a0
 # --- DEBUG START ---
 li TESTNUM, 99 #-> DEBUG
@@ -103,7 +103,7 @@ vscode:
 nop
 li TESTNUM, 6 #-> Virtual supervisor load/store SLAT
 la t3, vsdata
-ASM_PA2VA_SDATA(t3)
+PA2VA_SDATA(t3)
 li t1, 0xc0ffee
 sd t1, 0(t3)
 ld t3, 0(t3)
@@ -111,7 +111,7 @@ li TESTNUM, 7 #-> Virtual supervisor load/store SLAT of virtual user page
 li a0, SSTATUS_SUM
 csrs sstatus, a0
 la t3, vudata
-ASM_PA2VA_UDATA(t3)
+PA2VA_UDATA(t3)
 li t1, 0xc0ffee
 sd t1, 0(t3)
 ld t3, 0(t3)
@@ -120,7 +120,7 @@ csrc sstatus, a0
 li t0, SSTATUS_SPP
 csrc sstatus, t0
 la a0, vucode
-ASM_PA2VA_UCODE(a0)
+PA2VA_UCODE(a0)
 csrw sepc, a0
 li TESTNUM, 8 #-> Virtual user fetch SLAT
 sret
@@ -132,7 +132,7 @@ vucode:
 nop
 li TESTNUM, 9 #-> Virtual user load/store SLAT
 la t3, vudata
-ASM_PA2VA_UDATA(t3)
+PA2VA_UDATA(t3)
 li t1, 0xc0ffee
 sd t1, 0(t3)
 ld t3, 0(t3)

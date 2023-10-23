@@ -18,7 +18,7 @@ li a1, GPA_BASE
 li a2, 3
 jal setup_vspt
 la a0, spt
-ASM_SPA2GPA_SLAT(a0)
+SPA2GPA_SLAT(a0)
 srl a0, a0, RISCV_PGSHIFT
 li a1, SATP_MODE_SV39 * (SATP_MODE & ~(SATP_MODE<<1))
 or a0, a0, a1
@@ -52,7 +52,7 @@ t1_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (PTE_V | !PTE_X | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   j ret_vs
 t1_post:
@@ -70,7 +70,7 @@ t2_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (PTE_V | PTE_R | !PTE_W | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   j ret_vs
 t2_post:
@@ -88,7 +88,7 @@ t3_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (PTE_V | !PTE_R | !PTE_W | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   j ret_vs
 t3_post:
@@ -106,7 +106,7 @@ t4_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (!PTE_V | PTE_X | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   j ret_vs
 t4_post:
@@ -124,7 +124,7 @@ t5_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (!PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   j ret_vs
 t5_post:
@@ -142,7 +142,7 @@ t6_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (!PTE_V)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   j ret_vs
 t6_post:
@@ -160,7 +160,7 @@ t7_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (!PTE_V | PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   hfence.vvma # hfence.vvma since VS-stage page walk has to happen in order to access slat pte
   j ret_vs
@@ -179,7 +179,7 @@ t8_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (PTE_V | PTE_X | !PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   j ret_vs
 t8_post:
@@ -197,7 +197,7 @@ t9_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (PTE_V | PTE_R | PTE_W | PTE_X | !PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   j ret_vs
 t9_post:
@@ -215,7 +215,7 @@ t10_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (PTE_V | PTE_R | PTE_W | PTE_X | !PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   j ret_vs
 t10_post:
@@ -233,7 +233,7 @@ t11_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (PTE_V | !PTE_R | PTE_W | PTE_X | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   j ret_vs
 t11_post:
@@ -251,7 +251,7 @@ t12_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (PTE_V | !PTE_R | PTE_W | PTE_U | PTE_D | PTE_A)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   j ret_vs
 t12_post:
@@ -269,7 +269,7 @@ t13_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (PTE_V)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   j ret_vs
 t13_post:
@@ -287,7 +287,7 @@ t14_pre:
   la t1, pte_data
   sd t0, 0(t1)
   li a1, (PTE_V)
-  ASM_UPDATE_PTE_BITS(a0, a1)
+  UPDATE_PTE_BITS(a0, a1)
   hfence.gvma
   j ret_vs
 t14_post:
@@ -393,15 +393,15 @@ ret_vs:
   li t0, 0x800 | MSTATUS_MPV
   csrs mstatus, t0
   la a0, vscode
-  ASM_SPA2GPA_VCODE(a0)
-  ASM_PA2VA_SCODE(a0)
+  SPA2GPA_VCODE(a0)
+  PA2VA_SCODE(a0)
   csrw mepc, a0
   mret
 
 vscode:
   nop
   la a0, vsdata
-  ASM_PA2VA_SDATA(a0)
+  PA2VA_SDATA(a0)
   ld t0, 0(a0)
   not t0, t0
   sw t0, 0(a0)
