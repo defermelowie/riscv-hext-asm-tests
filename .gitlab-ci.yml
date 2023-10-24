@@ -15,7 +15,7 @@ build_tests:
 
 verif_tests_spike:
   stage: test
-  image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env:latest
+  image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env:spike
   needs:
     - build_tests
   script:
