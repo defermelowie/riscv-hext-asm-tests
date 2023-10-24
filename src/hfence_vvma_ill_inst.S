@@ -15,7 +15,7 @@ la a0, testcode
 RVTEST_MRET_U(a0)
 
 testcode:
-  hfence.vvma
+  HFENCE_VVMA(zero, zero)
   j fail
 
 mtvec_handler:

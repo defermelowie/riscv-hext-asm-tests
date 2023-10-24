@@ -21,7 +21,7 @@ vu_test:
   RVTEST_MRET_VU(a0)
 
 testcode:
-  hfence.vvma
+  HFENCE_VVMA(zero, zero)
   j fail
 
 mtvec_handler:
