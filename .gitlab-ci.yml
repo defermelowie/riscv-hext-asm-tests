@@ -3,7 +3,7 @@ variables:
 
 build_tests:
   stage: build
-  image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env:latest
+  image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env:toolchain
   script:
     - make setup
     - make dump
