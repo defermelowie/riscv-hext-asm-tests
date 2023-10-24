@@ -73,10 +73,10 @@ test: dump
 
 # Support for G-stage virtual memory
 $(OBJDIR)/vmem.o: $(ENVDIR)/vmem.c
-	$(CC) -c $(CCFLAGS) -o $@ -c $<
+	$(CC) -c $(CCFLAGS) -o $@ $<
 
 $(OBJDIR)/%.o: $(SCRDIR)/%.S
-	$(CC) -c $(CCFLAGS) -o $@ -c $<
+	$(CC) -c $(CCFLAGS) -o $@ $<
 
 $(DUMPDIR)/%.dump: $(TARGETDIR)/%.elf
 	$(OBJDUMP) -D $< > $@
