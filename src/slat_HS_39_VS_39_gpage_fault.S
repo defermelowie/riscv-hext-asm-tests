@@ -39,10 +39,6 @@ csrw satp, t0 # Reuse G-stage pages for S-stage AT
 # ---------------------------
 # Actual tests
 # ---------------------------
-#define PTR_PTE        gpt+(1*RISCV_PGSIZE)+(0*8) # pointer pte
-#define SLAT_LEAF_PTE  gpt+(1*RISCV_PGSIZE)+(1*8) # S-stage at structure leaf pte
-#define VCODE_LEAF_PTE gpt+(2*RISCV_PGSIZE)+(0*8) # user/supervisor code leaf pte
-#define VDATA_LEAF_PTE gpt+(2*RISCV_PGSIZE)+(3*8) # user/supervisor data leaf pte
 
 # Fetch-guest-page-fault due to missing execute permission in code pte
 t1_pre:
