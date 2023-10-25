@@ -23,7 +23,7 @@ verif_tests_spike:
     - make spike
   artifacts:
     paths:
-      - "log/"
+      - "log/*.log"
     expire_in: 7 days
 
 stages:
