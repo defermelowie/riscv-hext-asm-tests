@@ -25,6 +25,11 @@ LOGDIR = ./log
 
 EMULATOR = $(CSIM64)
 
+RISCV_SVADU ?= false
+ifeq ($(RISCV_SVADU), true)
+	CCFLAGS += -D SVADU_EXT
+endif
+
 #-------------------------------------------------#
 #                  List of tests                  #
 #-------------------------------------------------#

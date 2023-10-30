@@ -42,8 +42,10 @@ or t0, t0, t1
 csrw hgatp, t0
 
 # Configure menvcfg.adue in order to enable updates of pte.D & pte.A (Requires Svadu extension)
+#ifdef SVADU_EXT
 li t0, MENVCFG_HADE
 csrs menvcfg, t0
+#endif
 
 # ---------------------------
 # Actual test
