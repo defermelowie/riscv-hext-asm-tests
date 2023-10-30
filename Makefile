@@ -7,9 +7,13 @@ LDFLAGS = -static -nostdlib
 
 OBJDUMP = riscv64-unknown-elf-objdump
 
-OSIM = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 -enable-hext"
-CSIM = "./../sail-riscv/c_emulator/riscv_sim_RV64 --enable-dirty-update"
-EMULATOR = $(CSIM)
+OSIMFLAGS = -enable-hext
+OSIM64 = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 $(OSIMFLAGS)"
+OSIM32 = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 $(OSIMFLAGS)"
+
+CSIMFLAGS = --enable-dirty-update
+CSIM64 = "./../sail-riscv/c_emulator/riscv_sim_RV64 $(CSIMFLAGS)"
+CSIM32 = "./../sail-riscv/c_emulator/riscv_sim_RV32 $(CSIMFLAGS)"
 
 ENVDIR = ./env/slat
 SCRDIR = ./src
@@ -18,6 +22,8 @@ OBJDIR = ./target
 TARGETDIR = ./target
 DUMPDIR = ./target
 LOGDIR = ./log
+
+EMULATOR = $(CSIM64)
 
 #-------------------------------------------------#
 #                  List of tests                  #
@@ -37,6 +43,7 @@ TARGETS += vmem_VU_at_independent_from_satp vmem_U_at_independent_from_vsatp vme
 TARGETS += at_S_U_39 # at_S_U_48 at_S_U_57
 TARGETS += at_S_39_update_pte_A at_S_39_update_pte_D
 TARGETS += slat_HS_39_VS_VU_39 # slat_HS_39_VS_VU_48 slat_HS_39_VS_VU_57
+TARGETS += slat_VS_39_update_pte_A slat_VS_39_update_pte_D
 TARGETS += slat_HS_39_VS_39_gpage_fault
 
 # TARGETS += ci_infinite_loop ci_direct_fail # Only for CI debug

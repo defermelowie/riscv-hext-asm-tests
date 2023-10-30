@@ -47,7 +47,7 @@ sfence.vma
 la a0, testcode
 PA2VA_SCODE(a0)
 RVTEST_MRET_HS(a0)
-# Read data
+# Write data
 testcode:
   la a0, testdata
   PA2VA_SDATA(a0)
