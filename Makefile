@@ -1,5 +1,5 @@
 # CC = riscv64-unknown-elf-gcc -march=rv64g
-CC = clang --target=riscv64 -march=rv64g # LLVM assembler supports hypervisor-specific instructions
+CC = clang --target=riscv64 -march=rv64gh # LLVM assembler supports hypervisor-specific instructions
 CCFLAGS = -mabi=lp64 -mcmodel=medany -I$(ENVDIR)
 
 LD = riscv64-unknown-elf-ld
@@ -50,6 +50,7 @@ TARGETS += at_S_39_update_pte_A at_S_39_update_pte_D
 TARGETS += slat_HS_39_VS_VU_39 # slat_HS_39_VS_VU_48 slat_HS_39_VS_VU_57
 TARGETS += slat_VS_39_update_pte_A slat_VS_39_update_pte_D
 TARGETS += slat_HS_39_VS_39_gpage_fault
+TARGETS += hlv_M hlv_HS hlv_U_spvp_1 hlv_U_spvp_0
 
 # TARGETS += ci_infinite_loop ci_direct_fail # Only for CI debug
 

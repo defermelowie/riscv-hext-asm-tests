@@ -21,4 +21,3 @@ RVTEST_DATA_BEGIN
 result:
         .dword -1
 RVTEST_DATA_END
-
