@@ -1,5 +1,6 @@
 #include "riscv_test.h"
 #include "test_macros.h"
+#include "instructions.h"
 
 RVTEST_RV64M
 RVTEST_CODE_BEGIN

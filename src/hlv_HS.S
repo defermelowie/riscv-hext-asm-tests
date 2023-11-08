@@ -1,5 +1,6 @@
 #include "riscv_test.h"
 #include "test_macros.h"
+#include "instructions.h"
 
 RVTEST_RV64M
 RVTEST_CODE_BEGIN
@@ -76,31 +77,31 @@ SPA2GPA_VDATA(a0)
 PA2VA_SDATA(a0)
 
 li TESTNUM, 1
-hlv.d t0, 0(a0)
+HLV_D(t0, a0)
 bne t0, s0, fail
 
 li TESTNUM, 2
-hlv.w t0, 0(a0)
+HLV_W(t0, a0)
 bne t0, s4, fail
 
 li TESTNUM, 3
-hlv.h t0, 0(a0)
+HLV_H(t0, a0)
 bne t0, s5, fail
 
 li TESTNUM, 4
-hlv.b t0, 0(a0)
+HLV_B(t0, a0)
 bne t0, s6, fail
 
 li TESTNUM, 5
-hlv.wu t0, 0(a0)
+HLV_WU(t0, a0)
 bne t0, s1, fail
 
 li TESTNUM, 6
-hlv.hu t0, 0(a0)
+HLV_HU(t0, a0)
 bne t0, s2, fail
 
 li TESTNUM, 7
-hlv.bu t0, 0(a0)
+HLV_BU(t0, a0)
 bne t0, s3, fail
 
 # ---------------------------
@@ -114,31 +115,31 @@ SPA2GPA_VDATA(a0)
 PA2VA_UDATA(a0)
 
 li TESTNUM, 8
-hlv.d t0, 0(a0)
+HLV_D(t0, a0)
 bne t0, s0, fail
 
 li TESTNUM, 9
-hlv.w t0, 0(a0)
+HLV_W(t0, a0)
 bne t0, s4, fail
 
 li TESTNUM, 10
-hlv.h t0, 0(a0)
+HLV_H(t0, a0)
 bne t0, s5, fail
 
 li TESTNUM, 11
-hlv.b t0, 0(a0)
+HLV_B(t0, a0)
 bne t0, s6, fail
 
 li TESTNUM, 12
-hlv.wu t0, 0(a0)
+HLV_WU(t0, a0)
 bne t0, s1, fail
 
 li TESTNUM, 13
-hlv.hu t0, 0(a0)
+HLV_HU(t0, a0)
 bne t0, s2, fail
 
 li TESTNUM, 14
-hlv.bu t0, 0(a0)
+HLV_BU(t0, a0)
 bne t0, s3, fail
 
 # ---------------------------
