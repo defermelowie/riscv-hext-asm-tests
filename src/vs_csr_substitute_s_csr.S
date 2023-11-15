@@ -17,7 +17,6 @@ test_setup:
     # Return into HS-mode
     la a0, hscode
     RVTEST_MRET_HS(a0)
-    unimp
 
 hscode:
     # Alter s* CSRs
@@ -63,7 +62,6 @@ hscode:
     INIT_XREG
     # Return into VS-mode
     sret
-    unimp
 
 vscode:
     # Alter vs* CSRs
@@ -98,7 +96,6 @@ vscode:
     INIT_XREG
     # Trap into M-mode
     ecall
-    unimp
 
 test_check:
     # Only handle ecall from VS-mode
@@ -182,7 +179,6 @@ test_check:
 
     # All checks have passed
     j success
-    unimp
 
 fail:
     # RVTEST_FAIL uses ecall and stops working after xtvec is overwritten

@@ -1,5 +1,5 @@
 # CC = riscv64-unknown-elf-gcc -march=rv64g
-CC = clang --target=riscv64 -march=rv64g # LLVM assembler supports hypervisor-specific instructions
+CC = clang --target=riscv64 -march=rv64gch # LLVM assembler supports hypervisor-specific instructions
 CCFLAGS = -mabi=lp64 -mcmodel=medany -I$(ENVDIR)
 
 LD = riscv64-unknown-elf-ld
@@ -11,7 +11,7 @@ OSIMFLAGS = -enable-hext
 OSIM64 = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 $(OSIMFLAGS)"
 OSIM32 = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 $(OSIMFLAGS)"
 
-CSIMFLAGS = --enable-dirty-update
+CSIMFLAGS = --enable-dirty-update --mtval-has-illegal-inst-bits --xtinst-has-transformed-inst
 CSIM64 = "./../sail-riscv/c_emulator/riscv_sim_RV64 $(CSIMFLAGS)"
 CSIM32 = "./../sail-riscv/c_emulator/riscv_sim_RV32 $(CSIMFLAGS)"
 
@@ -51,6 +51,7 @@ TARGETS += slat_HS_39_VS_VU_39 # slat_HS_39_VS_VU_48 slat_HS_39_VS_VU_57
 TARGETS += slat_VS_39_update_pte_A slat_VS_39_update_pte_D
 TARGETS += slat_HS_39_VS_39_gpage_fault
 TARGETS += hlv_M hlv_HS hlv_U_spvp_1 hlv_U_spvp_0
+TARGETS += tinst_amo tinst_load tinst_store tinst_vm_load_store
 
 # TARGETS += ci_infinite_loop ci_direct_fail # Only for CI debug
 

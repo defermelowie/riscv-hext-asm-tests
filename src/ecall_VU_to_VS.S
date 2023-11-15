@@ -22,7 +22,6 @@ unimp
 do_ecall:
     ecall
     ret
-    unimp
 
 trap_vector_overwrite:
     csrr t0, scause
