@@ -44,20 +44,17 @@ csrw satp, t0 # Reuse G-stage pages & mode for S-stage AT
 
 # Cause load-page-fault on loads
 t_lpf_pre:
-  la a0, HDATA_LEAF_PTE
+  la a0, SDATA_LEAF_PTE
   ld t0, 0(a0)
   la t1, cfg_data
   sd t0, 0(t1)
   li a1, (PTE_V | !PTE_R | PTE_D | PTE_A)
   UPDATE_PTE_BITS(a0, a1)
-  sfence.vma
-  la a0, test_loads
-  SPA2GPA_HCODE(a0)
-  RVTEST_MRET_HS(a0)
+  j test_entry
 t_lpf_post:
   la t1, cfg_data
   ld t0, 0(t1)
-  la a0, HDATA_LEAF_PTE
+  la a0, SDATA_LEAF_PTE
   sd t0, 0(a0)
   sfence.vma
 
@@ -80,10 +77,7 @@ t_laf_pre:
   csrw pmpaddr2, t0
   li t0, (PMP_NAPOT | PMP_R | PMP_W| PMP_X) | ((PMP_NAPOT) << 8) | ((PMP_NAPOT | PMP_R | PMP_W | PMP_X) << 16)
   csrw pmpcfg0, t0
-  sfence.vma
-  la a0, test_loads
-  SPA2GPA_HCODE(a0)
-  RVTEST_MRET_HS(a0)
+  j test_entry
 t_laf_post:
   la t1, cfg_data
   ld t0, 0(t1)
@@ -92,18 +86,37 @@ t_laf_post:
   csrw pmpaddr0, t0
   sfence.vma
 
-# TODO: setup en cleanup of load-guest-page-fault tests
-j pass
+# Cause load-guest-page-fault on loads
 t_lgpf_pre:
-  j fail # TODO: implement lgpf tests
+  la a0, VDATA_LEAF_PTE
+  ld t0, 0(a0)
+  la t1, cfg_data
+  sd t0, 0(t1)
+  li a1, (PTE_V | !PTE_R | PTE_D | PTE_A)
+  UPDATE_PTE_BITS(a0, a1)
+  j test_entry
 t_lgpf_post:
-  j fail # TODO: implement lgpf tests
+  la t1, cfg_data
+  ld t0, 0(t1)
+  la a0, SDATA_LEAF_PTE
+  sd t0, 0(a0)
+  sfence.vma
+
+j pass # All tests finished, exit success
 
 # ------------------------
 
+test_entry:
+  sfence.vma
+  la a0, test_loads
+  SPA2GPA_VCODE(a0)
+  PA2VA_SCODE(a0)
+  RVTEST_MRET_VS(a0)
+
 test_loads:
     la s1, test_data
-    SPA2GPA_HDATA(s1)
+    SPA2GPA_VDATA(s1)
+    PA2VA_SDATA(s1)
     addi TESTNUM, TESTNUM, 0x1
 l1: lb a0, 0(s1)
     j fail
@@ -137,8 +150,7 @@ l8: lhu a0, 0(s1)
     addi TESTNUM, TESTNUM, 0x1
 l9: lwu a0, 0(s1)
     j fail
-    andi TESTNUM, TESTNUM, 0xf0
-    addi TESTNUM, TESTNUM, 0x10
+    addi TESTNUM, TESTNUM, 0x07 # Add to TESTNUM in order to reach next multiple of 0x10
     ebreak
 
 # ------------------------
@@ -172,7 +184,7 @@ mtvec_handler:
   li t0, CAUSE_LOAD_GUEST_PAGE_FAULT
   beq a0, t0, 1f
   j fail
-  # Check tval, tval2 & tinst value
+  # Check tinst value
 1:andi t1, TESTNUM, 0xf # t1 = testnum % 16
   li t0, 0x1
   bne t1, t0, 1f
