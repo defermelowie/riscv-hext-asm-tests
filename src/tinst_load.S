@@ -104,6 +104,7 @@ l9: lwu a0, 0(s1)
   li t0, (mask);                        \
   and t0, inst, t0;                     \
   csrr t1, xtinst;                      \
+  beq t1, zero, c;                      \
   beq t0, t1, c;                        \
   j fail;
 
