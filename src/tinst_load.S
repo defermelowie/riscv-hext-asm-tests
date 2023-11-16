@@ -150,7 +150,13 @@ l8: lhu a0, 0(s1)
     addi TESTNUM, TESTNUM, 0x1
 l9: lwu a0, 0(s1)
     j fail
-    addi TESTNUM, TESTNUM, 0x07 # Add to TESTNUM in order to reach next multiple of 0x10
+    addi TESTNUM, TESTNUM, 0x1
+l10:lr.w a0, 0(s1)
+    j fail
+    addi TESTNUM, TESTNUM, 0x1
+l11:lr.d a0, 0(s1)
+    j fail
+    addi TESTNUM, TESTNUM, 0x05 # Add to TESTNUM in order to reach next multiple of 0x10
     ebreak
 
 # ------------------------
@@ -213,6 +219,12 @@ mtvec_handler:
 1:li t0, 0x9
   bne t1, t0, 1f
   j check_t9
+1:li t0, 0xa
+  bne t1, t0, 1f
+  j check_t10
+1:li t0, 0xb
+  bne t1, t0, 1f
+  j check_t11
 1:j fail                # TESTNUM is unknown
 
 #define CHECK_TINST(inst, mask)\
@@ -267,6 +279,16 @@ check_t9:
   la t0, l9
   lw t2, 0(t0)
   CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE)
+
+check_t10:
+  la t0, l10
+  lw t2, 0(t0)
+  CHECK_TINST(t2, INSN_FIELD_AMOOP | INSN_FIELD_AQRL | INSN_FIELD_RS2 | INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE)
+
+check_t11:
+  la t0, l11
+  lw t2, 0(t0)
+  CHECK_TINST(t2, INSN_FIELD_AMOOP | INSN_FIELD_AQRL | INSN_FIELD_RS2 | INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE)
 
 continue:# Skip faulting inst & j fail
   addi a1, a1, 0x8

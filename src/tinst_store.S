@@ -92,13 +92,13 @@ t_sgpf_pre:
   ld t0, 0(a0)
   la t1, cfg_data
   sd t0, 0(t1)
-  li a1, (PTE_V | PTE_R | !PTE_W | PTE_D | PTE_A)
+  li a1, (PTE_V | PTE_R | !PTE_W | PTE_U | PTE_D | PTE_A)
   UPDATE_PTE_BITS(a0, a1)
   j test_entry
 t_sgpf_post:
   la t1, cfg_data
   ld t0, 0(t1)
-  la a0, SDATA_LEAF_PTE
+  la a0, VDATA_LEAF_PTE
   sd t0, 0(a0)
   sfence.vma
 
@@ -141,10 +141,17 @@ s6: c.sd a0, 0(s1)
     c.nop
     .option norvc; .align 2
     j fail
-    addi TESTNUM, TESTNUM, 0x0a # Add to TESTNUM in order to reach next multiple of 0x10
+    addi TESTNUM, TESTNUM, 0x1
+    li t0, 1
+    lr.w t0, 0(s1)
+s7: sc.w zero, a0, 0(s1)
+    j fail
+    addi TESTNUM, TESTNUM, 0x1
+    lr.d t0, 0(s1)
+s8: sc.d zero, a0, 0(s1)
+    j fail
+    addi TESTNUM, TESTNUM, 0x08 # Add to TESTNUM in order to reach next multiple of 0x10
     ebreak
-
-j fail # FIXME: remove when loads are implemented
 
 # ------------------------
 
@@ -197,14 +204,20 @@ mtvec_handler:
 1:li t0, 0x6
   bne t1, t0, 1f
   j check_t6
+1:li t0, 0x7
+  bne t1, t0, 1f
+  j check_t7
+1:li t0, 0x8
+  bne t1, t0, 1f
+  j check_t8
 1:j fail                # TESTNUM is unknown
 
-#define CHECK_TINST(inst, mask)\
-  li t0, (mask);               \
-  and t0, inst, t0;            \
-  csrr t1, mtinst;             \
-  beq t1, zero, continue;      \
-  beq t0, t1, continue;        \
+#define CHECK_TINST(instreg, mask)\
+  li t0, (mask);                  \
+  and t0, instreg, t0;            \
+  csrr t1, mtinst;                \
+  beq t1, zero, continue;         \
+  beq t0, t1, continue;           \
   j fail;
 
 check_t1:
@@ -236,6 +249,16 @@ check_t6:
   la t0, s4 # Uncompressed version: sd a0, 0(s1)
   lw t2, 0(t0)
   CHECK_TINST(t2, INSN_FIELD_RS2 | INSN_FIELD_FUNCT3 | (INSN_FIELD_OPCODE ^ 0b10))
+
+check_t7:
+  la t0, s7
+  lw t2, 0(t0)
+  CHECK_TINST(t2, INSN_FIELD_AMOOP | INSN_FIELD_AQRL | INSN_FIELD_RS2 | INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE)
+
+check_t8:
+  la t0, s8
+  lw t2, 0(t0)
+  CHECK_TINST(t2, INSN_FIELD_AMOOP | INSN_FIELD_AQRL | INSN_FIELD_RS2 | INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE)
 
 continue:# Skip faulting inst & j fail
   addi a1, a1, 0x8
