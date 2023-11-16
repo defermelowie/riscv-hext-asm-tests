@@ -100,14 +100,6 @@ l9: lwu a0, 0(s1)
 
 # ------------------------
 
-#define CHECK_TINST(inst, mask, xtinst) \
-  li t0, (mask);                        \
-  and t0, inst, t0;                     \
-  csrr t1, xtinst;                      \
-  beq t1, zero, c;                      \
-  beq t0, t1, c;                        \
-  j fail;
-
 mtvec_handler:
   # Load regs & CSRs so their value is visible in traces
   addi TESTNUM, TESTNUM, 0
@@ -129,71 +121,90 @@ mtvec_handler:
   beq a0, t0, 1f
   j fail
   # Check tval, tval2 & tinst value
-1:li t0, 0x1
-  andi t1, TESTNUM, 0xf
+1:andi t1, TESTNUM, 0xf # t1 = testnum % 16
+  li t0, 0x1
   bne t1, t0, 1f
+  j check_t1
+1:li t0, 0x2
+  bne t1, t0, 1f
+  j check_t2
+1:li t0, 0x3
+  bne t1, t0, 1f
+  j check_t3
+1:li t0, 0x4
+  bne t1, t0, 1f
+  j check_t4
+1:li t0, 0x5
+  bne t1, t0, 1f
+  j check_t5
+1:li t0, 0x6
+  bne t1, t0, 1f
+  j check_t6
+1:li t0, 0x7
+  bne t1, t0, 1f
+  j check_t7
+1:li t0, 0x8
+  bne t1, t0, 1f
+  j check_t8
+1:li t0, 0x9
+  bne t1, t0, 1f
+  j check_t9
+1:j fail                # TESTNUM is unknown
 
+#define CHECK_TINST(inst, mask)\
+  li t0, (mask);               \
+  and t0, inst, t0;            \
+  csrr t1, mtinst;             \
+  beq t1, zero, continue;      \
+  beq t0, t1, continue;        \
+  j fail;
+
+check_t1:
   la t0, l1
   lw t2, 0(t0)
-  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE, mtinst)
-1:li t0, 0x2
-  andi t1, TESTNUM, 0xf
-  bne t1, t0, 1f
+  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE)
 
+check_t2:
   la t0, l2
   lw t2, 0(t0)
-  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE, mtinst)
-1:li t0, 0x3
-  andi t1, TESTNUM, 0xf
-  bne t1, t0, 1f
+  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE)
 
+check_t3:
   la t0, l3
   lw t2, 0(t0)
-  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE, mtinst)
-1:li t0, 0x4
-  andi t1, TESTNUM, 0xf
-  bne t1, t0, 1f
+  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE)
 
+check_t4:
   la t0, l4
   lw t2, 0(t0)
-  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE, mtinst)
-1:li t0, 0x5
-  andi t1, TESTNUM, 0xf
-  bne t1, t0, 1f
+  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE)
 
+check_t5:
   la t0, l3 # Uncompressed version: lw a0, 0(s1)
   lw t2, 0(t0)
-  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | (INSN_FIELD_OPCODE ^ 0b10), mtinst)
-1:li t0, 0x6
-  andi t1, TESTNUM, 0xf
-  bne t1, t0, 1f
+  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | (INSN_FIELD_OPCODE ^ 0b10))
 
+check_t6:
   la t0, l4 # Uncompressed version: ld a0, 0(s1)
   lw t2, 0(t0)
-  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | (INSN_FIELD_OPCODE ^ 0b10), mtinst)
-1:li t0, 0x7
-  andi t1, TESTNUM, 0xf
-  bne t1, t0, 1f
+  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | (INSN_FIELD_OPCODE ^ 0b10))
 
+check_t7:
   la t0, l7
   lw t2, 0(t0)
-  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE, mtinst)
-1:li t0, 0x8
-  andi t1, TESTNUM, 0xf
-  bne t1, t0, 1f
+  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE)
 
+check_t8:
   la t0, l8
   lw t2, 0(t0)
-  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE, mtinst)
-1:li t0, 0x9
-  andi t1, TESTNUM, 0xf
-  bne t1, t0, 1f
+  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE)
 
+check_t9:
   la t0, l9
   lw t2, 0(t0)
-  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE, mtinst)
-1:j fail # TESTNUM is unknown
-c:# Skip faulting inst & continue
+  CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE)
+
+continue:# Skip faulting inst & continue
   addi a1, a1, 0x4
   csrw mepc, a1
   mret
