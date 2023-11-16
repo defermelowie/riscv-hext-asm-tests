@@ -42,11 +42,11 @@ csrw satp, t0 # Reuse G-stage pages & mode for S-stage AT
 # Actual test
 # ------------------------
 
-# Cause load page fault on load
+# Cause load-page-fault on loads
 t_lpf_pre:
   la a0, HDATA_LEAF_PTE
   ld t0, 0(a0)
-  la t1, pte_data
+  la t1, cfg_data
   sd t0, 0(t1)
   li a1, (PTE_V | !PTE_R | PTE_D | PTE_A)
   UPDATE_PTE_BITS(a0, a1)
@@ -55,46 +55,89 @@ t_lpf_pre:
   SPA2GPA_HCODE(a0)
   RVTEST_MRET_HS(a0)
 t_lpf_post:
-  la t1, pte_data
+  la t1, cfg_data
   ld t0, 0(t1)
   la a0, HDATA_LEAF_PTE
   sd t0, 0(a0)
+  sfence.vma
 
-# TODO: setup en cleanup of load-access-fault tests
+# Cause load-access-fault on loads
 t_laf_pre:
-unimp
+  la t0, cfg_data
+  csrr t1, pmpcfg0
+  sd t1, 0(t0)
+  csrr t1, pmpaddr0
+  sd t1, 8(t0)
+
+  la t0, .text.init + (1 << (RISCV_PGSHIFT-1) - 1)   # Testcode
+  srli t0, t0, PMP_SHIFT
+  csrw pmpaddr0, t0
+  la t0, .data + (1 << (RISCV_PGSHIFT-1) - 1)        # Testdata
+  srli t0, t0, PMP_SHIFT
+  csrw pmpaddr1, t0
+  la t0, .data.pt + (1 << (RISCV_L1_SPGSHIFT-1) - 1) # Page table data
+  srli t0, t0, PMP_SHIFT
+  csrw pmpaddr2, t0
+  li t0, (PMP_NAPOT | PMP_R | PMP_W| PMP_X) | ((PMP_NAPOT) << 8) | ((PMP_NAPOT | PMP_R | PMP_W | PMP_X) << 16)
+  csrw pmpcfg0, t0
+  sfence.vma
+  la a0, test_loads
+  SPA2GPA_HCODE(a0)
+  RVTEST_MRET_HS(a0)
 t_laf_post:
-unimp
+  la t1, cfg_data
+  ld t0, 0(t1)
+  csrw pmpcfg0, t0
+  ld t0, 8(t1)
+  csrw pmpaddr0, t0
+  sfence.vma
 
 # TODO: setup en cleanup of load-guest-page-fault tests
+j pass
 t_lgpf_pre:
-unimp
+  j fail # TODO: implement lgpf tests
 t_lgpf_post:
-unimp
+  j fail # TODO: implement lgpf tests
 
 # ------------------------
 
 test_loads:
     la s1, test_data
+    SPA2GPA_HDATA(s1)
     addi TESTNUM, TESTNUM, 0x1
 l1: lb a0, 0(s1)
+    j fail
     addi TESTNUM, TESTNUM, 0x1
 l2: lh a0, 0(s1)
+    j fail
     addi TESTNUM, TESTNUM, 0x1
 l3: lw a0, 0(s1)
+    j fail
     addi TESTNUM, TESTNUM, 0x1
 l4: ld a0, 0(s1)
+    j fail
     addi TESTNUM, TESTNUM, 0x1
-l5: .option rvc; c.lw a0, 0(s1); .option norvc; .align 2
+l5: .option rvc;
+    c.lw a0, 0(s1)
+    c.nop
+    .option norvc; .align 2
+    j fail
     addi TESTNUM, TESTNUM, 0x1
-l6: .option rvc; c.ld a0, 0(s1); .option norvc; .align 2
+l6: .option rvc;
+    c.ld a0, 0(s1)
+    c.nop
+    .option norvc; .align 2
+    j fail
     addi TESTNUM, TESTNUM, 0x1
 l7: lbu a0, 0(s1)
+    j fail
     addi TESTNUM, TESTNUM, 0x1
 l8: lhu a0, 0(s1)
+    j fail
     addi TESTNUM, TESTNUM, 0x1
 l9: lwu a0, 0(s1)
-    andi TESTNUM, TESTNUM, 0x0f
+    j fail
+    andi TESTNUM, TESTNUM, 0xf0
     addi TESTNUM, TESTNUM, 0x10
     ebreak
 
@@ -102,7 +145,7 @@ l9: lwu a0, 0(s1)
 
 mtvec_handler:
   # Load regs & CSRs so their value is visible in traces
-  addi TESTNUM, TESTNUM, 0
+  add TESTNUM, TESTNUM, zero
   csrr a0, mcause
   csrr a1, mepc
   csrr a2, mtval
@@ -110,10 +153,19 @@ mtvec_handler:
   csrr a4, mtinst
   # Test next error type if breakpoint
   li t0, CAUSE_BREAKPOINT
-  bne a0, t0, 1f
-  j pass # TODO: test next error type
+  bne a0, t0, 2f
+1:li t0, 0x10
+  bne TESTNUM, t0, 1f
+  j t_lpf_post
+1:li t0, 0x20
+  bne TESTNUM, t0, 1f
+  j t_laf_post
+1:li t0, 0x30
+  bne TESTNUM, t0, 1f
+  j t_lgpf_post
+1:j fail                # TESTNUM is unkown
   # Check if trap cause is expected
-1:li t0, CAUSE_LOAD_PAGE_FAULT
+2:li t0, CAUSE_LOAD_PAGE_FAULT
   beq a0, t0, 1f
   li t0, CAUSE_LOAD_ACCESS
   beq a0, t0, 1f
@@ -204,11 +256,10 @@ check_t9:
   lw t2, 0(t0)
   CHECK_TINST(t2, INSN_FIELD_FUNCT3 | INSN_FIELD_RD | INSN_FIELD_OPCODE)
 
-continue:# Skip faulting inst & continue
-  addi a1, a1, 0x4
+continue:# Skip faulting inst & j fail
+  addi a1, a1, 0x8
   csrw mepc, a1
   mret
-
 
 # ------------------------
 
@@ -221,7 +272,7 @@ RVTEST_CODE_END
 .data
 RVTEST_DATA_BEGIN
 .align 3
-pte_data:  .dword 0x0
-test_data: .dword 0xc0ffee
+cfg_data:  .dword 0x0; .dword 0x0
+test_data: .dword 0x0
 result:    .dword -1
 RVTEST_DATA_END
