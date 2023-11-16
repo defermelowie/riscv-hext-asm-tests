@@ -1,6 +1,13 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
+- repo: https://github.com/espressif/conventional-precommit-linter
+  rev: v1.3.0
+  hooks:
+    - id: conventional-precommit-linter
+      stages: [commit-msg]
+      args:
+        - --types=feat,wip,fix,ci,refactor,revert,merge
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
     hooks:
@@ -16,10 +23,3 @@ repos:
   hooks:
   - id: clang-format
     types_or: [c++, c]
-- repo: https://github.com/espressif/conventional-precommit-linter
-  rev: v1.3.0
-  hooks:
-    - id: conventional-precommit-linter
-      stages: [commit-msg]
-      args:
-        - --types=feat,wip,fix,ci,refactor,revert,merge
