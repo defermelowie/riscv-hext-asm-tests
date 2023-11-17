@@ -57,7 +57,7 @@ or s4, s0, t4
 or s5, s0, t5
 or s6, s0, t6
 
-# Set "Supervisor previous virtual privilage" to supervisor
+# Set "Supervisor previous virtual privilege" to supervisor
 li t0, HSTATUS_SPVP
 csrs hstatus, t0
 # Allow U-mode hypervisor load/store

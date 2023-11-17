@@ -57,21 +57,20 @@ or s4, s0, t4
 or s5, s0, t5
 or s6, s0, t6
 
-# Set "Supervisor previous virtual privilege" to user
-li t0, HSTATUS_SPVP
-csrc hstatus, t0
-# Allow U-mode hypervisor load/store
-li t0, HSTATUS_HU
-csrs hstatus, t0
-# Return into U-mode
+# ---------------------------
+# Return into HS-mode
+# ---------------------------
 la a0, tcode
-SPA2GPA_UCODE(a0)
-RVTEST_MRET_U(a0)
+SPA2GPA_HCODE(a0)
+RVTEST_MRET_HS(a0)
 
 # ---------------------------
 # Test hlv instructions
 # ---------------------------
 tcode:
+# Set "Supervisor previous virtual privilege" to user
+li t0, HSTATUS_SPVP
+csrc hstatus, t0
 # Convert address
 la a0, tdata
 SPA2GPA_VDATA(a0)
@@ -104,6 +103,8 @@ bne t0, s2, fail
 li TESTNUM, 7
 HLV_BU(t0, a0)
 bne t0, s3, fail
+
+# ---------------------------
 
 j pass
 

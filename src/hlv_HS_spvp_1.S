@@ -68,7 +68,7 @@ RVTEST_MRET_HS(a0)
 # Test hlv instructions
 # ---------------------------
 tcode:
-# Set "Supervisor previous virtual privilage" to supervisor
+# Set "Supervisor previous virtual privilege" to supervisor
 li t0, HSTATUS_SPVP
 csrs hstatus, t0
 # Convert address
@@ -101,44 +101,6 @@ HLV_HU(t0, a0)
 bne t0, s2, fail
 
 li TESTNUM, 7
-HLV_BU(t0, a0)
-bne t0, s3, fail
-
-# ---------------------------
-
-# Set "Supervisor previous virtual privilage" to user
-li t0, HSTATUS_SPVP
-csrc hstatus, t0
-# Convert address
-la a0, tdata
-SPA2GPA_VDATA(a0)
-PA2VA_UDATA(a0)
-
-li TESTNUM, 8
-HLV_D(t0, a0)
-bne t0, s0, fail
-
-li TESTNUM, 9
-HLV_W(t0, a0)
-bne t0, s4, fail
-
-li TESTNUM, 10
-HLV_H(t0, a0)
-bne t0, s5, fail
-
-li TESTNUM, 11
-HLV_B(t0, a0)
-bne t0, s6, fail
-
-li TESTNUM, 12
-HLV_WU(t0, a0)
-bne t0, s1, fail
-
-li TESTNUM, 13
-HLV_HU(t0, a0)
-bne t0, s2, fail
-
-li TESTNUM, 14
 HLV_BU(t0, a0)
 bne t0, s3, fail
 
