@@ -84,7 +84,9 @@ t_af_pre:
   la t0, .data.pt + (1 << (RISCV_L1_SPGSHIFT-1) - 1) # Page table data
   srli t0, t0, PMP_SHIFT
   csrw pmpaddr2, t0
-  li t0, (PMP_NAPOT | !PMP_R | !PMP_W | PMP_X) | ((PMP_NAPOT | !PMP_R | !PMP_W) << 8) | ((PMP_NAPOT | PMP_R | PMP_W ) << 16)
+  li t0, ((PMP_NAPOT | PMP_R  | !PMP_W | PMP_X)) |       /* Testcode may be executed or read */                           \
+         ((PMP_NAPOT | !PMP_R | !PMP_W | !PMP_X) << 8) | /* Data has no permissions so hypervisor load/store will fault*/ \
+         ((PMP_NAPOT | PMP_R  | PMP_W  | !PMP_X) << 16)  /* Page tables can be read & write but not executed */
   csrw pmpcfg0, t0
   j test_entry
 t_af_post:
@@ -135,10 +137,6 @@ test_vm_ls:
     la s1, test_data
     SPA2GPA_VDATA(s1)
     PA2VA_SDATA(s1)
-    # Load virtual address of test_code to s2
-    la s2, test_code
-    SPA2GPA_VCODE(s2)
-    PA2VA_SCODE(s2)
     # Set "Supervisor previous virtual privilege" to supervisor
     li t0, HSTATUS_SPVP
     csrs hstatus, t0
@@ -150,19 +148,10 @@ t1: HLV_D(t0, s1)
 t2: HSV_D(s1, t0)
     j fail
     addi TESTNUM, TESTNUM, 0x1
-t3: HLVX_WU(t0, s2)
+t3: HLVX_WU(t0, s1) # Use test_data as if it is code
     j fail
     addi TESTNUM, TESTNUM, 0x0d # Add to TESTNUM in order to reach next multiple of 0x10
     ebreak
-
-# ------------------------
-
-test_code:
-  nop
-  nop
-  nop
-  nop
-  nop
 
 # ------------------------
 
