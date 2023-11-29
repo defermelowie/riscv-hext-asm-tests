@@ -11,7 +11,7 @@ OSIMFLAGS = -enable-hext -enable-dirty-update -mtval-has-illegal-inst-bits -xtin
 OSIM64 = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 $(OSIMFLAGS)"
 OSIM32 = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 $(OSIMFLAGS)"
 
-CSIMFLAGS = --enable-dirty-update --mtval-has-illegal-inst-bits --xtinst-has-transformed-inst --enable-pmp
+CSIMFLAGS = --enable-dirty-update --mtval-has-illegal-inst-bits --enable-pmp #--xtinst-has-transformed-inst
 CSIM64 = "./../sail-riscv/c_emulator/riscv_sim_RV64 $(CSIMFLAGS)"
 CSIM32 = "./../sail-riscv/c_emulator/riscv_sim_RV32 $(CSIMFLAGS)"
 
@@ -45,14 +45,16 @@ TARGETS += read_s_csr_from_U read_s_csr_from_VS read_s_csr_from_VU
 TARGETS += read_vs_csr_from_U read_vs_csr_from_VS read_vs_csr_from_VU
 TARGETS += hfence_vvma_ill_inst hfence_vvma_virt_inst
 TARGETS += vmem_VU_at_independent_from_satp vmem_U_at_independent_from_vsatp vmem_S_at_independent_from_vsatp vmem_VS_at_independent_from_satp
-TARGETS += at_S_U_39 # at_S_U_48 at_S_U_57
+TARGETS += at_S_U_39 at_S_U_48 # at_S_U_57
 TARGETS += at_S_39_update_pte_A at_S_39_update_pte_D
-TARGETS += slat_HS_39_VS_VU_39 # slat_HS_39_VS_VU_48 slat_HS_39_VS_VU_57
+TARGETS += slat_HS_39_VS_VU_39 slat_HS_39_VS_VU_48 # slat_HS_39_VS_VU_57
 TARGETS += slat_VS_39_update_pte_A slat_VS_39_update_pte_D
 TARGETS += slat_HS_39_VS_39_gpage_fault
 TARGETS += hlv_M hlv_HS_spvp_1 hlv_HS_spvp_0 hlv_U_spvp_1 hlv_U_spvp_0
 # TARGETS += hsv_M hsv_HS_spvp_1 hsv_HS_spvp_0 hsv_U_spvp_1 hsv_U_spvp_0
+# TARGETS += hlvx_M hlvx_HS_spvp_1 hlvx_HS_spvp_0 hlvx_U_spvp_1 hlvx_U_spvp_0
 TARGETS += tinst_load tinst_store tinst_amo tinst_vm_load_store
+TARGETS += misaligned_pmp
 
 # TARGETS += ci_infinite_loop ci_direct_fail # Only for CI debug
 
