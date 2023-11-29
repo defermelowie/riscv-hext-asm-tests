@@ -24,6 +24,7 @@ verif_tests_spike:
     - make setup
     - make spike
   artifacts:
+    when: always
     paths:
       - "log/*.log"
     expire_in: 7 days
