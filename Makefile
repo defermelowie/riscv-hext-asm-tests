@@ -11,7 +11,7 @@ OSIMFLAGS = -enable-hext -enable-dirty-update -mtval-has-illegal-inst-bits -xtin
 OSIM64 = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 $(OSIMFLAGS)"
 OSIM32 = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 $(OSIMFLAGS)"
 
-CSIMFLAGS = --enable-dirty-update --mtval-has-illegal-inst-bits --enable-pmp #--xtinst-has-transformed-inst
+CSIMFLAGS = --enable-dirty-update --mtval-has-illegal-inst-bits --enable-pmp --enable-misaligned #--xtinst-has-transformed-inst
 CSIM64 = "./../sail-riscv/c_emulator/riscv_sim_RV64 $(CSIMFLAGS)"
 CSIM32 = "./../sail-riscv/c_emulator/riscv_sim_RV32 $(CSIMFLAGS)"
 

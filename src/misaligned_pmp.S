@@ -61,8 +61,6 @@ mtvec_handler:
   csrr a0, mcause
   csrr a1, mepc
   csrr a2, mtval
-  csrr a3, mtval2
-  csrr a4, mtinst
   # Check testnum & cause
   li t0, MISALIGNED_LOAD_TEST
   bne t0, TESTNUM, fail
