@@ -15,7 +15,7 @@ CSIMFLAGS = --enable-dirty-update --mtval-has-illegal-inst-bits --enable-pmp --e
 CSIM64 = "./../sail-riscv/c_emulator/riscv_sim_RV64 $(CSIMFLAGS)"
 CSIM32 = "./../sail-riscv/c_emulator/riscv_sim_RV32 $(CSIMFLAGS)"
 
-ENVDIR = ./env/slat
+ENVDIR = ./env/p
 SCRDIR = ./src
 
 OBJDIR = ./target
@@ -102,7 +102,7 @@ $(DUMPDIR)/%.dump: $(TARGETDIR)/%.elf
 $(LOGDIR)/%.test.log: $(TARGETDIR)/%.elf
 	$(EMULATOR) $< > $@
 
-$(TARGETDIR)/%.elf: $(OBJDIR)/%.o $(OBJDIR)/vmem.o
+$(TARGETDIR)/%.elf: $(OBJDIR)/%.o # $(OBJDIR)/vmem.o
 	$(LD) $(LDFLAGS) -script $(ENVDIR)/link.ld -o $@ $^
 
 #-------------------------------------------------#
