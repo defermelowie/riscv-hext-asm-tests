@@ -7,13 +7,13 @@ LDFLAGS = -static -nostdlib
 
 OBJDUMP = riscv64-unknown-elf-objdump
 
-OSIMFLAGS = -enable-hext -enable-dirty-update -mtval-has-illegal-inst-bits -xtinst-has-transformed-inst -enable-pmp
-OSIM64 = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 $(OSIMFLAGS)"
-OSIM32 = "./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 $(OSIMFLAGS)"
+OSIMFLAGS = -enable-hext -enable-dirty-update -mtval-has-illegal-inst-bits -enable-pmp -xtinst-has-transformed-inst
+OSIM64 = ./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 $(OSIMFLAGS)
+OSIM32 = ./../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64 $(OSIMFLAGS)
 
-CSIMFLAGS = --enable-dirty-update --mtval-has-illegal-inst-bits --xtinst-has-transformed-inst --enable-pmp
-CSIM64 = "./../sail-riscv/c_emulator/riscv_sim_RV64 $(CSIMFLAGS)"
-CSIM32 = "./../sail-riscv/c_emulator/riscv_sim_RV32 $(CSIMFLAGS)"
+CSIMFLAGS = --enable-dirty-update --mtval-has-illegal-inst-bits --enable-pmp --xtinst-has-transformed-inst
+CSIM64 = ./../sail-riscv/c_emulator/riscv_sim_RV64 $(CSIMFLAGS)
+CSIM32 = ./../sail-riscv/c_emulator/riscv_sim_RV32 $(CSIMFLAGS)
 
 ENVDIR = ./env/slat
 SCRDIR = ./src
@@ -85,7 +85,7 @@ dump: $(TARGETS:%=$(DUMPDIR)/%.dump)
 
 .PONY: test
 test: build
-	./script/run_tests.sh $(EMULATOR) $(TARGETDIR) $(LOGDIR) $(TARGETS)
+	./script/run_tests.sh "$(EMULATOR)" $(TARGETDIR) $(LOGDIR) $(TARGETS)
 
 # Support for G-stage virtual memory
 $(OBJDIR)/vmem.o: $(ENVDIR)/vmem.c
