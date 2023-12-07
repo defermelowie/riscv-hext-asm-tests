@@ -42,38 +42,45 @@ csrw satp, t0 # Reuse G-stage pages & mode for S-stage AT
 # Actual test
 # ------------------------
 
-# Cause page-fault on read, store (data) & fetch (code)
+# Cause page-fault on read, store (data) & fetch (data)
 t_pf_pre:
   la a0, SDATA_LEAF_PTE
   ld t0, 0(a0)
   la t1, cfg_data
   sd t0, 0(t1)
-  li a1, (PTE_V | !PTE_R | !PTE_W | PTE_D | PTE_A)
+  li a1, (PTE_V | !PTE_R | !PTE_W | !PTE_X | PTE_D | PTE_A)
   UPDATE_PTE_BITS(a0, a1)
-  la a0, SCODE_LEAF_PTE
-  ld t0, 0(a0)
-  la t1, cfg_data
-  sd t0, 8(t1)
-  li a1, (PTE_V | !PTE_X | PTE_D | PTE_A)
-  UPDATE_PTE_BITS(a0, a1)
+  sfence.vma
+  HFENCE_VVMA(zero, zero)
+  HFENCE_GVMA(zero, zero)
   j test_entry
 t_pf_post:
   la t1, cfg_data
   ld t0, 0(t1)
   la a0, SDATA_LEAF_PTE
   sd t0, 0(a0)
-  ld t0, 8(t1)
-  la a0, SCODE_LEAF_PTE
-  sd t0, 0(a0)
   sfence.vma
+  HFENCE_VVMA(zero, zero)
+  HFENCE_GVMA(zero, zero)
 
-# Cause access-fault on read, store (data) & fetch (code)
+# Cause access-fault on read, store (data) & fetch (data)
 t_af_pre:
   la t0, cfg_data
   csrr t1, pmpcfg0
   sd t1, 0(t0)
   csrr t1, pmpaddr0
   sd t1, 8(t0)
+
+  # Add execute permissions to data page for HLVX tests
+  la a0, SDATA_LEAF_PTE
+  li a1, (PTE_V | PTE_R | PTE_W | PTE_X | PTE_D | PTE_A)
+  UPDATE_PTE_BITS(a0, a1)
+  la a0, VDATA_LEAF_PTE
+  li a1, (PTE_V | PTE_R | PTE_W | PTE_X | PTE_U | PTE_D | PTE_A)
+  UPDATE_PTE_BITS(a0, a1)
+  sfence.vma
+  HFENCE_VVMA(zero, zero)
+  HFENCE_GVMA(zero, zero)
 
   la t0, .text.init + (1 << (RISCV_PGSHIFT-1) - 1)   # Testcode
   srli t0, t0, PMP_SHIFT
@@ -85,7 +92,7 @@ t_af_pre:
   srli t0, t0, PMP_SHIFT
   csrw pmpaddr2, t0
   li t0, ((PMP_NAPOT | PMP_R  | !PMP_W | PMP_X)) |       /* Testcode may be executed or read */                           \
-         ((PMP_NAPOT | !PMP_R | !PMP_W | !PMP_X) << 8) | /* Data has no permissions so hypervisor load/store will fault*/ \
+         ((PMP_NAPOT | !PMP_R | !PMP_W | PMP_X) << 8) |  /* Data has no permissions so hypervisor load/store will fault*/ \
          ((PMP_NAPOT | PMP_R  | PMP_W  | !PMP_X) << 16)  /* Page tables can be read & write but not executed */
   csrw pmpcfg0, t0
   j test_entry
@@ -95,7 +102,11 @@ t_af_post:
   csrw pmpcfg0, t0
   ld t0, 8(t1)
   csrw pmpaddr0, t0
+  csrw pmpaddr1, zero
+  csrw pmpaddr2, zero
   sfence.vma
+  HFENCE_VVMA(zero, zero)
+  HFENCE_GVMA(zero, zero)
 
 # Cause guest-page-fault on read, store (data) & fetch (code)
 t_gpf_pre:
@@ -111,6 +122,9 @@ t_gpf_pre:
   sd t0, 8(t1)
   li a1, (PTE_V | !PTE_X | PTE_D | PTE_A)
   UPDATE_PTE_BITS(a0, a1)
+  sfence.vma
+  HFENCE_VVMA(zero, zero)
+  HFENCE_GVMA(zero, zero)
   j test_entry
 t_gpf_post:
   la t1, cfg_data
@@ -121,6 +135,8 @@ t_gpf_post:
   la a0, VCODE_LEAF_PTE
   sd t0, 0(a0)
   sfence.vma
+  HFENCE_VVMA(zero, zero)
+  HFENCE_GVMA(zero, zero)
 
 j pass # All tests finished, exit success
 
