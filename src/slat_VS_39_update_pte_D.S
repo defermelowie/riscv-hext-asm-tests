@@ -48,7 +48,7 @@ csrs menvcfg, t0
 #endif
 
 # ---------------------------
-# Actual test
+# Test setup
 # ---------------------------
 li TESTNUM, 1
 
@@ -57,29 +57,52 @@ la a0, VDATA_LEAF_PTE
 li a1, (PTE_V | PTE_R | PTE_W | PTE_U | !PTE_D | PTE_A)
 UPDATE_PTE_BITS(a0, a1)
 HFENCE_GVMA(zero, zero)
-# Enable SLAT (Return into S-mode)
+la a0, SDATA_LEAF_PTE
+li a1, (PTE_V | PTE_R | PTE_W | !PTE_D | PTE_A)
+UPDATE_PTE_BITS(a0, a1)
+HFENCE_VVMA(zero, zero)
+# Enable SLAT (Return into VS-mode)
 la a0, testcode
 SPA2GPA_VCODE(a0)
 PA2VA_SCODE(a0)
 RVTEST_MRET_VS(a0)
-# Write data
+
+# ---------------------------
+# Actual test
+# ---------------------------
+
 testcode:
+  # Write data
   la a0, testdata
   SPA2GPA_VDATA(a0)
   PA2VA_SDATA(a0)
   li t1, 0xaaaa0000aaaa0000
   sd t1, 0(a0)
   ebreak
-# Assert pte.D == 0b1
+
+
 mtvec_handler:
+  # DEBUG: Load relevant GPRs & CSRs to make them visible in execution trace
+  add TESTNUM, TESTNUM, zero
+  csrr a0, mcause
+  csrr a1, mepc
+  csrr a2, mtval
+  csrr a3, mtval2
+  csrr a4, mtinst
+  # Check cause is expected
   csrr a0, mcause
   li t0, CAUSE_BREAKPOINT
   beq t0, a0, 1f
   j fail
+  # Assert pte.D == 0b1
 1:la a1, VDATA_LEAF_PTE
+  la a2, SDATA_LEAF_PTE
   ld a1, 0(a1)
+  ld a2, 0(a2)
   li t0, PTE_D
-  and t1, t0, a1
+  and a1, t0, a1
+  and a2, t0, a2
+  and a1, a1, a2
   beq t1, zero, fail
 
 TEST_PASSFAIL
