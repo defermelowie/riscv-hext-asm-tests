@@ -45,6 +45,7 @@ csrw hgatp, t0
 #ifdef SVADU_EXT
 li t0, MENVCFG_HADE
 csrs menvcfg, t0
+csrs henvcfg, t0
 #endif
 
 # ---------------------------
