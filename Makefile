@@ -53,6 +53,7 @@ TARGETS += slat_HS_39_VS_39_gpage_fault
 TARGETS += hlv_M hlv_HS_spvp_1 hlv_HS_spvp_0 hlv_U_spvp_1 hlv_U_spvp_0
 # TARGETS += hsv_M hsv_HS_spvp_1 hsv_HS_spvp_0 hsv_U_spvp_1 hsv_U_spvp_0
 TARGETS += tinst_load tinst_store tinst_amo tinst_vm_load_store
+TARGETS += slat_VS_39_pseudoinst
 
 # TARGETS += ci_infinite_loop ci_direct_fail # Only for CI debug
 
