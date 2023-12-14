@@ -51,7 +51,8 @@ TARGETS += slat_HS_39_VS_VU_39 slat_HS_39_VS_VU_48 # slat_HS_39_VS_VU_57
 TARGETS += slat_VS_39_update_pte_A slat_VS_39_update_pte_D
 TARGETS += slat_HS_39_VS_39_gpage_fault
 TARGETS += hlv_M hlv_HS_spvp_1 hlv_HS_spvp_0 hlv_U_spvp_1 hlv_U_spvp_0
-# TARGETS += hsv_M hsv_HS_spvp_1 hsv_HS_spvp_0 hsv_U_spvp_1 hsv_U_spvp_0
+# TODO: TARGETS += hsv_M hsv_HS_spvp_1 hsv_HS_spvp_0 hsv_U_spvp_1 hsv_U_spvp_0
+TARGETS += hlvx_M # hlvx_HS_spvp_1 hlvx_HS_spvp_0
 TARGETS += tinst_load tinst_store tinst_amo tinst_vm_load_store
 TARGETS += slat_VS_39_pseudoinst
 
