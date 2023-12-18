@@ -56,24 +56,28 @@ csrs scounteren, t0
 // Set Δtime
 li s0, 0x1000
 csrw htimedelta, s0
-
-mtime: csrr s1, time
-
+// Calculate virtual addresses
 la a0, hstime
 SPA2GPA_HCODE(a0)
+la a1, vstime
+SPA2GPA_VCODE(a1)
+PA2VA_SCODE(a1)
+la a2, vutime
+SPA2GPA_VCODE(a2)
+PA2VA_UCODE(a2)
+// Read time on at different privileges
+mtime: csrr s1, time
 RVTEST_MRET_HS(a0)
-
 hstime: csrr s2, time
-bne s1, s2, fail
-
-la a0, vstime
-PA2VA_SCODE(a0)
-RVTEST_SRET_VS(a0)
-
+RVTEST_SRET_VS(a1)
 vstime: csrr s3, time
-add t0, s2, s0
+RVTEST_SRET_U(a2)
+vutime: csrr s4, time
+// Check results
+bne s1, s2, fail
+add t0, s1, s0
 bne t0, s3, fail
-
+bne t0, s4, fail
 j pass
 
 TEST_PASSFAIL
