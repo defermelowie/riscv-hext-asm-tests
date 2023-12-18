@@ -45,6 +45,7 @@ TARGETS += read_s_csr_from_U read_s_csr_from_VS read_s_csr_from_VU
 TARGETS += read_vs_csr_from_U read_vs_csr_from_VS read_vs_csr_from_VU
 TARGETS += hfence_vvma_ill_inst hfence_vvma_virt_inst
 TARGETS += high_half_CRS_ill_instr
+TARGETS += htime_delta
 TARGETS += vmem_VU_at_independent_from_satp vmem_U_at_independent_from_vsatp vmem_S_at_independent_from_vsatp vmem_VS_at_independent_from_satp
 TARGETS += at_S_U_39 at_S_U_48 # at_S_U_57
 TARGETS += at_S_39_update_pte_A at_S_39_update_pte_D
@@ -53,7 +54,7 @@ TARGETS += slat_VS_39_update_pte_A slat_VS_39_update_pte_D
 TARGETS += slat_HS_39_VS_39_gpage_fault
 TARGETS += hlv_M hlv_HS_spvp_1 hlv_HS_spvp_0 hlv_U_spvp_1 hlv_U_spvp_0
 # TODO: TARGETS += hsv_M hsv_HS_spvp_1 hsv_HS_spvp_0 hsv_U_spvp_1 hsv_U_spvp_0
-TARGETS += hlvx_M # hlvx_HS_spvp_1 hlvx_HS_spvp_0
+TARGETS += hlvx_M # TODO: hlvx_HS_spvp_1 hlvx_HS_spvp_0
 TARGETS += tinst_load tinst_store tinst_amo tinst_vm_load_store
 TARGETS += slat_VS_39_pseudoinst
 
