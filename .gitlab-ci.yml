@@ -3,7 +3,7 @@ variables:
 
 build_tests:
   stage: build
-  image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env/toolchain:v1.0.2
+  image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env/toolchain:latest
   variables:
     RISCV_SVADU: "true"
   script:
@@ -17,7 +17,7 @@ build_tests:
 
 verif_tests_spike:
   stage: test
-  image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env/spike:v1.0.2
+  image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env/spike:latest
   needs:
     - build_tests
   script:
