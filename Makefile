@@ -57,6 +57,7 @@ TARGETS += hlv_M hlv_HS_spvp_1 hlv_HS_spvp_0 hlv_U_spvp_1 hlv_U_spvp_0
 TARGETS += hlvx_M # TODO: hlvx_HS_spvp_1 hlvx_HS_spvp_0
 TARGETS += tinst_load tinst_store tinst_amo tinst_vm_load_store
 TARGETS += slat_VS_39_pseudoinst
+TARGETS += time_int_VU_to_M time_int_VU_to_HS
 
 # TARGETS += ci_infinite_loop ci_direct_fail # Only for CI debug
 
@@ -101,7 +102,7 @@ $(OBJDIR)/%.o: $(SCRDIR)/%.S
 $(DUMPDIR)/%.dump: $(TARGETDIR)/%.elf
 	$(OBJDUMP) -D $< > $@
 
-$(LOGDIR)/%.test.log: $(TARGETDIR)/%.elf
+$(LOGDIR)/%.log: $(TARGETDIR)/%.elf
 	$(EMULATOR) $< > $@
 
 $(TARGETDIR)/%.elf: $(OBJDIR)/%.o $(OBJDIR)/vmem.o
