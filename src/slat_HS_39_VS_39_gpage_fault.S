@@ -1,6 +1,6 @@
 #include "riscv_test.h"
 #include "test_macros.h"
-#include "instructions.h"
+#include "test_util.h"
 
 RVTEST_RV64M
 RVTEST_CODE_BEGIN
@@ -416,4 +416,3 @@ RVTEST_DATA_BEGIN
 result:
         .dword -1
 RVTEST_DATA_END
-

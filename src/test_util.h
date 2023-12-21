@@ -29,6 +29,8 @@
 // Instructions known to the assembler which raise build error when used
 // incorrectly (which is wat we want to test sometimes)
 //-----------------------------------------------------------------------------
+#ifndef __INSTR_RAW
+#define __INSTR_RAW
 
 // Note: Since .insn i expects a signed value, `csr` should be converted
 #define CSRRW_RAW(rd, csr, rs1)                                                \
@@ -51,3 +53,5 @@
   .else;                                                                       \
   .insn i 0b1110011, 0b011, rd, rs1, 0x800 - csr;                              \
   .endif;
+
+#endif
