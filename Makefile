@@ -1,5 +1,5 @@
-CC = riscv64-unknown-elf-gcc
-# CC = clang --target=riscv64 # LLVM supports hypervisor-specific instructions
+# CC = riscv64-unknown-elf-gcc
+CC = clang --target=riscv64 # LLVM supports hypervisor-specific instructions
 CCFLAGS = -g -march=rv64gc -mabi=lp64 -mcmodel=medany -I$(ENVDIR)
 
 LD = riscv64-unknown-elf-ld
