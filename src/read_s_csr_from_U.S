@@ -6,10 +6,6 @@ RVTEST_CODE_BEGIN
 
 .align 2
 
-# Overwrite trap_vector
-la t1, trap_vector_overwrite
-csrw mtvec, t1
-
 # Go to U-mode
 la t1, ucode
 RVTEST_MRET_U(t1)
@@ -19,33 +15,15 @@ ucode:
     csrr t0, sstatus # Illegal access should trigger illegal instruction exception
     unimp
 
-trap_vector_overwrite:
+mtvec_handler:
     csrr t0, mcause
     li t1, CAUSE_ILLEGAL_INSTRUCTION
-    beq t0, t1, success
+    beq t0, t1, pass
     mv  TESTNUM, t0
     j fail
     unimp
 
-# RVTEST_PASS macro uses ecall and stops working after xtvec is overwritten
-success:
-    fence
-    la t0, tohost
-    li TESTNUM, 0x1
-    sw TESTNUM, 0(t0)
-    sw zero, 4(t0)
-    unimp
-
-# RVTEST_FAIL macro uses ecall and stops working after xtvec is overwritten
-fail:
-    fence
-    la t0, tohost
-    sll TESTNUM, TESTNUM, 1
-    or TESTNUM, TESTNUM, 1
-    sw TESTNUM, 0(t0)
-    sw zero, 4(t0)
-    unimp
-
+TEST_PASSFAIL
 RVTEST_CODE_END
 
 .data
