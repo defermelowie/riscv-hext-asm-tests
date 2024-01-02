@@ -8,15 +8,9 @@ RVTEST_CODE_BEGIN
 # Todo: sie -> vsie is not yet implemented
 # Todo: sip -> vsip is not yet implemented
 
-.align 2
-
-test_setup:
-    # Overwrite trap_vector
-    la t1, test_check
-    csrw mtvec, t1
-    # Return into HS-mode
-    la a0, hscode
-    RVTEST_MRET_HS(a0)
+# Return into HS-mode
+la a0, hscode
+RVTEST_MRET_HS(a0)
 
 hscode:
     # Alter s* CSRs
@@ -58,7 +52,7 @@ hscode:
     sd x7, 40(x1)
     sd x8, 48(x1)
     sd x9, 56(x1)
-    # Clear registerfile
+    # Clear GPRs
     INIT_XREG
     # Return into VS-mode
     sret
@@ -92,16 +86,16 @@ vscode:
     sd x7, 40(x1)
     sd x8, 48(x1)
     sd x9, 56(x1)
-    # Clear registerfile
+    # Clear GPRs
     INIT_XREG
     # Trap into M-mode
-    ecall
+    ebreak
 
-test_check:
-    # Only handle ecall from VS-mode
+mtvec_handler:
+    # Only handle breakpoints
     li TESTNUM, 0xff
     csrr t0, mcause
-    li t1, CAUSE_VIRTUAL_SUPERVISOR_ECALL
+    li t1, CAUSE_BREAKPOINT
     bne t0, t1, fail
 
     # Check vs* CSRs
@@ -178,30 +172,15 @@ test_check:
     # bne t1, t2, fail
 
     # All checks have passed
-    j success
+    j pass
 
-fail:
-    # RVTEST_FAIL uses ecall and stops working after xtvec is overwritten
-    fence
-    la t0, tohost
-    sll TESTNUM, TESTNUM, 1
-    or TESTNUM, TESTNUM, 1
-    sw TESTNUM, 0(t0)
-    sw zero, 4(t0)
-    unimp
-
-success:
-    # RVTEST_PASS uses ecall and stops working after xtvec is overwritten
-    fence
-    la t0, tohost
-    li TESTNUM, 0x1
-    sw TESTNUM, 0(t0)
-    sw zero, 4(t0)
-    unimp
+TEST_PASSFAIL
+RVTEST_CODE_END
 
 # Output data section.
 .data
 RVTEST_DATA_BEGIN
+
 .align 2
 s_csr:
     .dword 0x0
