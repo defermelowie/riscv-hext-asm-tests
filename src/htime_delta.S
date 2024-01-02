@@ -65,7 +65,9 @@ PA2VA_SCODE(a1)
 la a2, vutime
 SPA2GPA_VCODE(a2)
 PA2VA_UCODE(a2)
-// Read time on at different privileges
+// Reset timer
+SET_MTIME(zero)
+// Read time at different privileges
 mtime: csrr s1, time
 RVTEST_MRET_HS(a0)
 hstime: csrr s2, time
