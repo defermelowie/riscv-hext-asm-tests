@@ -22,6 +22,7 @@ do_ecall:
     ecall
     ret
 
+.align 2
 trap_vector_overwrite:
     csrr t0, scause
     li t1, CAUSE_VIRTUAL_SUPERVISOR_ECALL
