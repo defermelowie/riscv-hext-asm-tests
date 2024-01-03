@@ -84,9 +84,27 @@
   li t0, CAUSE_MACHINE_TIMER_I;                                                \
   bne cause, t0, skip;                                                         \
   li t0, MIP_MTIP;                                                             \
-  csrc mie, t0;                                                                \
+  csrc mie, t0; /* Disable M timer interrupts (mip.MTIP may be read-only) */   \
   li t0, MIP_STIP;                                                             \
-  csrw mip, t0;                                                                \
+  csrs mip, t0; /* Set S timer interrupt pending*/                             \
+  mret;                                                                        \
+  nop;                                                                         \
+  skip:
+
+/**
+ * @brief Let a machine-timer-interrupt cause a
+ * virtual-supervisor-timer-interrupt
+ * @param cause General purpose register holding the trap cause
+ */
+#define PROMOTE_MTI_TO_VSTI(cause)                                             \
+  li t0, CAUSE_MACHINE_TIMER_I;                                                \
+  bne cause, t0, skip;                                                         \
+  li t0, MIP_MTIP;                                                             \
+  csrc mie, t0; /* Disable M timer interrupts (mip.MTIP may be read-only) */   \
+  li t0, MIP_VSTIP;                                                            \
+  csrs hvip, t0; /* Set VS timer interrupt pending */                          \
+  li t0, MIP_STIP;                                                             \
+  csrc sip, t0; /* Clear STIP, side-effect of setting VSTIP on spike */        \
   mret;                                                                        \
   nop;                                                                         \
   skip:

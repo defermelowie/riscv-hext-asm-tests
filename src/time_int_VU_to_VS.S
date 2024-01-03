@@ -29,10 +29,11 @@ csrsi mstatus, MSTATUS_MIE | MSTATUS_SIE
 GET_MTIME(a0)
 addi a0, a0, 2 // Note: 1 timer tick corresponds with 100 instructions in Sail model
 SET_MTIMECMP(a0)
-// Enable and delegate timer-interrupts to HS
-li a0, MIP_MTIP | MIP_STIP
-csrs mideleg, a0
+// Enable and delegate timer-interrupts to VS
+li a0, MIP_MTIP | !MIP_STIP | MIP_VSTIP
 csrs mie, a0
+csrs mideleg, a0 // Delegate from M ---> HS
+csrs hideleg, a0 // Delegate from HS --> VS
 // Ret into VU
 la a0, 1f
 RVTEST_MRET_VU(a0)
@@ -54,20 +55,20 @@ mtvec_handler:
   csrr t0, mtval
   csrr t0, mtval2
   csrr t0, mtinst
-  // Let a machine timer interrupt cause a supervisor timer interrupt
-  PROMOTE_MTI_TO_STI(a0)
+  csrr t0, mip
+  // Let a machine timer interrupt cause a virtual supervisor timer interrupt
+  PROMOTE_MTI_TO_VSTI(a0)
   j fail
 
 .align 2
-stvec_handler:
+vstvec_handler:
   // Load regs & CSRs so their value is visible in traces
   addi TESTNUM, TESTNUM, 0
   csrr a0, scause
   csrr a1, sepc
   csrr t0, stval
-  csrr t0, htval
-  csrr t0, htinst
-  // Check if supervisor timer interrupt
+  csrr t0, sip
+  // Check if virtual supervisor timer interrupt appears as supervisor timer interrupt for VS-mode
   li t0, CAUSE_SUPERVISOR_TIMER_I
   beq a0, t0, pass
   // Fail if unexpected trap cause
