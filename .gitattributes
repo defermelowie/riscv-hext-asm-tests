@@ -1,2 +1,0 @@
-ci/bin/ filter=lfs diff=lfs merge=lfs -text
-ci/bin/spike filter=lfs diff=lfs merge=lfs -text

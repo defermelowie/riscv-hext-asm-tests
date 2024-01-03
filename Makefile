@@ -1,5 +1,5 @@
-# CC = riscv64-unknown-elf-gcc
-CC = clang --target=riscv64 # LLVM supports hypervisor-specific instructions
+CC = riscv64-unknown-elf-gcc
+# CC = clang --target=riscv64 # LLVM supports hypervisor-specific instructions
 CCFLAGS = -g -march=rv64gc -mabi=lp64 -mcmodel=medany -I$(ENVDIR)
 
 LD = riscv64-unknown-elf-ld
@@ -57,7 +57,7 @@ TARGETS += hlv_M hlv_HS_spvp_1 hlv_HS_spvp_0 hlv_U_spvp_1 hlv_U_spvp_0
 TARGETS += hlvx_M # TODO: hlvx_HS_spvp_1 hlvx_HS_spvp_0
 TARGETS += tinst_load tinst_store tinst_amo tinst_vm_load_store
 TARGETS += slat_VS_39_pseudoinst
-TARGETS += time_int_VU_to_M time_int_VU_to_HS
+TARGETS += time_int_VU_to_M time_int_VU_to_HS time_int_VU_to_VS
 
 # TARGETS += ci_infinite_loop ci_direct_fail # Only for CI debug
 
@@ -96,7 +96,7 @@ test: build
 $(OBJDIR)/vmem.o: $(ENVDIR)/vmem.c
 	$(CC) -c $(CCFLAGS) -o $@ $<
 
-$(OBJDIR)/%.o: $(SCRDIR)/%.S
+$(OBJDIR)/%.o: $(SCRDIR)/%.S $(SCRDIR)/*.h
 	$(CC) -c $(CCFLAGS) -o $@ $<
 
 $(DUMPDIR)/%.dump: $(TARGETDIR)/%.elf
