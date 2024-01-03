@@ -8,7 +8,7 @@ build_tests:
     RISCV_SVADU: "true"
   script:
     - make setup
-    - make dump
+    - make dump CC="clang --target=riscv64"
   artifacts:
     paths:
       - target/*.elf
