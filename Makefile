@@ -58,6 +58,7 @@ TARGETS += hlvx_M # TODO: hlvx_HS_spvp_1 hlvx_HS_spvp_0
 TARGETS += tinst_load tinst_store tinst_amo tinst_vm_load_store
 TARGETS += slat_VS_39_pseudoinst
 TARGETS += time_int_VU_to_M time_int_VU_to_HS time_int_VU_to_VS
+TARGETS += write_xip_csr
 
 # TARGETS += ci_infinite_loop ci_direct_fail # Only for CI debug
 
