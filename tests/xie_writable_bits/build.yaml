@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/xie_writable_bits/xie_writable_bits.elf

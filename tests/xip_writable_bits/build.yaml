@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/xip_writable_bits/xip_writable_bits.elf

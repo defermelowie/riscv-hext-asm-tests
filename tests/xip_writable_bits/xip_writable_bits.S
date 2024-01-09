@@ -3,7 +3,6 @@
  */
 
 #include "riscv_test.h"
-
 #include "riscv_util.h"
 
 RVTEST_RV64M

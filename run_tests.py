@@ -76,7 +76,8 @@ ALL_TESTS = [
     "time_int_VU_to_HS",
     "time_int_VU_to_M",
     "time_int_VU_to_VS",
-    "write_xip_csr"
+    "xip_writable_bits",
+    "xie_writable_bits"
 ]
 
 TESTDIR = Path("tests")
@@ -322,7 +323,9 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--run", action='store_true',
                         help="Run test executables")
     parser.add_argument("-e", "--emulator", type=str,
-                        help="Run with specific emulator", default="sail-csim")
+                        help="Run with specific emulator (default: %(default)s)", default="sail-csim")
+    parser.add_argument('-t', '--tests', nargs='+',
+                        help="Run specific tests", default=ALL_TESTS)
     parser.add_argument("-v", action="count", default=0,
                         help="Enable verbose output")
     args = parser.parse_args()
@@ -348,4 +351,4 @@ if __name__ == "__main__":
             exit(-1)
 
     # Run main function (after argument parsing is complete)
-    main(ALL_TESTS, args.clean, args.build, args.run, e=emul)
+    main(args.tests, args.clean, args.build, args.run, e=emul)
