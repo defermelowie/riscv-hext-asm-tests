@@ -14,3 +14,7 @@ These unit tests are verified using the following H-extension capable emulators/
 - [ ] [rocket-chip](https://github.com/chipsalliance/rocket-chip) instance
 
 *Details on exact versions etc. can be found in [riscv-ci-env](https://gitlab.kuleuven.be/u0165022/riscv-ci-env)*
+
+## Structure
+
+Actual tests are situated in `./tests/`. Environments & libraries common to multiple tests sit in `./common/`. Each test defines a `build.json` which indicates how the test should be build.

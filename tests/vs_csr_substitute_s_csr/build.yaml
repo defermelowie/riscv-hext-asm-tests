@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/vs_csr_substitute_s_csr/vs_csr_substitute_s_csr.elf

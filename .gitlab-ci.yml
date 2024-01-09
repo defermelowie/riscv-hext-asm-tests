@@ -1,37 +1,38 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
-build_tests:
+build_tests_spike:
   stage: build
   image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env/toolchain:latest
-  variables:
-    RISCV_SVADU: "true"
   script:
-    - make setup
-    - make dump CC="clang --target=riscv64"
+    # Build tests for spike
+    - ./run_tests.py --clean --build --emulator spike
   artifacts:
+    when: always
     paths:
-      - target/*.elf
-      - target/*.dump
+      - tests/*/build.log
+      - tests/*/*.elf
     expire_in: 7 days
 
 verif_tests_spike:
   stage: test
   image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env/spike:latest
   needs:
-    - build_tests
+    - build_tests_spike
   script:
-    - make setup
-    - make spike
+    - apt-get install python3-full -y
+    - python3 -m venv venv && source venv/bin/activate
+    - pip3 install pyyaml
+    - ./run_tests.py --run --emulator spike
   artifacts:
     when: always
     paths:
-      - "log/*.log"
+      - tests/*/*.log
     expire_in: 7 days
 
 stages:
-- build
-- test
+  - build
+  - test
 
 include:
   # Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings

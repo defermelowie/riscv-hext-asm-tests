@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/sret_HS_to_VS/sret_HS_to_VS.elf

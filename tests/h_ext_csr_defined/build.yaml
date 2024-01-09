@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/h_ext_csr_defined/h_ext_csr_defined.elf

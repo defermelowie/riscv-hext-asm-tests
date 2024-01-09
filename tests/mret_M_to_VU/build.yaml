@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/mret_M_to_VU/mret_M_to_VU.elf

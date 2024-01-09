@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/read_h_csr_from_U/read_h_csr_from_U.elf

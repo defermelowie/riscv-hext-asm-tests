@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/vmem_VU_at_independent_from_satp/vmem_VU_at_independent_from_satp.elf

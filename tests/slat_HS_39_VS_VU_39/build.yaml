@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-vmem.mk
+  target: tests/slat_HS_39_VS_VU_39/slat_HS_39_VS_VU_39.elf

@@ -15,3 +15,7 @@ trim_trailing_whitespace = true
 # Follow Makefile spec.
 [Makefile]
 indent_style = tab
+
+# Follow PEP8
+[*.py]
+indent_size = 2

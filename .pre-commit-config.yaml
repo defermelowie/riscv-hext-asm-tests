@@ -31,3 +31,9 @@ repos:
   - id: clang-format
     stages: [pre-commit]
     types_or: [c++, c]
+- repo: https://github.com/doublify/pre-commit-rust
+  rev: v1.0
+  hooks:
+    - id: fmt
+    - id: cargo-check
+    - id: clippy
