@@ -1,21 +1,25 @@
 #include "riscv_test.h"
 
-
 RVTEST_RV64M
 RVTEST_CODE_BEGIN
 
 # Todo: Test *atp registers after 2-stage address translation is implemented
-# Todo: sie -> vsie is not yet implemented
-# Todo: sip -> vsip is not yet implemented
 
+# Enable delegation because otherwise sip, sie, vsip & vsie are not writable
+li t0, MIP_SSIP | MIP_VSSIP | MIP_MSIP | \
+       MIP_STIP | MIP_VSTIP | MIP_MTIP | \
+       MIP_SEIP | MIP_VSEIP | MIP_MEIP | MIP_SGEIP
+csrs mideleg, t0
+csrs hideleg, t0
 # Return into HS-mode
 la a0, hscode
 RVTEST_MRET_HS(a0)
 
 hscode:
     # Alter s* CSRs
-    li t0, 0xaaaaaaaaaaaaaaaa
+    li t0 0xaaaaaaaaaaaaaaaa & ~MSTATUS_MIE & ~MSTATUS_SIE // Mask Interrupt Enable to prevent interrupts from firing during test
     csrw sstatus, t0
+    li t0 0xaaaaaaaaaaaaaaaa
     csrw sie, t0
     csrw stvec, t0
     csrw sscratch, t0
@@ -59,6 +63,8 @@ hscode:
 
 vscode:
     # Alter vs* CSRs
+    li t0 0xffffffffffffffff & ~MSTATUS_MIE & ~MSTATUS_SIE // Mask Interrupt Enable to prevent interrupts from firing during test
+    csrw sstatus, t0
     li t0, 0xffffffffffffffff
     csrw sstatus, t0
     csrw sie, t0
@@ -104,10 +110,10 @@ mtvec_handler:
     csrr t1, vsstatus
     ld t2, 0(t0)
     bne t1, t2, fail
-    # li TESTNUM, 0x2
-    # csrr t1, vsie
-    # ld t2, 8(t0)
-    # bne t1, t2, fail
+    li TESTNUM, 0x2
+    csrr t1, vsie
+    ld t2, 8(t0)
+    bne t1, t2, fail
     li TESTNUM, 0x3
     csrr t1, vstvec
     ld t2, 16(t0)
@@ -128,10 +134,10 @@ mtvec_handler:
     csrr t1, vstval
     ld t2, 48(t0)
     bne t1, t2, fail
-    # li TESTNUM, 0x8
-    # csrr t1, vsip
-    # ld t2, 56(t0)
-    # bne t1, t2, fail
+    li TESTNUM, 0x8
+    csrr t1, vsip
+    ld t2, 56(t0)
+    bne t1, t2, fail
 
     # Check s* CSRs
     la t0, s_csr
@@ -142,10 +148,10 @@ mtvec_handler:
     and t1, t1, t3
     and t2, t2, t3
     bne t1, t2, fail
-    # li TESTNUM, 0x12
-    # csrr t1, sie
-    # ld t2, 8(t0)
-    # bne t1, t2, fail
+    li TESTNUM, 0x12
+    csrr t1, sie
+    ld t2, 8(t0)
+    bne t1, t2, fail
     li TESTNUM, 0x13
     csrr t1, stvec
     ld t2, 16(t0)
@@ -166,10 +172,10 @@ mtvec_handler:
     csrr t1, stval
     ld t2, 48(t0)
     bne t1, t2, fail
-    # li TESTNUM, 0x18
-    # csrr t1, sip
-    # ld t2, 56(t0)
-    # bne t1, t2, fail
+    li TESTNUM, 0x18
+    csrr t1, sip
+    ld t2, 56(t0)
+    bne t1, t2, fail
 
     # All checks have passed
     j pass
