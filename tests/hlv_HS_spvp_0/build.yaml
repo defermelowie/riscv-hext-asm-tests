@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-vmem.mk
+  target: tests/hlv_HS_spvp_0/hlv_HS_spvp_0.elf

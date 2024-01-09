@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/high_half_CRS_ill_instr/high_half_CRS_ill_instr.elf

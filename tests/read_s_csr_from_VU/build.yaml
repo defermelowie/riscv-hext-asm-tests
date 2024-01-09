@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/read_s_csr_from_VU/read_s_csr_from_VU.elf

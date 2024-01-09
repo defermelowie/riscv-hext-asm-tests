@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-vmem.mk
+  target: tests/slat_VS_39_pseudoinst/slat_VS_39_pseudoinst.elf

@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/ci_infinite_loop/ci_infinite_loop.elf

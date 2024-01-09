@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-vmem.mk
+  target: tests/at_S_39_update_pte_A/at_S_39_update_pte_A.elf

@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/ecall_VS_to_HS/ecall_VS_to_HS.elf
