@@ -38,37 +38,37 @@ bnez t1, fail    // Fail if unable to clear
 li TESTNUM, 2
 li t0, MIP_SSIP
 csrs sip, a0       // Try to set all bits
-csrr t1, sip
+csrr t1, mip
 bne t0, t1, fail   // Check if written bits are expected
 csrc sip, a0       // Clear all bits
-csrr t1, sip
+csrr t1, mip
 bnez t1, fail      // Fail if unable to clear
 
 li TESTNUM, 3
 li t0, MIP_VSSIP
 csrs hip, a0       // Try to set all bits
-csrr t1, hip
+csrr t1, mip
 bne t0, t1, fail   // Check if written bits are expected
 csrc hip, a0       // Clear all bits
-csrr t1, hip
+csrr t1, mip
 bnez t1, fail      // Fail if unable to clear
 
 li TESTNUM, 4
 li t0, MIP_VSSIP | MIP_VSTIP | MIP_VSEIP
 csrs hvip, a0      // Try to set all bits
-csrr t1, hvip
+csrr t1, mip
 bne t0, t1, fail   // Check if written bits are expected
 csrc hvip, a0      // Clear all bits
-csrr t1, hvip
+csrr t1, mip
 bnez t1, fail      // Fail if unable to clear
 
 li TESTNUM, 5
-li t0, MIP_SSIP
+li t0, MIP_VSSIP
 csrs vsip, a0      // Try to set all bits
-csrr t1, vsip
+csrr t1, mip
 bne t0, t1, fail   // Check if written bits are expected
 csrc vsip, a0      // Clear all bits
-csrr t1, vsip
+csrr t1, mip
 bnez t1, fail      // Fail if unable to clear
 
 j pass
