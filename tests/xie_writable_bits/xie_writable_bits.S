@@ -26,6 +26,8 @@ csrw hideleg, a0
 // Actual tests
 // ---------------------------
 
+// Check if bits are writable and visible in mie
+
 li TESTNUM, 1
 li t0, MIP_SSIP | MIP_VSSIP | MIP_MSIP | \
        MIP_STIP | MIP_VSTIP | MIP_MTIP | \
@@ -35,7 +37,7 @@ csrr t1, mie
 bne t0, t1, fail   // Check if written bits are expected
 csrc mie, a0       // Clear all bits
 csrr t1, mie
-bnez t1, fail    // Fail if unable to clear
+bnez t1, fail      // Fail if unable to clear
 
 li TESTNUM, 2
 li t0, MIP_SSIP | MIP_STIP| MIP_SEIP
@@ -44,16 +46,44 @@ csrr t1, mie
 bne t0, t1, fail   // Check if written bits are expected
 csrc sie, a0       // Clear all bits
 csrr t1, mie
-bnez t1, fail    // Fail if unable to clear
+bnez t1, fail      // Fail if unable to clear
 
 li TESTNUM, 3
+li t0, MIP_VSSIP | MIP_VSTIP | MIP_VSEIP
+csrs vsie, a0      // Try to set all bits
+csrr t1, mie
+bne t0, t1, fail   // Check if written bits are expected
+csrc vsie, a0      // Clear all bits
+csrr t1, mie
+bnez t1, fail      // Fail if unable to clear
+
+li TESTNUM, 4
 li t0, MIP_VSSIP | MIP_VSTIP | MIP_VSEIP | MIP_SGEIP
 csrs hie, a0       // Try to set all bits
 csrr t1, mie
 bne t0, t1, fail   // Check if written bits are expected
 csrc hie, a0       // Clear all bits
 csrr t1, mie
-bnez t1, fail    // Fail if unable to clear
+bnez t1, fail      // Fail if unable to clear
+
+// Check if mie bits are readable from xie
+csrs mie, a0 // Set all writable bits
+
+li TESTNUM, 5
+li t0, MIP_SSIP | MIP_STIP| MIP_SEIP
+csrr t1, sie
+bne t0, t1, fail   // Check if read bits are expected
+
+li TESTNUM, 6
+li t0,  MIP_SSIP | MIP_STIP | MIP_SEIP
+csrr t1, vsie
+bne t0, t1, fail   // Check if read bits are expected
+
+li TESTNUM, 7
+li t0, MIP_VSSIP | MIP_VSTIP | MIP_VSEIP | MIP_SGEIP
+csrr t1, hie
+bne t0, t1, fail   // Check if read bits are expected
+
 
 j pass
 
