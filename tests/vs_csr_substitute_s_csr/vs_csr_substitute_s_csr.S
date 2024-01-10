@@ -1,4 +1,5 @@
 #include "riscv_test.h"
+#include "riscv_util.h"
 
 RVTEST_RV64M
 RVTEST_CODE_BEGIN
@@ -6,20 +7,22 @@ RVTEST_CODE_BEGIN
 # Todo: Test *atp registers after 2-stage address translation is implemented
 
 # Enable delegation because otherwise sip, sie, vsip & vsie are not writable
-li t0, MIP_SSIP | MIP_VSSIP | MIP_MSIP | \
-       MIP_STIP | MIP_VSTIP | MIP_MTIP | \
+// Do not enable software interrupts to prevent them from firing during test
+li t0, MIP_STIP | MIP_VSTIP | MIP_MTIP | \
        MIP_SEIP | MIP_VSEIP | MIP_MEIP | MIP_SGEIP
 csrs mideleg, t0
 csrs hideleg, t0
+# Set mtimecmp as high as possible to prevent timer interrupt from firing
+li a0, -1
+SET_MTIMECMP(a0)
 # Return into HS-mode
 la a0, hscode
 RVTEST_MRET_HS(a0)
 
 hscode:
     # Alter s* CSRs
-    li t0 0xaaaaaaaaaaaaaaaa & ~MSTATUS_MIE & ~MSTATUS_SIE // Mask Interrupt Enable to prevent interrupts from firing during test
+    li t0, 0xaaaaaaaaaaaaaaaa
     csrw sstatus, t0
-    li t0 0xaaaaaaaaaaaaaaaa
     csrw sie, t0
     csrw stvec, t0
     csrw sscratch, t0
@@ -63,9 +66,8 @@ hscode:
 
 vscode:
     # Alter vs* CSRs
-    li t0 0xffffffffffffffff & ~MSTATUS_MIE & ~MSTATUS_SIE // Mask Interrupt Enable to prevent interrupts from firing during test
+    li t0, 0x5555555555555555
     csrw sstatus, t0
-    li t0, 0xffffffffffffffff
     csrw sstatus, t0
     csrw sie, t0
     csrw stvec, t0
