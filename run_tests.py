@@ -73,9 +73,12 @@ ALL_TESTS = [
     "hfence_vvma_ill_inst",
     "hfence_vvma_virt_inst",
     "htime_delta",
-    "time_int_VU_to_HS",
     "time_int_VU_to_M",
+    "time_int_VU_to_HS",
     "time_int_VU_to_VS",
+    "soft_int_VU_to_M",
+    "soft_int_VU_to_HS",
+    "soft_int_VU_to_VS",
     "xip_writable_bits",
     "xie_writable_bits"
 ]
@@ -228,13 +231,16 @@ def main(tests: List[str], c: bool, b: bool, r: bool, e: Emulator):
 def build(test: str, env: Dict[str, str]) -> bool:
     """Build a test"""
     test_dir = TESTDIR.joinpath(test)
-    success = True
     # Load build.json from test dir
     with open(test_dir.joinpath("build.yaml"), "r") as buildfile:
         MkBuilder = MakefileBuilder(yaml.safe_load(buildfile)['makefile'])
         # Build test executable
-        success &= MkBuilder.make(test, env, test_dir.joinpath("build.log"))
-    return success
+        if MkBuilder.make(test, env, test_dir.joinpath("build.log")):
+            print(f"[BUILD] {test} - \x1b[32mDone\x1b[0m")
+            return True
+        else:
+            print(f"[BUILD] {test} - \x1b[31mError\x1b[0m")
+            return False
 
 
 def clean() -> bool:
