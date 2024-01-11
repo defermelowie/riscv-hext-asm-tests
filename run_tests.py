@@ -79,6 +79,8 @@ ALL_TESTS = [
     "soft_int_VU_to_M",
     "soft_int_VU_to_HS",
     "soft_int_VU_to_VS",
+    "ext_int_VU_to_HS",
+    "ext_int_VU_to_VS",
     "xip_writable_bits",
     "xie_writable_bits",
     "hgeie_writable_bits",

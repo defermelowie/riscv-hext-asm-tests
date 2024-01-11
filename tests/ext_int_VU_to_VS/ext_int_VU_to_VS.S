@@ -68,6 +68,7 @@ vstvec_handler:
   csrr a1, sepc
   csrr t0, stval
   // Pass if expected trap cause (VSEI should appear as SEI from VS-mode)
+  li TESTNUM, 2
   li t0, CAUSE_SUPERVISOR_EXTERNAL_I
   beq a0, t0, pass
   // Fail if unexpected trap cause

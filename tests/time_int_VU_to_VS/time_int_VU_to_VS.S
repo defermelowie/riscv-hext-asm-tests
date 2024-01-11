@@ -69,6 +69,7 @@ vstvec_handler:
   csrr t0, stval
   csrr t0, sip
   // Check if virtual supervisor timer interrupt appears as supervisor timer interrupt for VS-mode
+  li TESTNUM, 2
   li t0, CAUSE_SUPERVISOR_TIMER_I
   beq a0, t0, pass
   // Fail if unexpected trap cause

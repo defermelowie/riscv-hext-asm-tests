@@ -55,6 +55,7 @@ vstvec_handler:
   csrr a1, sepc
   csrr t0, stval
   // Check if virtual supervisor software interrupt appears as supervisor software interrupt for VS-mode
+  li TESTNUM, 2
   li t0, CAUSE_SUPERVISOR_SOFTWARE_I
   beq a0, t0, pass
   // Fail if unexpected trap cause
