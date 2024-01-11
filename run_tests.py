@@ -80,7 +80,8 @@ ALL_TESTS = [
     "soft_int_VU_to_HS",
     "soft_int_VU_to_VS",
     "xip_writable_bits",
-    "xie_writable_bits"
+    "xie_writable_bits",
+    "hgeie_writable_bits",
 ]
 
 TESTDIR = Path("tests")

@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/hgeie_writable_bits/hgeie_writable_bits.elf
