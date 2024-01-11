@@ -23,6 +23,7 @@ csrc medeleg, t0
 // ------------------------
 // Actual test
 // ------------------------
+.option norvc
 li TESTNUM, 1
 // Enable & delegate VSEI
 li t0, MIP_VSEIP
@@ -41,6 +42,7 @@ loop:
   blt t0, t1, loop
 // Interrupt was not triggered
 j fail
+.option rvc
 
 .align 2
 mtvec_handler:
@@ -50,6 +52,10 @@ mtvec_handler:
   bne a0, t0, 1f
   li t0, MIP_VSEIP
   csrs hvip, t0
+  // Set mepc to next instruction & return from trap
+  csrr t0, mepc
+  addi t0, t0, 4
+  csrw mepc, t0
   mret
   // Fail on unexpected trap cause
   1: j fail
