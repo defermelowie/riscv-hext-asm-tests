@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/xideleg_writable_bits/xideleg_writable_bits.elf

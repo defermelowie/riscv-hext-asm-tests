@@ -30,10 +30,9 @@ GET_MTIME(a0)
 addi a0, a0, 2 // Note: 1 timer tick corresponds with 100 instructions in Sail model
 SET_MTIMECMP(a0)
 // Enable and delegate timer-interrupts to VS
-li a0, MIP_MTIP | !MIP_STIP | MIP_VSTIP
+li a0, MIP_MTIP | MIP_VSTIP
 csrs mie, a0
-csrs mideleg, a0 // Delegate from M ---> HS
-csrs hideleg, a0 // Delegate from HS --> VS
+csrs hideleg, a0 // Delegate from HS --> VS (VS-level interrupts are always delegated from M --> HS)
 // Ret into VU
 la a0, 1f
 RVTEST_MRET_VU(a0)
