@@ -198,6 +198,7 @@ class Spike(Emulator):
 
 def main(tests: List[str], c: bool, b: bool, r: bool, e: Emulator):
     success = True
+    print(f"---------------------")
     # Clean tests
     if c:
         success &= clean()
@@ -205,6 +206,7 @@ def main(tests: List[str], c: bool, b: bool, r: bool, e: Emulator):
     if b:
         for test in tests:
             success &= build(test, emul.build_vars())
+        print(f"---------------------")
     # Run tests on emulator
     if r:
         passed = 0
