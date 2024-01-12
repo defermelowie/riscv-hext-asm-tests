@@ -1,5 +1,5 @@
 /**
- * File: time_int_VU_to_M.S
+ * File: MTI_VU_to_M.S
  * Description: Let a timer interrupt cause a trap into HS-mode
  */
 
