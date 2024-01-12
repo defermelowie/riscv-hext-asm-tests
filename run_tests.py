@@ -78,6 +78,7 @@ ALL_TESTS = [
     "STI_VU_to_HS",
     "SSI_VU_to_HS",
     "SEI_VU_to_HS",
+    "VSSI_VU_to_HS",
     "VSTI_VU_to_VS",
     "VSSI_VU_to_VS",
     "VSEI_VU_to_VS",
