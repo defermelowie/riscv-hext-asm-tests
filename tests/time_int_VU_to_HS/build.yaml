@@ -1,3 +1,0 @@
-makefile:
-  path: common/makefiles/asm-phys.mk
-  target: tests/time_int_VU_to_HS/time_int_VU_to_HS.elf

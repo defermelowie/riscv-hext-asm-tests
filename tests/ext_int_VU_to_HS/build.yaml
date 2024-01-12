@@ -1,3 +1,0 @@
-makefile:
-  path: common/makefiles/asm-phys.mk
-  target: tests/ext_int_VU_to_HS/ext_int_VU_to_HS.elf

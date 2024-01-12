@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/MTI_VU_to_M/MTI_VU_to_M.elf

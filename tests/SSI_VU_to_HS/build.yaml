@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/SSI_VU_to_HS/SSI_VU_to_HS.elf
