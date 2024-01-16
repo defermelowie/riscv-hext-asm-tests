@@ -195,12 +195,42 @@ class Spike(Emulator):
         return self.env
 
 
+class Qemu(Emulator):
+    sim = Path("qemu-system-riscv64")
+    simflags = [
+        "--machine", "spike",
+        "-cpu", "rv64,h=true",
+        "-d", "in_asm,int,cpu",
+        "-nographic",
+    ]
+    env = {
+        "RISCV_SVADU": "true"
+    }
+    timeout = 5
+
+    def run(self, executable: Path, logfile: Path) -> bool:
+        cmd = f"{self.sim} {' '.join(self.simflags)} -bios {executable}"
+        log.debug(f"Emulator cmd: \"{cmd}\"")
+        try:
+            with open(logfile, "wb") as logf:
+                res = subprocess.run(
+                    cmd, shell=True, stderr=logf, stdout=logf, timeout=self.timeout)
+            return res.returncode == 0
+        except subprocess.TimeoutExpired:
+            log.debug(f"{cmd} timed out")
+            with open(logfile, "a") as logf:
+                logf.write(f"TIMEOUT: {self.timeout}")
+            return False
+
+    def build_vars(self):
+        return self.env
+
 # ------------------------------------------------------------------------------
 # Build & run script
 # ------------------------------------------------------------------------------
 
 
-def main(tests: List[str], c: bool, b: bool, r: bool, e: Emulator):
+def main(tests: List[str], c: bool, b: bool, d: bool, r: bool, e: Emulator):
     success = True
     print(f"---------------------")
     # Clean tests
@@ -211,6 +241,10 @@ def main(tests: List[str], c: bool, b: bool, r: bool, e: Emulator):
         for test in tests:
             success &= build(test, emul.build_vars())
         print(f"---------------------")
+    # Objdump tests
+    if d:
+        for test in tests:
+            success &= dump(test)
     # Run tests on emulator
     if r:
         passed = 0
@@ -247,6 +281,19 @@ def build(test: str, env: Dict[str, str]) -> bool:
         else:
             print(f"[BUILD] {test} - \x1b[31mError\x1b[0m")
             return False
+
+
+def dump(test: str) -> bool:
+    """Create object dump of test"""
+    elf = TESTDIR.joinpath(test, f"{test}.elf")
+    dmp = TESTDIR.joinpath(test, f"{test}.dump")
+    if not elf.exists():
+        log.error(f"Could not find {elf}")
+        return False
+    else:
+        subprocess.run(
+            f"riscv64-unknown-elf-objdump -D {elf} > {dmp}", shell=True)
+        return dmp.exists()
 
 
 def clean() -> bool:
@@ -332,6 +379,8 @@ if __name__ == "__main__":
                         help="Clean before build")
     parser.add_argument("-b", "--build", action='store_true',
                         help="Build test executables")
+    parser.add_argument("-d", "--dump", action='store_true',
+                        help="Create objdump of test executables")
     parser.add_argument("-r", "--run", action='store_true',
                         help="Run test executables")
     parser.add_argument("-e", "--emulator", type=str,
@@ -358,9 +407,12 @@ if __name__ == "__main__":
         case "spike":
             log.info("Using spike emulator")
             emul = Spike()
+        case "qemu":
+            log.info("Using QEMU")
+            emul = Qemu()
         case other:
             log.error(f"Unknown emulator with name \"{other}\"")
             exit(-1)
 
     # Run main function (after argument parsing is complete)
-    main(args.tests, args.clean, args.build, args.run, e=emul)
+    main(args.tests, args.clean, args.build, args.dump, args.run, e=emul)
