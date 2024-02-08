@@ -17,6 +17,8 @@ ALL_TESTS = [
     # "ci_infinite_loop",  # For CI debug only
     "h_ext_enabled",
     "h_ext_csr_defined",
+    "htif_fromhost",
+    "htif_getc",
     "mret_M_to_HS",
     "mret_M_to_U",
     "mret_M_to_VS",
@@ -121,7 +123,7 @@ class SailCSim(Emulator):
         try:
             with open(logfile, "wb") as logf:
                 subprocess.run(cmd, shell=True, stderr=logf,
-                               stdout=logf, timeout=self.timeout)
+                               stdout=logf, timeout=self.timeout, input=b"hello\n")
             with open(logfile, "r") as logf:
                 return ("SUCCESS" in logf.read())
         except subprocess.TimeoutExpired:
@@ -152,7 +154,7 @@ class SailOSim(Emulator):
         try:
             with open(logfile, "wb") as logf:
                 subprocess.run(cmd, shell=True, stderr=logf,
-                               stdout=logf, timeout=self.timeout)
+                               stdout=logf, timeout=self.timeout, input=b"hello\n")
             with open(logfile, "r") as logf:
                 return ("SUCCESS" in logf.read())
         except subprocess.TimeoutExpired:
@@ -183,7 +185,7 @@ class Spike(Emulator):
         try:
             with open(logfile, "wb") as logf:
                 res = subprocess.run(
-                    cmd, shell=True, stderr=logf, stdout=logf, timeout=self.timeout)
+                    cmd, shell=True, stderr=logf, stdout=logf, timeout=self.timeout, input=b"hello\n")
             return res.returncode == 0
         except subprocess.TimeoutExpired:
             log.debug(f"{cmd} timed out")
@@ -203,9 +205,6 @@ class Qemu(Emulator):
         "-d", "in_asm,int,cpu",
         "-nographic",
     ]
-    env = {
-        "RISCV_SVADU": "true"
-    }
     timeout = 5
 
     def run(self, executable: Path, logfile: Path) -> bool:
@@ -214,7 +213,7 @@ class Qemu(Emulator):
         try:
             with open(logfile, "wb") as logf:
                 res = subprocess.run(
-                    cmd, shell=True, stderr=logf, stdout=logf, timeout=self.timeout)
+                    cmd, shell=True, stderr=logf, stdout=logf, timeout=self.timeout, input=b"hello\n")
             return res.returncode == 0
         except subprocess.TimeoutExpired:
             log.debug(f"{cmd} timed out")
@@ -223,7 +222,7 @@ class Qemu(Emulator):
             return False
 
     def build_vars(self):
-        return self.env
+        return {}
 
 # ------------------------------------------------------------------------------
 # Build & run script
