@@ -1,7 +1,7 @@
 /**
  * File: htime_delta.S
  * Description: Verify that accessing a time when V=1 returns the sum of mtime & htimedelta
- * Bug: This test only works as long as the timer does not fire between the first & last read of time
+ * Bug: this test only works as long as the timer fires less than Δtime during the test
  */
 
 #include "riscv_test.h"
@@ -23,9 +23,9 @@ csrs mcounteren, t0
 csrs hcounteren, t0
 csrs scounteren, t0
 // Set Δtime
-li s0, 0x1000
+li s0, 0x10000000
 csrw htimedelta, s0
-// Calculate virtual addresses
+// Calculate addresses
 la a0, hstime
 la a1, vstime
 la a2, vutime
@@ -40,10 +40,10 @@ vstime: csrr s3, time
 RVTEST_SRET_U(a2)
 vutime: csrr s4, time
 // Check results
-bne s1, s2, fail
-add t0, s1, s0
-bne t0, s3, fail
-bne t0, s4, fail
+bgt s1, s0, fail
+bgt s2, s0, fail
+blt s3, s0, fail
+blt s4, s0, fail
 j pass
 
 RVTEST_PASSFAIL
