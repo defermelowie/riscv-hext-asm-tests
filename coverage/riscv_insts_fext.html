@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>riscv_insts_fext</title></head>
+<body>
+<h1>riscv_insts_fext.sail (19/396) 5%</h1>
+<code style="display: block">
+/*=======================================================================================*/<br>
+/*&nbsp;&nbsp;RISCV&nbsp;Sail&nbsp;Model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;Sail&nbsp;RISC-V&nbsp;architecture&nbsp;model,&nbsp;comprising&nbsp;all&nbsp;files&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;directories&nbsp;except&nbsp;for&nbsp;the&nbsp;snapshots&nbsp;of&nbsp;the&nbsp;Lem&nbsp;and&nbsp;Sail&nbsp;libraries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;in&nbsp;the&nbsp;prover_snapshots&nbsp;directory&nbsp;(which&nbsp;include&nbsp;copies&nbsp;of&nbsp;their&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;licences),&nbsp;is&nbsp;subject&nbsp;to&nbsp;the&nbsp;BSD&nbsp;two-clause&nbsp;licence&nbsp;below.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2017-2023&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Prashanth&nbsp;Mundkur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Rishiyur&nbsp;S.&nbsp;Nikhil&nbsp;and&nbsp;Bluespec,&nbsp;Inc.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jon&nbsp;French&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Brian&nbsp;Campbell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Robert&nbsp;Norton-Wright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alasdair&nbsp;Armstrong&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Thomas&nbsp;Bauereiss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Shaked&nbsp;Flur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Christopher&nbsp;Pulte&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Sewell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alexander&nbsp;Richardson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Hesham&nbsp;Almatary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jessica&nbsp;Clarke&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Microsoft,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Robert&nbsp;Norton-Wright&nbsp;and&nbsp;Nathaniel&nbsp;Wesley&nbsp;Filardo&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Rugg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Aril&nbsp;Computer&nbsp;Corp.,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Scott&nbsp;Johnson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Philipp&nbsp;Tomsich&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;VRULL&nbsp;GmbH,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;its&nbsp;employees&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;All&nbsp;rights&nbsp;reserved.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;the&nbsp;above&nbsp;within&nbsp;the&nbsp;Rigorous&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Engineering&nbsp;of&nbsp;Mainstream&nbsp;Systems&nbsp;(REMS)&nbsp;project,&nbsp;partly&nbsp;funded&nbsp;by&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;EPSRC&nbsp;grant&nbsp;EP/K008528/1,&nbsp;at&nbsp;the&nbsp;Universities&nbsp;of&nbsp;Cambridge&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Edinburgh.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;SRI&nbsp;International&nbsp;and&nbsp;the&nbsp;University&nbsp;of&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Cambridge&nbsp;Computer&nbsp;Laboratory&nbsp;(Department&nbsp;of&nbsp;Computer&nbsp;Science&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Technology)&nbsp;under&nbsp;DARPA/AFRL&nbsp;contract&nbsp;FA8650-18-C-7809&nbsp;(&quot;CIFV&quot;),&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;under&nbsp;DARPA&nbsp;contract&nbsp;HR0011-18-C-0016&nbsp;(&quot;ECATS&quot;)&nbsp;as&nbsp;part&nbsp;of&nbsp;the&nbsp;DARPA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SSITH&nbsp;research&nbsp;programme.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;project&nbsp;has&nbsp;received&nbsp;funding&nbsp;from&nbsp;the&nbsp;European&nbsp;Research&nbsp;Council&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;(ERC)&nbsp;under&nbsp;the&nbsp;European&nbsp;Union’s&nbsp;Horizon&nbsp;2020&nbsp;research&nbsp;and&nbsp;innovation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;programme&nbsp;(grant&nbsp;agreement&nbsp;789108,&nbsp;ELVER).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Redistribution&nbsp;and&nbsp;use&nbsp;in&nbsp;source&nbsp;and&nbsp;binary&nbsp;forms,&nbsp;with&nbsp;or&nbsp;without&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;modification,&nbsp;are&nbsp;permitted&nbsp;provided&nbsp;that&nbsp;the&nbsp;following&nbsp;conditions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;are&nbsp;met:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;1.&nbsp;Redistributions&nbsp;of&nbsp;source&nbsp;code&nbsp;must&nbsp;retain&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;2.&nbsp;Redistributions&nbsp;in&nbsp;binary&nbsp;form&nbsp;must&nbsp;reproduce&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;documentation&nbsp;and/or&nbsp;other&nbsp;materials&nbsp;provided&nbsp;with&nbsp;the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;distribution.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;THIS&nbsp;SOFTWARE&nbsp;IS&nbsp;PROVIDED&nbsp;BY&nbsp;THE&nbsp;AUTHOR&nbsp;AND&nbsp;CONTRIBUTORS&nbsp;``AS&nbsp;IS''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;AND&nbsp;ANY&nbsp;EXPRESS&nbsp;OR&nbsp;IMPLIED&nbsp;WARRANTIES,&nbsp;INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;TO,&nbsp;THE&nbsp;IMPLIED&nbsp;WARRANTIES&nbsp;OF&nbsp;MERCHANTABILITY&nbsp;AND&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;PARTICULAR&nbsp;PURPOSE&nbsp;ARE&nbsp;DISCLAIMED.&nbsp;&nbsp;IN&nbsp;NO&nbsp;EVENT&nbsp;SHALL&nbsp;THE&nbsp;AUTHOR&nbsp;OR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;CONTRIBUTORS&nbsp;BE&nbsp;LIABLE&nbsp;FOR&nbsp;ANY&nbsp;DIRECT,&nbsp;INDIRECT,&nbsp;INCIDENTAL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SPECIAL,&nbsp;EXEMPLARY,&nbsp;OR&nbsp;CONSEQUENTIAL&nbsp;DAMAGES&nbsp;(INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;LIMITED&nbsp;TO,&nbsp;PROCUREMENT&nbsp;OF&nbsp;SUBSTITUTE&nbsp;GOODS&nbsp;OR&nbsp;SERVICES;&nbsp;LOSS&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;USE,&nbsp;DATA,&nbsp;OR&nbsp;PROFITS;&nbsp;OR&nbsp;BUSINESS&nbsp;INTERRUPTION)&nbsp;HOWEVER&nbsp;CAUSED&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;ON&nbsp;ANY&nbsp;THEORY&nbsp;OF&nbsp;LIABILITY,&nbsp;WHETHER&nbsp;IN&nbsp;CONTRACT,&nbsp;STRICT&nbsp;LIABILITY,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OR&nbsp;TORT&nbsp;(INCLUDING&nbsp;NEGLIGENCE&nbsp;OR&nbsp;OTHERWISE)&nbsp;ARISING&nbsp;IN&nbsp;ANY&nbsp;WAY&nbsp;OUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OF&nbsp;THE&nbsp;USE&nbsp;OF&nbsp;THIS&nbsp;SOFTWARE,&nbsp;EVEN&nbsp;IF&nbsp;ADVISED&nbsp;OF&nbsp;THE&nbsp;POSSIBILITY&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SUCH&nbsp;DAMAGE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*=======================================================================================*/<br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;This&nbsp;file&nbsp;specifies&nbsp;the&nbsp;instructions&nbsp;in&nbsp;the&nbsp;F&nbsp;extension&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;(single&nbsp;precision&nbsp;floating&nbsp;point).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+/*&nbsp;RISC-V&nbsp;follows&nbsp;IEEE&nbsp;754-2008&nbsp;floating&nbsp;point&nbsp;arithmetic&nbsp;standard.&nbsp;*/<br>
+<br>
+/*&nbsp;Original&nbsp;version&nbsp;written&nbsp;by&nbsp;Rishiyur&nbsp;S.&nbsp;Nikhil,&nbsp;Sept-Oct&nbsp;2019&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;IMPORTANT!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;The&nbsp;files&nbsp;'riscv_insts_fext.sail',&nbsp;'riscv_insts_dext.sail'&nbsp;and&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;'riscv_insts_zfh.sail'&nbsp;define&nbsp;the&nbsp;F,&nbsp;D&nbsp;and&nbsp;Zfh&nbsp;extensions,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;respectively.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;The&nbsp;texts&nbsp;follow&nbsp;each&nbsp;other&nbsp;very&nbsp;closely;&nbsp;please&nbsp;try&nbsp;to&nbsp;maintain&nbsp;*/<br>
+/*&nbsp;this&nbsp;correspondence&nbsp;as&nbsp;the&nbsp;files&nbsp;are&nbsp;maintained&nbsp;for&nbsp;bug-fixes,&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;improvements,&nbsp;and&nbsp;version&nbsp;updates.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+<br>
+mapping&nbsp;encdec_rounding_mode&nbsp;:&nbsp;rounding_mode&nbsp;&lt;-&gt;&nbsp;bits(3)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">RM_RNE</span>&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b000</span>,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">RM_RTZ</span>&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b001</span>,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">RM_RDN</span>&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b010</span>,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">RM_RUP</span>&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b011</span>,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">RM_RMM</span>&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b100</span>,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">RM_DYN</span>&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b111</span><br>
+}<br>
+<br>
+mapping&nbsp;frm_mnemonic&nbsp;:&nbsp;rounding_mode&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;RM_RNE&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;rne&quot;</span>,<br>
+&nbsp;&nbsp;RM_RTZ&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;rtz&quot;</span>,<br>
+&nbsp;&nbsp;RM_RDN&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;rdn&quot;</span>,<br>
+&nbsp;&nbsp;RM_RUP&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;rup&quot;</span>,<br>
+&nbsp;&nbsp;RM_RMM&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;rmm&quot;</span>,<br>
+&nbsp;&nbsp;RM_DYN&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;dyn&quot;</span><br>
+}<br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;valid_rounding_mode&nbsp;:&nbsp;bits(3)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;valid_rounding_mode&nbsp;rm&nbsp;=&nbsp;(<span style="background-color: hsl(0, 85%, 80%)">rm&nbsp;!=&nbsp;0b101&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 75%)">rm&nbsp;!=&nbsp;0b110</span></span>)<br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;select_instr_or_fcsr_rm&nbsp;:&nbsp;rounding_mode&nbsp;-&gt;&nbsp;option(rounding_mode)<br>
+function&nbsp;select_instr_or_fcsr_rm&nbsp;instr_rm&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;(instr_rm&nbsp;==&nbsp;RM_DYN)<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;fcsr_rm&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;(<span style="background-color: hsl(0, 85%, 65%)">valid_rounding_mode(fcsr_rm)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 60%)">fcsr_rm&nbsp;!=&nbsp;encdec_rounding_mode(RM_DYN)</span></span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">Some(encdec_rounding_mode(fcsr_rm))</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">None()</span></span><br>
+&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 75%)">Some(instr_rm)</span></span><br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;Floating&nbsp;point&nbsp;accrued&nbsp;exception&nbsp;flags&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+function&nbsp;nxFlag()&nbsp;-&gt;&nbsp;bits(5)&nbsp;=&nbsp;0b_00001<br>
+function&nbsp;ufFlag()&nbsp;-&gt;&nbsp;bits(5)&nbsp;=&nbsp;0b_00010<br>
+function&nbsp;ofFlag()&nbsp;-&gt;&nbsp;bits(5)&nbsp;=&nbsp;0b_00100<br>
+function&nbsp;dzFlag()&nbsp;-&gt;&nbsp;bits(5)&nbsp;=&nbsp;0b_01000<br>
+function&nbsp;nvFlag()&nbsp;-&gt;&nbsp;bits(5)&nbsp;=&nbsp;0b_10000<br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;S&nbsp;and&nbsp;D&nbsp;value&nbsp;structure&nbsp;(sign,&nbsp;exponent,&nbsp;mantissa)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+/*&nbsp;TODO:&nbsp;this&nbsp;should&nbsp;be&nbsp;a&nbsp;'mapping'&nbsp;*/<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fsplit_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;(bits(1),&nbsp;bits(8),&nbsp;bits(23))<br>
+function&nbsp;fsplit_S&nbsp;&nbsp;&nbsp;x32&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(x32[31..31],&nbsp;x32[30..23],&nbsp;x32[22..0])</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fmake_S&nbsp;&nbsp;:&nbsp;(bits(1),&nbsp;bits(8),&nbsp;bits(23))&nbsp;-&gt;&nbsp;bits(32)<br>
+function&nbsp;fmake_S&nbsp;(sign,&nbsp;exp,&nbsp;mant)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">sign&nbsp;@&nbsp;exp&nbsp;@&nbsp;mant</span><br>
+<br>
+/*&nbsp;----&nbsp;Structure&nbsp;tests&nbsp;*/<br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f_is_neg_inf_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_neg_inf_S&nbsp;&nbsp;&nbsp;x32&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sign,&nbsp;exp,&nbsp;mant)&nbsp;=&nbsp;fsplit_S&nbsp;(x32);<br>
+&nbsp;&nbsp;(&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(sign&nbsp;==&nbsp;0b1)<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(exp&nbsp;&nbsp;==&nbsp;ones())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 60%)">mant&nbsp;==&nbsp;zeros()</span>)</span></span>)</span><br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f_is_neg_norm_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_neg_norm_S&nbsp;&nbsp;&nbsp;x32&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sign,&nbsp;exp,&nbsp;mant)&nbsp;=&nbsp;fsplit_S&nbsp;(x32);<br>
+&nbsp;&nbsp;(&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(sign&nbsp;==&nbsp;0b1)<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(exp&nbsp;&nbsp;!=&nbsp;zeros())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 60%)">exp&nbsp;&nbsp;!=&nbsp;ones()</span>)</span></span>)</span><br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f_is_neg_subnorm_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_neg_subnorm_S&nbsp;&nbsp;&nbsp;x32&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sign,&nbsp;exp,&nbsp;mant)&nbsp;=&nbsp;fsplit_S&nbsp;(x32);<br>
+&nbsp;&nbsp;(&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(sign&nbsp;==&nbsp;0b1)<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(exp&nbsp;&nbsp;==&nbsp;zeros())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 60%)">mant&nbsp;!=&nbsp;zeros()</span>)</span></span>)</span><br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f_is_neg_zero_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_neg_zero_S&nbsp;&nbsp;&nbsp;x32&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sign,&nbsp;exp,&nbsp;mant)&nbsp;=&nbsp;fsplit_S&nbsp;(x32);<br>
+&nbsp;&nbsp;(&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(sign&nbsp;==&nbsp;ones())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(exp&nbsp;&nbsp;==&nbsp;zeros())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 60%)">mant&nbsp;==&nbsp;zeros()</span>)</span></span>)</span><br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f_is_pos_zero_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_pos_zero_S&nbsp;&nbsp;&nbsp;x32&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sign,&nbsp;exp,&nbsp;mant)&nbsp;=&nbsp;fsplit_S&nbsp;(x32);<br>
+&nbsp;&nbsp;(&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(sign&nbsp;==&nbsp;zeros())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(exp&nbsp;&nbsp;==&nbsp;zeros())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 60%)">mant&nbsp;==&nbsp;zeros()</span>)</span></span>)</span><br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f_is_pos_subnorm_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_pos_subnorm_S&nbsp;&nbsp;&nbsp;x32&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sign,&nbsp;exp,&nbsp;mant)&nbsp;=&nbsp;fsplit_S&nbsp;(x32);<br>
+&nbsp;&nbsp;(&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(sign&nbsp;==&nbsp;zeros())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(exp&nbsp;&nbsp;==&nbsp;zeros())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 60%)">mant&nbsp;!=&nbsp;zeros()</span>)</span></span>)</span><br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f_is_pos_norm_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_pos_norm_S&nbsp;&nbsp;&nbsp;x32&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sign,&nbsp;exp,&nbsp;mant)&nbsp;=&nbsp;fsplit_S&nbsp;(x32);<br>
+&nbsp;&nbsp;(&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(sign&nbsp;==&nbsp;zeros())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(exp&nbsp;&nbsp;!=&nbsp;zeros())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 60%)">exp&nbsp;&nbsp;!=&nbsp;ones()</span>)</span></span>)</span><br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f_is_pos_inf_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_pos_inf_S&nbsp;&nbsp;&nbsp;x32&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sign,&nbsp;exp,&nbsp;mant)&nbsp;=&nbsp;fsplit_S&nbsp;(x32);<br>
+&nbsp;&nbsp;(&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(sign&nbsp;==&nbsp;zeros())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(exp&nbsp;&nbsp;==&nbsp;ones())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 60%)">mant&nbsp;==&nbsp;zeros()</span>)</span></span>)</span><br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f_is_SNaN_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_SNaN_S&nbsp;&nbsp;&nbsp;x32&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sign,&nbsp;exp,&nbsp;mant)&nbsp;=&nbsp;fsplit_S&nbsp;(x32);<br>
+&nbsp;&nbsp;(&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(exp&nbsp;==&nbsp;ones())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(mant&nbsp;[22]&nbsp;==&nbsp;bitzero)<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 60%)">mant&nbsp;!=&nbsp;zeros()</span>)</span></span>)</span><br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f_is_QNaN_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_QNaN_S&nbsp;&nbsp;&nbsp;x32&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sign,&nbsp;exp,&nbsp;mant)&nbsp;=&nbsp;fsplit_S&nbsp;(x32);<br>
+&nbsp;&nbsp;(&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(exp&nbsp;==&nbsp;ones())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 65%)">mant&nbsp;[22]&nbsp;==&nbsp;bitone</span>)</span>)</span><br>
+}</span><br>
+<br>
+/*&nbsp;Either&nbsp;QNaN&nbsp;or&nbsp;SNan&nbsp;*/<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f_is_NaN_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_NaN_S&nbsp;&nbsp;&nbsp;x32&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sign,&nbsp;exp,&nbsp;mant)&nbsp;=&nbsp;fsplit_S&nbsp;(x32);<br>
+&nbsp;&nbsp;(&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(exp&nbsp;==&nbsp;ones())<br>
+&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 65%)">mant&nbsp;!=&nbsp;zeros()</span>)</span>)</span><br>
+}</span><br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;Help&nbsp;functions&nbsp;used&nbsp;in&nbsp;the&nbsp;semantic&nbsp;functions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;negate_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;bits(32)<br>
+function&nbsp;negate_S&nbsp;(x32)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sign,&nbsp;exp,&nbsp;mant)&nbsp;=&nbsp;fsplit_S&nbsp;(x32);<br>
+&nbsp;&nbsp;let&nbsp;new_sign&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;(sign&nbsp;==&nbsp;0b0)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">0b1</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">0b0</span></span>;<br>
+&nbsp;&nbsp;fmake_S&nbsp;(new_sign,&nbsp;exp,&nbsp;mant)</span><br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;feq_quiet_S&nbsp;:&nbsp;(bits(32),&nbsp;bits&nbsp;(32))&nbsp;-&gt;&nbsp;(bool,&nbsp;bits(5))<br>
+function&nbsp;feq_quiet_S&nbsp;&nbsp;&nbsp;(v1,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v2)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;(s1,&nbsp;e1,&nbsp;m1)&nbsp;=&nbsp;fsplit_S&nbsp;(v1);<br>
+&nbsp;&nbsp;let&nbsp;(s2,&nbsp;e2,&nbsp;m2)&nbsp;=&nbsp;fsplit_S&nbsp;(v2);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;v1Is0&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;f_is_neg_zero_S(v1)&nbsp;|&nbsp;f_is_pos_zero_S(v1);<br>
+&nbsp;&nbsp;let&nbsp;v2Is0&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;f_is_neg_zero_S(v2)&nbsp;|&nbsp;f_is_pos_zero_S(v2);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;result&nbsp;=&nbsp;((v1&nbsp;==&nbsp;v2)&nbsp;|&nbsp;(v1Is0&nbsp;&&nbsp;v2Is0));<br>
+<br>
+&nbsp;&nbsp;let&nbsp;fflags&nbsp;=&nbsp;if&nbsp;&nbsp;&nbsp;(f_is_SNaN_S(v1)&nbsp;|&nbsp;f_is_SNaN_S(v2))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;nvFlag()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;zeros();<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;fflags)<br>
+}<br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flt_S&nbsp;:&nbsp;(bits(32),&nbsp;bits&nbsp;(32),&nbsp;bool)&nbsp;-&gt;&nbsp;(bool,&nbsp;bits(5))<br>
+function&nbsp;flt_S&nbsp;&nbsp;&nbsp;(v1,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v2,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_quiet)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;(s1,&nbsp;e1,&nbsp;m1)&nbsp;=&nbsp;fsplit_S&nbsp;(v1);<br>
+&nbsp;&nbsp;let&nbsp;(s2,&nbsp;e2,&nbsp;m2)&nbsp;=&nbsp;fsplit_S&nbsp;(v2);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;result&nbsp;:&nbsp;bool&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s1&nbsp;==&nbsp;0b0)&nbsp;&&nbsp;(s2&nbsp;==&nbsp;0b0)&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;&nbsp;&nbsp;(e1&nbsp;==&nbsp;e2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;unsigned&nbsp;(m1)&nbsp;&lt;&nbsp;unsigned&nbsp;(m2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;unsigned&nbsp;(e1)&nbsp;&lt;&nbsp;unsigned&nbsp;(e2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(s1&nbsp;==&nbsp;0b0)&nbsp;&&nbsp;(s2&nbsp;==&nbsp;0b1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(s1&nbsp;==&nbsp;0b1)&nbsp;&&nbsp;(s2&nbsp;==&nbsp;0b0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;true<br>
+&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;&nbsp;&nbsp;(e1&nbsp;==&nbsp;e2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;unsigned&nbsp;(m1)&nbsp;&gt;&nbsp;unsigned&nbsp;(m2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;unsigned&nbsp;(e1)&nbsp;&gt;&nbsp;unsigned&nbsp;(e2);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;fflags&nbsp;=&nbsp;if&nbsp;is_quiet&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;&nbsp;&nbsp;(f_is_SNaN_S(v1)&nbsp;|&nbsp;f_is_SNaN_S(v2))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;nvFlag()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;zeros()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;&nbsp;&nbsp;(f_is_NaN_S(v1)&nbsp;|&nbsp;f_is_NaN_S(v2))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;nvFlag()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;zeros();<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;fflags)<br>
+}<br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fle_S&nbsp;:&nbsp;(bits(32),&nbsp;bits&nbsp;(32),&nbsp;bool)&nbsp;-&gt;&nbsp;(bool,&nbsp;bits(5))<br>
+function&nbsp;fle_S&nbsp;&nbsp;&nbsp;(v1,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v2,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_quiet)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(s1,&nbsp;e1,&nbsp;m1)&nbsp;=&nbsp;fsplit_S&nbsp;(v1);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;(s2,&nbsp;e2,&nbsp;m2)&nbsp;=&nbsp;fsplit_S&nbsp;(v2);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;v1Is0&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 65%)">f_is_neg_zero_S(v1)&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 60%)">f_is_pos_zero_S(v1)</span></span>;<br>
+&nbsp;&nbsp;let&nbsp;v2Is0&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 65%)">f_is_neg_zero_S(v2)&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 60%)">f_is_pos_zero_S(v2)</span></span>;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;result&nbsp;:&nbsp;bool&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(s1&nbsp;==&nbsp;0b0)&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 55%)">s2&nbsp;==&nbsp;0b0</span>)</span>&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;&nbsp;&nbsp;(e1&nbsp;==&nbsp;e2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">unsigned&nbsp;(m1)&nbsp;&lt;=&nbsp;&nbsp;unsigned&nbsp;(m2)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">unsigned&nbsp;(e1)&nbsp;&nbsp;&lt;&nbsp;&nbsp;unsigned&nbsp;(e2)</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(s1&nbsp;==&nbsp;0b0)&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 50%)">s2&nbsp;==&nbsp;0b1</span>)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;(<span style="background-color: hsl(0, 85%, 55%)">v1Is0&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 50%)">v2Is0</span></span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Equal&nbsp;in&nbsp;this&nbsp;case&nbsp;(+0=-0)&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">if&nbsp;<span style="background-color: hsl(0, 85%, 50%)">(s1&nbsp;==&nbsp;0b1)&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 45%)">s2&nbsp;==&nbsp;0b0</span>)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 50%)">true</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">if&nbsp;&nbsp;&nbsp;(e1&nbsp;==&nbsp;e2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 45%)">unsigned&nbsp;(m1)&nbsp;&gt;=&nbsp;&nbsp;unsigned&nbsp;(m2)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 45%)">unsigned&nbsp;(e1)&nbsp;&nbsp;&gt;&nbsp;&nbsp;unsigned&nbsp;(e2)</span></span></span></span></span>;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;fflags&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;is_quiet&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;&nbsp;&nbsp;(<span style="background-color: hsl(0, 85%, 55%)">f_is_SNaN_S(v1)&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 50%)">f_is_SNaN_S(v2)</span></span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;nvFlag()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;zeros()</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;&nbsp;&nbsp;(<span style="background-color: hsl(0, 85%, 55%)">f_is_NaN_S(v1)&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 50%)">f_is_NaN_S(v2)</span></span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;nvFlag()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;zeros()</span></span>;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;fflags)</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;Helper&nbsp;functions&nbsp;for&nbsp;'encdec()'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+function&nbsp;haveSingleFPU()&nbsp;-&gt;&nbsp;bool&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">haveFExt()&nbsp;|&nbsp;<span style="background-color: hsl(120, 85%, 75%)">haveZfinx()</span></span><br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+/*&nbsp;Floating-point&nbsp;loads&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+/*&nbsp;AST&nbsp;*/<br>
+/*&nbsp;FLH,&nbsp;FLW&nbsp;and&nbsp;FLD;&nbsp;H/W/D&nbsp;is&nbsp;encoded&nbsp;in&nbsp;'word_width'&nbsp;*/<br>
+<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;LOAD_FP&nbsp;:&nbsp;(bits(12),&nbsp;regidx,&nbsp;regidx,&nbsp;word_width)<br>
+<br>
+/*&nbsp;AST&nbsp;&lt;-&gt;&nbsp;Binary&nbsp;encoding&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;LOAD_FP(imm,&nbsp;rs1,&nbsp;rd,&nbsp;HALF)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveZfh()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">imm&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b001&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b000_0111</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveZfh()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;LOAD_FP(imm,&nbsp;rs1,&nbsp;rd,&nbsp;WORD)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveFExt()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">imm&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b010&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b000_0111</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveFExt()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;LOAD_FP(imm,&nbsp;rs1,&nbsp;rd,&nbsp;DOUBLE)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveDExt()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">imm&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b011&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b000_0111</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveDExt()</span><br>
+<br>
+/*&nbsp;Execution&nbsp;semantics&nbsp;================================&nbsp;*/<br>
+<br>
+val&nbsp;process_fload64&nbsp;:&nbsp;(regidx,&nbsp;xlenbits,&nbsp;MemoryOpResult(bits(64)))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_fload64(rd,&nbsp;vaddr,&nbsp;value)&nbsp;=<br>
+&nbsp;&nbsp;if&nbsp;&nbsp;&nbsp;sizeof(flen)&nbsp;==&nbsp;64<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;value&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(result)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;F(rd)&nbsp;=&nbsp;result;&nbsp;RETIRE_SUCCESS&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;else&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;should&nbsp;not&nbsp;get&nbsp;here&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RETIRE_FAIL<br>
+&nbsp;&nbsp;}<br>
+<br>
+val&nbsp;process_fload32&nbsp;:&nbsp;(regidx,&nbsp;xlenbits,&nbsp;MemoryOpResult(bits(32)))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_fload32(rd,&nbsp;vaddr,&nbsp;value)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;value&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MemValue(result)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;F(rd)&nbsp;=&nbsp;nan_box(result);&nbsp;RETIRE_SUCCESS&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+val&nbsp;process_fload16&nbsp;:&nbsp;(regidx,&nbsp;xlenbits,&nbsp;MemoryOpResult(bits(16)))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_fload16(rd,&nbsp;vaddr,&nbsp;value)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;value&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MemValue(result)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;F(rd)&nbsp;=&nbsp;nan_box(result);&nbsp;RETIRE_SUCCESS&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(LOAD_FP(imm,&nbsp;rs1,&nbsp;rd,&nbsp;width))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;offset&nbsp;:&nbsp;xlenbits&nbsp;=&nbsp;sign_extend(imm);<br>
+&nbsp;&nbsp;/*&nbsp;Get&nbsp;the&nbsp;address,&nbsp;X(rs1)&nbsp;+&nbsp;offset.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some&nbsp;extensions&nbsp;perform&nbsp;additional&nbsp;checks&nbsp;on&nbsp;address&nbsp;validity.&nbsp;*/<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;offset,&nbsp;Read(Data),&nbsp;width)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;&nbsp;&nbsp;check_misaligned(vaddr,&nbsp;width)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_Load_Addr_Align());&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;translateAddr(vaddr,&nbsp;Read(Data),&nbsp;width)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(addr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">let&nbsp;(aq,&nbsp;rl,&nbsp;res)&nbsp;=&nbsp;(false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">match&nbsp;(width)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BYTE&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HALF&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">process_fload16(rd,&nbsp;vaddr,&nbsp;mem_read(Read(Data),&nbsp;addr,&nbsp;2,&nbsp;aq,&nbsp;rl,&nbsp;res))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WORD&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">process_fload32(rd,&nbsp;vaddr,&nbsp;mem_read(Read(Data),&nbsp;addr,&nbsp;4,&nbsp;aq,&nbsp;rl,&nbsp;res))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOUBLE&nbsp;if&nbsp;sizeof(flen)&nbsp;&gt;=&nbsp;64&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">process_fload64(rd,&nbsp;vaddr,&nbsp;mem_read(Read(Data),&nbsp;addr,&nbsp;8,&nbsp;aq,&nbsp;rl,&nbsp;res))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">report_invalid_width(__FILE__,&nbsp;__LINE__,&nbsp;width,&nbsp;&quot;floating&nbsp;point&nbsp;load&quot;)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+/*&nbsp;AST&nbsp;-&gt;&nbsp;Assembly&nbsp;notation&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;LOAD_FP(imm,&nbsp;rs1,&nbsp;rd,&nbsp;width)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;fl&quot;&nbsp;^&nbsp;size_mnemonic(width)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_or_reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;hex_bits_12(imm)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;opt_spc()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;opt_spc()&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;opt_spc()&nbsp;^&nbsp;&quot;)&quot;<br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+/*&nbsp;Floating-point&nbsp;stores&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+/*&nbsp;AST&nbsp;*/<br>
+/*&nbsp;FSH,&nbsp;FSW&nbsp;and&nbsp;FSD;&nbsp;H/W/D&nbsp;is&nbsp;encoded&nbsp;in&nbsp;'word_width'&nbsp;*/<br>
+<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;STORE_FP&nbsp;:&nbsp;(bits(12),&nbsp;regidx,&nbsp;regidx,&nbsp;word_width)<br>
+<br>
+/*&nbsp;AST&nbsp;&lt;-&gt;&nbsp;Binary&nbsp;encoding&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;STORE_FP(imm7&nbsp;@&nbsp;imm5,&nbsp;rs2,&nbsp;rs1,&nbsp;HALF)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveZfh()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">imm7&nbsp;:&nbsp;bits(7)&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b001&nbsp;@&nbsp;imm5&nbsp;:&nbsp;bits(5)&nbsp;@&nbsp;0b010_0111</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveZfh()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;STORE_FP(imm7&nbsp;@&nbsp;imm5,&nbsp;rs2,&nbsp;rs1,&nbsp;WORD)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveFExt()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">imm7&nbsp;:&nbsp;bits(7)&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b010&nbsp;@&nbsp;imm5&nbsp;:&nbsp;bits(5)&nbsp;@&nbsp;0b010_0111</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveFExt()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;STORE_FP(imm7&nbsp;@&nbsp;imm5,&nbsp;rs2,&nbsp;rs1,&nbsp;DOUBLE)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveDExt()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">imm7&nbsp;:&nbsp;bits(7)&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b011&nbsp;@&nbsp;imm5&nbsp;:&nbsp;bits(5)&nbsp;@&nbsp;0b010_0111</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveDExt()</span><br>
+<br>
+/*&nbsp;Execution&nbsp;semantics&nbsp;================================&nbsp;*/<br>
+<br>
+val&nbsp;process_fstore&nbsp;:&nbsp;(xlenbits,&nbsp;MemoryOpResult(bool))&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_fstore(vaddr,&nbsp;value)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;value&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MemValue(true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;RETIRE_SUCCESS&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MemValue(false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;store&nbsp;got&nbsp;false&nbsp;from&nbsp;mem_write_value&quot;)&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(STORE_FP(imm,&nbsp;rs2,&nbsp;rs1,&nbsp;width))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;offset&nbsp;:&nbsp;xlenbits&nbsp;=&nbsp;sign_extend(imm);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(aq,&nbsp;rl,&nbsp;con)&nbsp;=&nbsp;(false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;/*&nbsp;Get&nbsp;the&nbsp;address,&nbsp;X(rs1)&nbsp;+&nbsp;offset.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some&nbsp;extensions&nbsp;perform&nbsp;additional&nbsp;checks&nbsp;on&nbsp;address&nbsp;validity.&nbsp;*/<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;offset,&nbsp;Write(Data),&nbsp;width)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;&nbsp;&nbsp;check_misaligned(vaddr,&nbsp;width)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_SAMO_Addr_Align());&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">match&nbsp;translateAddr(vaddr,&nbsp;Write(Data),&nbsp;width)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(addr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;eares&nbsp;:&nbsp;MemoryOpResult(unit)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 50%)">match&nbsp;width&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BYTE&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">MemValue&nbsp;()</span>&nbsp;/*&nbsp;bogus&nbsp;placeholder&nbsp;for&nbsp;illegal&nbsp;size&nbsp;*/,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HALF&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">mem_write_ea(addr,&nbsp;2,&nbsp;aq,&nbsp;rl,&nbsp;false)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WORD&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">mem_write_ea(addr,&nbsp;4,&nbsp;aq,&nbsp;rl,&nbsp;false)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOUBLE&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">mem_write_ea(addr,&nbsp;8,&nbsp;aq,&nbsp;rl,&nbsp;false)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">match&nbsp;(eares)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rs2_val&nbsp;=&nbsp;F(rs2);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">match&nbsp;(width)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BYTE&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HALF&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">process_fstore&nbsp;(vaddr,&nbsp;mem_write_value(addr,&nbsp;2,&nbsp;rs2_val[15..0],&nbsp;aq,&nbsp;rl,&nbsp;con))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WORD&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">process_fstore&nbsp;(vaddr,&nbsp;mem_write_value(addr,&nbsp;4,&nbsp;rs2_val[31..0],&nbsp;aq,&nbsp;rl,&nbsp;con))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOUBLE&nbsp;if&nbsp;sizeof(flen)&nbsp;&gt;=&nbsp;64&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">process_fstore&nbsp;(vaddr,&nbsp;mem_write_value(addr,&nbsp;8,&nbsp;rs2_val,&nbsp;aq,&nbsp;rl,&nbsp;con))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">report_invalid_width(__FILE__,&nbsp;__LINE__,&nbsp;width,&nbsp;&quot;floating&nbsp;point&nbsp;store&quot;)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;}</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;AST&nbsp;-&gt;&nbsp;Assembly&nbsp;notation&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;STORE_FP(imm,&nbsp;rs2,&nbsp;rs1,&nbsp;width)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;fs&quot;&nbsp;^&nbsp;size_mnemonic(width)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_name(rs2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;hex_bits_12(imm)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;opt_spc()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;opt_spc()&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;opt_spc()&nbsp;^&nbsp;&quot;)&quot;<br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+/*&nbsp;Fused&nbsp;multiply-add&nbsp;*/<br>
+<br>
+/*&nbsp;AST&nbsp;*/<br>
+<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;F_MADD_TYPE_S&nbsp;:&nbsp;(regidx,&nbsp;regidx,&nbsp;regidx,&nbsp;rounding_mode,&nbsp;regidx,&nbsp;f_madd_op_S)<br>
+<br>
+/*&nbsp;AST&nbsp;&lt;-&gt;&nbsp;Binary&nbsp;encoding&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_MADD_TYPE_S(rs3,&nbsp;rs2,&nbsp;rs1,&nbsp;rm,&nbsp;rd,&nbsp;FMADD_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">rs3&nbsp;@&nbsp;0b00&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b100_0011</span>&nbsp;&nbsp;if&nbsp;haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_MADD_TYPE_S(rs3,&nbsp;rs2,&nbsp;rs1,&nbsp;rm,&nbsp;rd,&nbsp;FMSUB_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">rs3&nbsp;@&nbsp;0b00&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b100_0111</span>&nbsp;&nbsp;if&nbsp;haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_MADD_TYPE_S(rs3,&nbsp;rs2,&nbsp;rs1,&nbsp;rm,&nbsp;rd,&nbsp;FNMSUB_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">rs3&nbsp;@&nbsp;0b00&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b100_1011</span>&nbsp;&nbsp;if&nbsp;haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_MADD_TYPE_S(rs3,&nbsp;rs2,&nbsp;rs1,&nbsp;rm,&nbsp;rd,&nbsp;FNMADD_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">rs3&nbsp;@&nbsp;0b00&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b100_1111</span>&nbsp;&nbsp;if&nbsp;haveSingleFPU()</span><br>
+<br>
+/*&nbsp;Execution&nbsp;semantics&nbsp;================================&nbsp;*/<br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_MADD_TYPE_S(rs3,&nbsp;rs2,&nbsp;rs1,&nbsp;rm,&nbsp;rd,&nbsp;op))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_32b&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;let&nbsp;rs2_val_32b&nbsp;=&nbsp;F_or_X_S(rs2);<br>
+&nbsp;&nbsp;let&nbsp;rs3_val_32b&nbsp;=&nbsp;F_or_X_S(rs3);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;(select_instr_or_fcsr_rm&nbsp;(rm))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(rm')&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;=&nbsp;encdec_rounding_mode(rm');<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;(fflags,&nbsp;rd_val_32b)&nbsp;:&nbsp;(bits(5),&nbsp;bits(32))&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">match&nbsp;op&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FMADD_S&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">riscv_f32MulAdd&nbsp;(rm_3b,&nbsp;rs1_val_32b,&nbsp;rs2_val_32b,&nbsp;rs3_val_32b)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FMSUB_S&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">riscv_f32MulAdd&nbsp;(rm_3b,&nbsp;rs1_val_32b,&nbsp;rs2_val_32b,&nbsp;negate_S&nbsp;(rs3_val_32b))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FNMSUB_S&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">riscv_f32MulAdd&nbsp;(rm_3b,&nbsp;negate_S&nbsp;(rs1_val_32b),&nbsp;rs2_val_32b,&nbsp;rs3_val_32b)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FNMADD_S&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">riscv_f32MulAdd&nbsp;(rm_3b,&nbsp;negate_S&nbsp;(rs1_val_32b),&nbsp;rs2_val_32b,&nbsp;negate_S&nbsp;(rs3_val_32b))</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F_or_X_S(rd)&nbsp;=&nbsp;rd_val_32b;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+/*&nbsp;AST&nbsp;-&gt;&nbsp;Assembly&nbsp;notation&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;f_madd_type_mnemonic_S&nbsp;:&nbsp;f_madd_op_S&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FMADD_S&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fmadd.s&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FMSUB_S&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fmsub.s&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FNMSUB_S&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fnmsub.s&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FNMADD_S&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fnmadd.s&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_MADD_TYPE_S(rs3,&nbsp;rs2,&nbsp;rs1,&nbsp;rm,&nbsp;rd,&nbsp;op)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_madd_type_mnemonic_S(op)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_or_reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs3)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;frm_mnemonic(rm)<br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+/*&nbsp;Binary&nbsp;ops&nbsp;with&nbsp;rounding&nbsp;mode&nbsp;*/<br>
+<br>
+/*&nbsp;AST&nbsp;*/<br>
+<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;F_BIN_RM_TYPE_S&nbsp;:&nbsp;(regidx,&nbsp;regidx,&nbsp;rounding_mode,&nbsp;regidx,&nbsp;f_bin_rm_op_S)<br>
+<br>
+/*&nbsp;AST&nbsp;&lt;-&gt;&nbsp;Binary&nbsp;encoding&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_BIN_RM_TYPE_S(rs2,&nbsp;rs1,&nbsp;rm,&nbsp;rd,&nbsp;FADD_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b000_0000&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_BIN_RM_TYPE_S(rs2,&nbsp;rs1,&nbsp;rm,&nbsp;rd,&nbsp;FSUB_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b000_0100&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_BIN_RM_TYPE_S(rs2,&nbsp;rs1,&nbsp;rm,&nbsp;rd,&nbsp;FMUL_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b000_1000&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_BIN_RM_TYPE_S(rs2,&nbsp;rs1,&nbsp;rm,&nbsp;rd,&nbsp;FDIV_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b000_1100&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;haveSingleFPU()</span><br>
+<br>
+/*&nbsp;Execution&nbsp;semantics&nbsp;================================&nbsp;*/<br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_BIN_RM_TYPE_S(rs2,&nbsp;rs1,&nbsp;rm,&nbsp;rd,&nbsp;op))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_32b&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;let&nbsp;rs2_val_32b&nbsp;=&nbsp;F_or_X_S(rs2);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;(select_instr_or_fcsr_rm&nbsp;(rm))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(rm')&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;=&nbsp;encdec_rounding_mode(rm');<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;(fflags,&nbsp;rd_val_32b)&nbsp;:&nbsp;(bits(5),&nbsp;bits(32))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 60%)">match&nbsp;op&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FADD_S&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">riscv_f32Add&nbsp;(rm_3b,&nbsp;rs1_val_32b,&nbsp;rs2_val_32b)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FSUB_S&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">riscv_f32Sub&nbsp;(rm_3b,&nbsp;rs1_val_32b,&nbsp;rs2_val_32b)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FMUL_S&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">riscv_f32Mul&nbsp;(rm_3b,&nbsp;rs1_val_32b,&nbsp;rs2_val_32b)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FDIV_S&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">riscv_f32Div&nbsp;(rm_3b,&nbsp;rs1_val_32b,&nbsp;rs2_val_32b)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F_or_X_S(rd)&nbsp;=&nbsp;rd_val_32b;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+/*&nbsp;AST&nbsp;-&gt;&nbsp;Assembly&nbsp;notation&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;f_bin_rm_type_mnemonic_S&nbsp;:&nbsp;f_bin_rm_op_S&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FADD_S&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fadd.s&quot;</span>,<br>
+&nbsp;&nbsp;FSUB_S&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fsub.s&quot;</span>,<br>
+&nbsp;&nbsp;FMUL_S&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fmul.s&quot;</span>,<br>
+&nbsp;&nbsp;FDIV_S&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fdiv.s&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_BIN_RM_TYPE_S(rs2,&nbsp;rs1,&nbsp;rm,&nbsp;rd,&nbsp;op)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_bin_rm_type_mnemonic_S(op)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_or_reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;frm_mnemonic(rm)<br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+/*&nbsp;Unary&nbsp;with&nbsp;rounding&nbsp;mode&nbsp;*/<br>
+<br>
+/*&nbsp;AST&nbsp;*/<br>
+<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;F_UN_RM_TYPE_S&nbsp;:&nbsp;(regidx,&nbsp;rounding_mode,&nbsp;regidx,&nbsp;f_un_rm_op_S)<br>
+<br>
+/*&nbsp;AST&nbsp;&lt;-&gt;&nbsp;Binary&nbsp;encoding&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FSQRT_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b010_1100&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_W_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b110_0000&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_WU_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b110_0000&nbsp;@&nbsp;0b00001&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_S_W)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b110_1000&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_S_WU)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b110_1000&nbsp;@&nbsp;0b00001&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;haveSingleFPU()</span><br>
+<br>
+/*&nbsp;F&nbsp;instructions,&nbsp;RV64&nbsp;only&nbsp;*/<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_L_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()&nbsp;&&nbsp;sizeof(xlen)&nbsp;&gt;=&nbsp;64<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b110_0000&nbsp;@&nbsp;0b00010&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 75%)">haveSingleFPU()&nbsp;&&nbsp;sizeof(xlen)&nbsp;&gt;=&nbsp;64</span></span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_LU_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()&nbsp;&&nbsp;sizeof(xlen)&nbsp;&gt;=&nbsp;64<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b110_0000&nbsp;@&nbsp;0b00011&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 75%)">haveSingleFPU()&nbsp;&&nbsp;sizeof(xlen)&nbsp;&gt;=&nbsp;64</span></span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_S_L)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()&nbsp;&&nbsp;sizeof(xlen)&nbsp;&gt;=&nbsp;64<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b110_1000&nbsp;@&nbsp;0b00010&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 75%)">haveSingleFPU()&nbsp;&&nbsp;sizeof(xlen)&nbsp;&gt;=&nbsp;64</span></span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_S_LU)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()&nbsp;&&nbsp;sizeof(xlen)&nbsp;&gt;=&nbsp;64<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b110_1000&nbsp;@&nbsp;0b00011&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_rounding_mode&nbsp;(rm)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 75%)">haveSingleFPU()&nbsp;&&nbsp;sizeof(xlen)&nbsp;&gt;=&nbsp;64</span></span><br>
+<br>
+/*&nbsp;Execution&nbsp;semantics&nbsp;================================&nbsp;*/<br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FSQRT_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;(select_instr_or_fcsr_rm&nbsp;(rm))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(rm')&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;=&nbsp;encdec_rounding_mode(rm');<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;(fflags,&nbsp;rd_val_S)&nbsp;=&nbsp;riscv_f32Sqrt&nbsp;&nbsp;&nbsp;(rm_3b,&nbsp;rs1_val_S);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F_or_X_S(rd)&nbsp;=&nbsp;rd_val_S;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_W_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;(select_instr_or_fcsr_rm&nbsp;(rm))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(rm')&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;=&nbsp;encdec_rounding_mode(rm');<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;(fflags,&nbsp;rd_val_W)&nbsp;=&nbsp;riscv_f32ToI32&nbsp;(rm_3b,&nbsp;rs1_val_S);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X(rd)&nbsp;=&nbsp;sign_extend&nbsp;(rd_val_W);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_WU_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;(select_instr_or_fcsr_rm&nbsp;(rm))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(rm')&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;=&nbsp;encdec_rounding_mode(rm');<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;(fflags,&nbsp;rd_val_WU)&nbsp;=&nbsp;riscv_f32ToUi32&nbsp;(rm_3b,&nbsp;rs1_val_S);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X(rd)&nbsp;=&nbsp;sign_extend&nbsp;(rd_val_WU);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_S_W))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_W&nbsp;=&nbsp;X(rs1)&nbsp;[31..0];<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;(select_instr_or_fcsr_rm&nbsp;(rm))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(rm')&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;=&nbsp;encdec_rounding_mode(rm');<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;(fflags,&nbsp;rd_val_S)&nbsp;=&nbsp;riscv_i32ToF32&nbsp;(rm_3b,&nbsp;rs1_val_W);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F_or_X_S(rd)&nbsp;=&nbsp;rd_val_S;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_S_WU))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_WU&nbsp;=&nbsp;X(rs1)&nbsp;[31..0];<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;(select_instr_or_fcsr_rm&nbsp;(rm))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(rm')&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;=&nbsp;encdec_rounding_mode(rm');<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;(fflags,&nbsp;rd_val_S)&nbsp;=&nbsp;riscv_ui32ToF32&nbsp;(rm_3b,&nbsp;rs1_val_WU);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F_or_X_S(rd)&nbsp;=&nbsp;rd_val_S;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_L_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(xlen)&nbsp;&gt;=&nbsp;64);<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;(select_instr_or_fcsr_rm&nbsp;(rm))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(rm')&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;=&nbsp;encdec_rounding_mode(rm');<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;(fflags,&nbsp;rd_val_L)&nbsp;=&nbsp;riscv_f32ToI64&nbsp;(rm_3b,&nbsp;rs1_val_S);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X(rd)&nbsp;=&nbsp;sign_extend(rd_val_L);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_LU_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(xlen)&nbsp;&gt;=&nbsp;64);<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;(select_instr_or_fcsr_rm&nbsp;(rm))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(rm')&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;=&nbsp;encdec_rounding_mode(rm');<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;(fflags,&nbsp;rd_val_LU)&nbsp;=&nbsp;riscv_f32ToUi64&nbsp;(rm_3b,&nbsp;rs1_val_S);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X(rd)&nbsp;=&nbsp;sign_extend(rd_val_LU);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_S_L))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(xlen)&nbsp;&gt;=&nbsp;64);<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_L&nbsp;=&nbsp;X(rs1)[63..0];<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;(select_instr_or_fcsr_rm&nbsp;(rm))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(rm')&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;=&nbsp;encdec_rounding_mode(rm');<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;(fflags,&nbsp;rd_val_S)&nbsp;=&nbsp;riscv_i64ToF32&nbsp;(rm_3b,&nbsp;rs1_val_L);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F_or_X_S(rd)&nbsp;=&nbsp;rd_val_S;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_S_LU))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(xlen)&nbsp;&gt;=&nbsp;64);<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_LU&nbsp;=&nbsp;X(rs1)[63..0];<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;(select_instr_or_fcsr_rm&nbsp;(rm))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(rm')&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;=&nbsp;encdec_rounding_mode(rm');<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;(fflags,&nbsp;rd_val_S)&nbsp;=&nbsp;riscv_ui64ToF32&nbsp;(rm_3b,&nbsp;rs1_val_LU);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F_or_X_S(rd)&nbsp;=&nbsp;rd_val_S;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+/*&nbsp;AST&nbsp;-&gt;&nbsp;Assembly&nbsp;notation&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;f_un_rm_type_mnemonic_S&nbsp;:&nbsp;f_un_rm_op_S&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FSQRT_S&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;fsqrt.s&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FCVT_W_S&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;fcvt.w.s&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FCVT_WU_S&nbsp;&lt;-&gt;&nbsp;&quot;fcvt.wu.s&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FCVT_S_W&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;fcvt.s.w&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FCVT_S_WU&nbsp;&lt;-&gt;&nbsp;&quot;fcvt.s.wu&quot;,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FCVT_L_S&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;fcvt.l.s&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FCVT_LU_S&nbsp;&lt;-&gt;&nbsp;&quot;fcvt.lu.s&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FCVT_S_L&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;fcvt.s.l&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FCVT_S_LU&nbsp;&lt;-&gt;&nbsp;&quot;fcvt.s.lu&quot;<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FSQRT_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_un_rm_type_mnemonic_S(FSQRT_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_or_reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;frm_mnemonic(rm)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_W_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_un_rm_type_mnemonic_S(FCVT_W_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;frm_mnemonic(rm)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_WU_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_un_rm_type_mnemonic_S(FCVT_WU_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;frm_mnemonic(rm)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_S_W)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_un_rm_type_mnemonic_S(FCVT_S_W)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_or_reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;frm_mnemonic(rm)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_S_WU)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_un_rm_type_mnemonic_S(FCVT_S_WU)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_or_reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;frm_mnemonic(rm)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_L_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_un_rm_type_mnemonic_S(FCVT_L_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;frm_mnemonic(rm)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_LU_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_un_rm_type_mnemonic_S(FCVT_LU_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;frm_mnemonic(rm)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_S_L)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_un_rm_type_mnemonic_S(FCVT_S_L)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_or_reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;frm_mnemonic(rm)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_UN_RM_TYPE_S(rs1,&nbsp;rm,&nbsp;rd,&nbsp;FCVT_S_LU)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_un_rm_type_mnemonic_S(FCVT_S_LU)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_or_reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;frm_mnemonic(rm)<br>
+<br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+/*&nbsp;Binary,&nbsp;no&nbsp;rounding&nbsp;mode&nbsp;*/<br>
+<br>
+/*&nbsp;AST&nbsp;*/<br>
+<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;F_BIN_TYPE_S&nbsp;:&nbsp;(regidx,&nbsp;regidx,&nbsp;regidx,&nbsp;f_bin_op_S)<br>
+<br>
+/*&nbsp;AST&nbsp;&lt;-&gt;&nbsp;Binary&nbsp;encoding&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FSGNJ_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b001_0000&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b000&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FSGNJN_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b001_0000&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b001&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FSGNJX_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b001_0000&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b010&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FMIN_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b001_0100&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b000&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FMAX_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b001_0100&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b001&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FEQ_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b101_0000&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b010&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FLT_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b101_0000&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b001&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FLE_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b101_0000&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b000&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveSingleFPU()</span><br>
+<br>
+/*&nbsp;Execution&nbsp;semantics&nbsp;================================&nbsp;*/<br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FSGNJ_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;let&nbsp;rs2_val_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F_or_X_S(rs2);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(s1,&nbsp;e1,&nbsp;m1)&nbsp;=&nbsp;fsplit_S&nbsp;(rs1_val_S);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;(s2,&nbsp;e2,&nbsp;m2)&nbsp;=&nbsp;fsplit_S&nbsp;(rs2_val_S);<br>
+&nbsp;&nbsp;let&nbsp;rd_val_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fmake_S&nbsp;(s2,&nbsp;e1,&nbsp;m1);<br>
+<br>
+&nbsp;&nbsp;F_or_X_S(rd)&nbsp;=&nbsp;rd_val_S;<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span></span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FSGNJN_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;let&nbsp;rs2_val_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F_or_X_S(rs2);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(s1,&nbsp;e1,&nbsp;m1)&nbsp;=&nbsp;fsplit_S&nbsp;(rs1_val_S);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;(s2,&nbsp;e2,&nbsp;m2)&nbsp;=&nbsp;fsplit_S&nbsp;(rs2_val_S);<br>
+&nbsp;&nbsp;let&nbsp;rd_val_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fmake_S&nbsp;(0b1&nbsp;^&nbsp;s2,&nbsp;e1,&nbsp;m1);<br>
+<br>
+&nbsp;&nbsp;F_or_X_S(rd)&nbsp;=&nbsp;rd_val_S;<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span></span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FSGNJX_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;let&nbsp;rs2_val_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F_or_X_S(rs2);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(s1,&nbsp;e1,&nbsp;m1)&nbsp;=&nbsp;fsplit_S&nbsp;(rs1_val_S);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;(s2,&nbsp;e2,&nbsp;m2)&nbsp;=&nbsp;fsplit_S&nbsp;(rs2_val_S);<br>
+&nbsp;&nbsp;let&nbsp;rd_val_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fmake_S&nbsp;(s1&nbsp;^&nbsp;s2,&nbsp;e1,&nbsp;m1);<br>
+<br>
+&nbsp;&nbsp;F_or_X_S(rd)&nbsp;=&nbsp;rd_val_S;<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span></span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FMIN_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;let&nbsp;rs2_val_S&nbsp;=&nbsp;F_or_X_S(rs2);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;is_quiet&nbsp;&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(rs1_lt_rs2,&nbsp;fflags)&nbsp;=&nbsp;fle_S&nbsp;(rs1_val_S,&nbsp;rs2_val_S,&nbsp;is_quiet);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;rd_val_S&nbsp;&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span style="background-color: hsl(0, 85%, 65%)">f_is_NaN_S(rs1_val_S)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 60%)">f_is_NaN_S(rs2_val_S)</span></span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;canonical_NaN_S()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;f_is_NaN_S(rs1_val_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">rs2_val_S</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;f_is_NaN_S(rs2_val_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">rs1_val_S</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">if&nbsp;(<span style="background-color: hsl(0, 85%, 50%)">f_is_neg_zero_S(rs1_val_S)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 45%)">f_is_pos_zero_S(rs2_val_S)</span></span>)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 50%)">rs1_val_S</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 50%)">if&nbsp;(<span style="background-color: hsl(0, 85%, 45%)">f_is_neg_zero_S(rs2_val_S)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 40%)">f_is_pos_zero_S(rs1_val_S)</span></span>)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 45%)">rs2_val_S</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 45%)">if&nbsp;rs1_lt_rs2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 40%)">rs1_val_S</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;/*&nbsp;(not&nbsp;rs1_lt_rs2)&nbsp;*/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">rs2_val_S</span></span></span></span></span></span></span>;<br>
+<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;F_or_X_S(rd)&nbsp;=&nbsp;rd_val_S;<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FMAX_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;let&nbsp;rs2_val_S&nbsp;=&nbsp;F_or_X_S(rs2);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;is_quiet&nbsp;&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(rs2_lt_rs1,&nbsp;fflags)&nbsp;=&nbsp;fle_S&nbsp;(rs2_val_S,&nbsp;rs1_val_S,&nbsp;is_quiet);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;rd_val_S&nbsp;&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span style="background-color: hsl(0, 85%, 65%)">f_is_NaN_S(rs1_val_S)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 60%)">f_is_NaN_S(rs2_val_S)</span></span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;canonical_NaN_S()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;f_is_NaN_S(rs1_val_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">rs2_val_S</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;f_is_NaN_S(rs2_val_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">rs1_val_S</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">if&nbsp;(<span style="background-color: hsl(0, 85%, 50%)">f_is_neg_zero_S(rs1_val_S)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 45%)">f_is_pos_zero_S(rs2_val_S)</span></span>)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 50%)">rs2_val_S</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 50%)">if&nbsp;(<span style="background-color: hsl(0, 85%, 45%)">f_is_neg_zero_S(rs2_val_S)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 40%)">f_is_pos_zero_S(rs1_val_S)</span></span>)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 45%)">rs1_val_S</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 45%)">if&nbsp;rs2_lt_rs1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 40%)">rs1_val_S</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;/*&nbsp;(not&nbsp;rs2_lt_rs1)&nbsp;*/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">rs2_val_S</span></span></span></span></span></span></span>;<br>
+<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;F_or_X_S(rd)&nbsp;=&nbsp;rd_val_S;<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FEQ_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;let&nbsp;rs2_val_S&nbsp;=&nbsp;F_or_X_S(rs2);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;rd_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bool)&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32Eq&nbsp;(rs1_val_S,&nbsp;rs2_val_S);<br>
+<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;X(rd)&nbsp;=&nbsp;zero_extend(bool_to_bits(rd_val));<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FLT_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;let&nbsp;rs2_val_S&nbsp;=&nbsp;F_or_X_S(rs2);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;rd_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bool)&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32Lt&nbsp;(rs1_val_S,&nbsp;rs2_val_S);<br>
+<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;X(rd)&nbsp;=&nbsp;zero_extend(bool_to_bits(rd_val));<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FLE_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+&nbsp;&nbsp;let&nbsp;rs2_val_S&nbsp;=&nbsp;F_or_X_S(rs2);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;rd_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bool)&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32Le&nbsp;(rs1_val_S,&nbsp;rs2_val_S);<br>
+<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;X(rd)&nbsp;=&nbsp;zero_extend(bool_to_bits(rd_val));<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+}</span><br>
+<br>
+/*&nbsp;AST&nbsp;-&gt;&nbsp;Assembly&nbsp;notation&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;f_bin_type_mnemonic_S&nbsp;:&nbsp;f_bin_op_S&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FSGNJ_S&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;fsgnj.s&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FSGNJN_S&nbsp;&lt;-&gt;&nbsp;&quot;fsgnjn.s&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FSGNJX_S&nbsp;&lt;-&gt;&nbsp;&quot;fsgnjx.s&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FMIN_S&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;fmin.s&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FMAX_S&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;fmax.s&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FEQ_S&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;feq.s&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FLT_S&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;flt.s&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FLE_S&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;fle.s&quot;<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FSGNJ_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_bin_type_mnemonic_S(FSGNJ_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_or_reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs2)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FSGNJN_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_bin_type_mnemonic_S(FSGNJN_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_or_reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs2)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FSGNJX_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_bin_type_mnemonic_S(FSGNJX_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_or_reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs2)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FMIN_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_bin_type_mnemonic_S(FMIN_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_or_reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs2)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FMAX_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_bin_type_mnemonic_S(FMAX_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_or_reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs2)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FEQ_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_bin_type_mnemonic_S(FEQ_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs2)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FLT_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_bin_type_mnemonic_S(FLT_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs2)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_BIN_TYPE_S(rs2,&nbsp;rs1,&nbsp;rd,&nbsp;FLE_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_bin_type_mnemonic_S(FLE_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs2)<br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+/*&nbsp;Unary,&nbsp;no&nbsp;rounding&nbsp;mode&nbsp;*/<br>
+<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;F_UN_TYPE_S&nbsp;:&nbsp;(regidx,&nbsp;regidx,&nbsp;f_un_op_S)<br>
+<br>
+/*&nbsp;AST&nbsp;&lt;-&gt;&nbsp;Binary&nbsp;encoding&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;F_UN_TYPE_S(rs1,&nbsp;rd,&nbsp;FCLASS_S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveSingleFPU()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b111_0000&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b001&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveSingleFPU()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;F_UN_TYPE_S(rs1,&nbsp;rd,&nbsp;FMV_X_W)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveFExt()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b111_0000&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b000&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveFExt()</span><br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;F_UN_TYPE_S(rs1,&nbsp;rd,&nbsp;FMV_W_X)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;haveFExt()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b111_1000&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b000&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b101_0011</span>&nbsp;&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveFExt()</span><br>
+<br>
+/*&nbsp;Execution&nbsp;semantics&nbsp;================================&nbsp;*/<br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_UN_TYPE_S(rs1,&nbsp;rd,&nbsp;FCLASS_S))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;=&nbsp;F_or_X_S(rs1);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;rd_val_10b&nbsp;:&nbsp;bits&nbsp;(10)&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f_is_neg_inf_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(rs1_val_S)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">0b_00_0000_0001</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;f_is_neg_norm_S&nbsp;&nbsp;&nbsp;&nbsp;(rs1_val_S)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">0b_00_0000_0010</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;f_is_neg_subnorm_S&nbsp;(rs1_val_S)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">0b_00_0000_0100</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;f_is_neg_zero_S&nbsp;&nbsp;&nbsp;&nbsp;(rs1_val_S)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">0b_00_0000_1000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">if&nbsp;f_is_pos_zero_S&nbsp;&nbsp;&nbsp;&nbsp;(rs1_val_S)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 50%)">0b_00_0001_0000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 50%)">if&nbsp;f_is_pos_subnorm_S&nbsp;(rs1_val_S)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 45%)">0b_00_0010_0000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 45%)">if&nbsp;f_is_pos_norm_S&nbsp;&nbsp;&nbsp;&nbsp;(rs1_val_S)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 40%)">0b_00_0100_0000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 40%)">if&nbsp;f_is_pos_inf_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(rs1_val_S)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 35%)">0b_00_1000_0000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 35%)">if&nbsp;f_is_SNaN_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(rs1_val_S)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 30%)">0b_01_0000_0000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 30%)">if&nbsp;f_is_QNaN_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(rs1_val_S)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 30%)">0b_10_0000_0000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;zeros()</span></span></span></span></span></span></span></span></span></span>;<br>
+<br>
+&nbsp;&nbsp;X(rd)&nbsp;=&nbsp;zero_extend&nbsp;(rd_val_10b);<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_UN_TYPE_S(rs1,&nbsp;rd,&nbsp;FMV_X_W))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F(rs1)[31..0];<br>
+&nbsp;&nbsp;let&nbsp;rd_val_X&nbsp;&nbsp;:&nbsp;xlenbits&nbsp;=&nbsp;sign_extend(rs1_val_S);<br>
+&nbsp;&nbsp;X(rd)&nbsp;=&nbsp;rd_val_X;<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;(F_UN_TYPE_S(rs1,&nbsp;rd,&nbsp;FMV_W_X))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs1_val_X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;X(rs1);<br>
+&nbsp;&nbsp;let&nbsp;rd_val_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;rs1_val_X&nbsp;[31..0];<br>
+&nbsp;&nbsp;F(rd)&nbsp;=&nbsp;nan_box&nbsp;(rd_val_S);<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}</span><br>
+<br>
+/*&nbsp;AST&nbsp;-&gt;&nbsp;Assembly&nbsp;notation&nbsp;================================&nbsp;*/<br>
+<br>
+mapping&nbsp;f_un_type_mnemonic_S&nbsp;:&nbsp;f_un_op_S&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FMV_X_W&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;fmv.x.w&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FCLASS_S&nbsp;&lt;-&gt;&nbsp;&quot;fclass.s&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FMV_W_X&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;fmv.w.x&quot;<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_UN_TYPE_S(rs1,&nbsp;rd,&nbsp;FMV_X_W)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_un_type_mnemonic_S(FMV_X_W)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_name(rs1)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_UN_TYPE_S(rs1,&nbsp;rd,&nbsp;FMV_W_X)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_un_type_mnemonic_S(FMV_W_X)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs1)<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;F_UN_TYPE_S(rs1,&nbsp;rd,&nbsp;FCLASS_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;f_un_type_mnemonic_S(FCLASS_S)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rd)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_or_reg_name(rs1)<br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+</code>
+</body>
+</html>

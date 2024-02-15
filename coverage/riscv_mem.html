@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>riscv_mem</title></head>
+<body>
+<h1>riscv_mem.sail (52/132) 39%</h1>
+<code style="display: block">
+/*=======================================================================================*/<br>
+/*&nbsp;&nbsp;RISCV&nbsp;Sail&nbsp;Model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;Sail&nbsp;RISC-V&nbsp;architecture&nbsp;model,&nbsp;comprising&nbsp;all&nbsp;files&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;directories&nbsp;except&nbsp;for&nbsp;the&nbsp;snapshots&nbsp;of&nbsp;the&nbsp;Lem&nbsp;and&nbsp;Sail&nbsp;libraries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;in&nbsp;the&nbsp;prover_snapshots&nbsp;directory&nbsp;(which&nbsp;include&nbsp;copies&nbsp;of&nbsp;their&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;licences),&nbsp;is&nbsp;subject&nbsp;to&nbsp;the&nbsp;BSD&nbsp;two-clause&nbsp;licence&nbsp;below.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2017-2023&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Prashanth&nbsp;Mundkur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Rishiyur&nbsp;S.&nbsp;Nikhil&nbsp;and&nbsp;Bluespec,&nbsp;Inc.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jon&nbsp;French&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Brian&nbsp;Campbell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Robert&nbsp;Norton-Wright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alasdair&nbsp;Armstrong&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Thomas&nbsp;Bauereiss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Shaked&nbsp;Flur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Christopher&nbsp;Pulte&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Sewell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alexander&nbsp;Richardson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Hesham&nbsp;Almatary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jessica&nbsp;Clarke&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Microsoft,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Robert&nbsp;Norton-Wright&nbsp;and&nbsp;Nathaniel&nbsp;Wesley&nbsp;Filardo&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Rugg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Aril&nbsp;Computer&nbsp;Corp.,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Scott&nbsp;Johnson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Philipp&nbsp;Tomsich&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;VRULL&nbsp;GmbH,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;its&nbsp;employees&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;All&nbsp;rights&nbsp;reserved.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;the&nbsp;above&nbsp;within&nbsp;the&nbsp;Rigorous&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Engineering&nbsp;of&nbsp;Mainstream&nbsp;Systems&nbsp;(REMS)&nbsp;project,&nbsp;partly&nbsp;funded&nbsp;by&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;EPSRC&nbsp;grant&nbsp;EP/K008528/1,&nbsp;at&nbsp;the&nbsp;Universities&nbsp;of&nbsp;Cambridge&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Edinburgh.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;SRI&nbsp;International&nbsp;and&nbsp;the&nbsp;University&nbsp;of&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Cambridge&nbsp;Computer&nbsp;Laboratory&nbsp;(Department&nbsp;of&nbsp;Computer&nbsp;Science&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Technology)&nbsp;under&nbsp;DARPA/AFRL&nbsp;contract&nbsp;FA8650-18-C-7809&nbsp;(&quot;CIFV&quot;),&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;under&nbsp;DARPA&nbsp;contract&nbsp;HR0011-18-C-0016&nbsp;(&quot;ECATS&quot;)&nbsp;as&nbsp;part&nbsp;of&nbsp;the&nbsp;DARPA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SSITH&nbsp;research&nbsp;programme.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;project&nbsp;has&nbsp;received&nbsp;funding&nbsp;from&nbsp;the&nbsp;European&nbsp;Research&nbsp;Council&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;(ERC)&nbsp;under&nbsp;the&nbsp;European&nbsp;Union’s&nbsp;Horizon&nbsp;2020&nbsp;research&nbsp;and&nbsp;innovation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;programme&nbsp;(grant&nbsp;agreement&nbsp;789108,&nbsp;ELVER).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Redistribution&nbsp;and&nbsp;use&nbsp;in&nbsp;source&nbsp;and&nbsp;binary&nbsp;forms,&nbsp;with&nbsp;or&nbsp;without&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;modification,&nbsp;are&nbsp;permitted&nbsp;provided&nbsp;that&nbsp;the&nbsp;following&nbsp;conditions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;are&nbsp;met:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;1.&nbsp;Redistributions&nbsp;of&nbsp;source&nbsp;code&nbsp;must&nbsp;retain&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;2.&nbsp;Redistributions&nbsp;in&nbsp;binary&nbsp;form&nbsp;must&nbsp;reproduce&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;documentation&nbsp;and/or&nbsp;other&nbsp;materials&nbsp;provided&nbsp;with&nbsp;the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;distribution.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;THIS&nbsp;SOFTWARE&nbsp;IS&nbsp;PROVIDED&nbsp;BY&nbsp;THE&nbsp;AUTHOR&nbsp;AND&nbsp;CONTRIBUTORS&nbsp;``AS&nbsp;IS''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;AND&nbsp;ANY&nbsp;EXPRESS&nbsp;OR&nbsp;IMPLIED&nbsp;WARRANTIES,&nbsp;INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;TO,&nbsp;THE&nbsp;IMPLIED&nbsp;WARRANTIES&nbsp;OF&nbsp;MERCHANTABILITY&nbsp;AND&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;PARTICULAR&nbsp;PURPOSE&nbsp;ARE&nbsp;DISCLAIMED.&nbsp;&nbsp;IN&nbsp;NO&nbsp;EVENT&nbsp;SHALL&nbsp;THE&nbsp;AUTHOR&nbsp;OR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;CONTRIBUTORS&nbsp;BE&nbsp;LIABLE&nbsp;FOR&nbsp;ANY&nbsp;DIRECT,&nbsp;INDIRECT,&nbsp;INCIDENTAL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SPECIAL,&nbsp;EXEMPLARY,&nbsp;OR&nbsp;CONSEQUENTIAL&nbsp;DAMAGES&nbsp;(INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;LIMITED&nbsp;TO,&nbsp;PROCUREMENT&nbsp;OF&nbsp;SUBSTITUTE&nbsp;GOODS&nbsp;OR&nbsp;SERVICES;&nbsp;LOSS&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;USE,&nbsp;DATA,&nbsp;OR&nbsp;PROFITS;&nbsp;OR&nbsp;BUSINESS&nbsp;INTERRUPTION)&nbsp;HOWEVER&nbsp;CAUSED&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;ON&nbsp;ANY&nbsp;THEORY&nbsp;OF&nbsp;LIABILITY,&nbsp;WHETHER&nbsp;IN&nbsp;CONTRACT,&nbsp;STRICT&nbsp;LIABILITY,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OR&nbsp;TORT&nbsp;(INCLUDING&nbsp;NEGLIGENCE&nbsp;OR&nbsp;OTHERWISE)&nbsp;ARISING&nbsp;IN&nbsp;ANY&nbsp;WAY&nbsp;OUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OF&nbsp;THE&nbsp;USE&nbsp;OF&nbsp;THIS&nbsp;SOFTWARE,&nbsp;EVEN&nbsp;IF&nbsp;ADVISED&nbsp;OF&nbsp;THE&nbsp;POSSIBILITY&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SUCH&nbsp;DAMAGE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*=======================================================================================*/<br>
+<br>
+/*&nbsp;Physical&nbsp;memory&nbsp;model.<br>
+&nbsp;*<br>
+&nbsp;*&nbsp;This&nbsp;assumes&nbsp;that&nbsp;the&nbsp;platform&nbsp;memory&nbsp;map&nbsp;has&nbsp;been&nbsp;defined,&nbsp;so&nbsp;that&nbsp;accesses<br>
+&nbsp;*&nbsp;to&nbsp;MMIO&nbsp;regions&nbsp;can&nbsp;be&nbsp;dispatched.<br>
+&nbsp;*<br>
+&nbsp;*&nbsp;The&nbsp;implementation&nbsp;below&nbsp;supports&nbsp;the&nbsp;reading&nbsp;and&nbsp;writing&nbsp;of&nbsp;memory<br>
+&nbsp;*&nbsp;metadata&nbsp;in&nbsp;addition&nbsp;to&nbsp;raw&nbsp;memory&nbsp;data.<br>
+&nbsp;*<br>
+&nbsp;*&nbsp;The&nbsp;external&nbsp;API&nbsp;for&nbsp;this&nbsp;module&nbsp;is&nbsp;composed&nbsp;of&nbsp;three&nbsp;central&nbsp;functions<br>
+&nbsp;*<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;mem_read_priv_meta<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;mem_write_ea<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;mem_write_value_priv_meta<br>
+&nbsp;*<br>
+&nbsp;*&nbsp;and&nbsp;some&nbsp;special&nbsp;cases&nbsp;which&nbsp;partially&nbsp;apply&nbsp;these&nbsp;functions:<br>
+&nbsp;*<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;mem_read_priv&nbsp;-&nbsp;strips&nbsp;metadata&nbsp;from&nbsp;reads<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;mem_read_meta&nbsp;-&nbsp;uses&nbsp;effectivePrivilege<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;mem_read&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;both&nbsp;of&nbsp;the&nbsp;above&nbsp;partial&nbsp;applications<br>
+&nbsp;*<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;mem_write_value_meta&nbsp;-&nbsp;uses&nbsp;effectivePrivilege<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;mem_write_value_priv&nbsp;-&nbsp;uses&nbsp;a&nbsp;default&nbsp;value&nbsp;for&nbsp;metadata<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;mem_write_value&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;both&nbsp;of&nbsp;the&nbsp;above&nbsp;partial&nbsp;applications<br>
+&nbsp;*<br>
+&nbsp;*&nbsp;The&nbsp;internal&nbsp;implementation&nbsp;first&nbsp;performs&nbsp;a&nbsp;PMP&nbsp;check&nbsp;(if&nbsp;PMP&nbsp;is<br>
+&nbsp;*&nbsp;enabled),&nbsp;and&nbsp;then&nbsp;dispatches&nbsp;to&nbsp;MMIO&nbsp;regions&nbsp;or&nbsp;physical&nbsp;memory&nbsp;as<br>
+&nbsp;*&nbsp;per&nbsp;the&nbsp;platform&nbsp;memory&nbsp;map.<br>
+&nbsp;*/<br>
+<br>
+function&nbsp;is_aligned_addr&nbsp;forall&nbsp;'n.&nbsp;(addr&nbsp;:&nbsp;xlenbits,&nbsp;width&nbsp;:&nbsp;atom('n))&nbsp;-&gt;&nbsp;bool&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">unsigned(addr)&nbsp;%&nbsp;width&nbsp;==&nbsp;0</span><br>
+<br>
+function&nbsp;read_kind_of_flags&nbsp;(aq&nbsp;:&nbsp;bool,&nbsp;rl&nbsp;:&nbsp;bool,&nbsp;res&nbsp;:&nbsp;bool)&nbsp;-&gt;&nbsp;option(read_kind)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(aq,&nbsp;rl,&nbsp;res)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(false,&nbsp;false,&nbsp;false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Some(Read_plain)</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(true,&nbsp;false,&nbsp;false)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">Some(Read_RISCV_acquire)</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(true,&nbsp;true,&nbsp;false)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">Some(Read_RISCV_strong_acquire)</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(false,&nbsp;false,&nbsp;true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Some(Read_RISCV_reserved)</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(true,&nbsp;false,&nbsp;true)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">Some(Read_RISCV_reserved_acquire)</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(true,&nbsp;true,&nbsp;true)&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">Some(Read_RISCV_reserved_strong_acquire)</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(false,&nbsp;true,&nbsp;false)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">None()</span></span>,&nbsp;/*&nbsp;should&nbsp;these&nbsp;be&nbsp;instead&nbsp;throwing&nbsp;error_not_implemented&nbsp;as&nbsp;below?&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(false,&nbsp;true,&nbsp;true)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">None()</span></span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+//&nbsp;only&nbsp;used&nbsp;for&nbsp;actual&nbsp;memory&nbsp;regions,&nbsp;to&nbsp;avoid&nbsp;MMIO&nbsp;effects<br>
+function&nbsp;phys_mem_read&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(t&nbsp;:&nbsp;AccessType(ext_access_type),&nbsp;paddr&nbsp;:&nbsp;xlenbits,&nbsp;width&nbsp;:&nbsp;atom('n),&nbsp;aq&nbsp;:&nbsp;bool,&nbsp;rl:&nbsp;bool,&nbsp;res&nbsp;:&nbsp;bool,&nbsp;meta&nbsp;:&nbsp;bool)&nbsp;-&gt;&nbsp;MemoryOpResult((bits(8&nbsp;*&nbsp;'n),&nbsp;mem_meta))&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;result&nbsp;=&nbsp;(<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;read_kind_of_flags(aq,&nbsp;rl,&nbsp;res)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(rk)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Some(read_ram(rk,&nbsp;paddr,&nbsp;width,&nbsp;meta))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">None()</span><br>
+&nbsp;&nbsp;}</span>)&nbsp;:&nbsp;option((bits(8&nbsp;*&nbsp;'n),&nbsp;mem_meta));<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;(t,&nbsp;result)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Execute(),&nbsp;&nbsp;None())&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">MemException(E_Fetch_Access_Fault())</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Read(Data),&nbsp;None())&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">MemException(E_Load_Access_Fault())</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None())&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">MemException(E_SAMO_Access_Fault())</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(v,&nbsp;m))&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;get_config_print_mem()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">print_mem(&quot;mem[&quot;&nbsp;^&nbsp;to_str(t)&nbsp;^&nbsp;&quot;,&quot;&nbsp;^&nbsp;BitStr(paddr)&nbsp;^&nbsp;&quot;]&nbsp;-&gt;&nbsp;&quot;&nbsp;^&nbsp;BitStr(v))</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(v,&nbsp;m)&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+/*&nbsp;dispatches&nbsp;to&nbsp;MMIO&nbsp;regions&nbsp;or&nbsp;physical&nbsp;memory&nbsp;regions&nbsp;depending&nbsp;on&nbsp;physical&nbsp;memory&nbsp;map&nbsp;*/<br>
+function&nbsp;checked_mem_read&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(t&nbsp;:&nbsp;AccessType(ext_access_type),&nbsp;paddr&nbsp;:&nbsp;xlenbits,&nbsp;width&nbsp;:&nbsp;atom('n),&nbsp;aq&nbsp;:&nbsp;bool,&nbsp;rl&nbsp;:&nbsp;bool,&nbsp;res:&nbsp;bool,&nbsp;meta&nbsp;:&nbsp;bool)&nbsp;-&gt;&nbsp;MemoryOpResult((bits(8&nbsp;*&nbsp;'n),&nbsp;mem_meta))&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">if&nbsp;&nbsp;&nbsp;within_mmio_readable(paddr,&nbsp;width)<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">MemoryOpResult_add_meta(mmio_read(t,&nbsp;paddr,&nbsp;width),&nbsp;default_meta)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">if&nbsp;within_phys_mem(paddr,&nbsp;width)<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">match&nbsp;ext_check_phys_mem_read(t,&nbsp;paddr,&nbsp;width,&nbsp;aq,&nbsp;rl,&nbsp;res,&nbsp;meta)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_PhysAddr_OK()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">phys_mem_read(t,&nbsp;paddr,&nbsp;width,&nbsp;aq,&nbsp;rl,&nbsp;res,&nbsp;meta)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_PhysAddr_Error(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">MemException(e)</span><br>
+&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;t&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Execute()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">MemException(E_Fetch_Access_Fault())</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Read(Data)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">MemException(E_Load_Access_Fault())</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">MemException(E_SAMO_Access_Fault())</span><br>
+&nbsp;&nbsp;}</span></span></span><br>
+<br>
+/*&nbsp;PMP&nbsp;checks&nbsp;if&nbsp;enabled&nbsp;*/<br>
+function&nbsp;pmp_mem_read&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(t&nbsp;:&nbsp;AccessType(ext_access_type),&nbsp;p&nbsp;:&nbsp;Privilege,&nbsp;paddr&nbsp;:&nbsp;xlenbits,&nbsp;width&nbsp;:&nbsp;atom('n),&nbsp;aq&nbsp;:&nbsp;bool,&nbsp;rl&nbsp;:&nbsp;bool,&nbsp;res:&nbsp;bool,&nbsp;meta&nbsp;:&nbsp;bool)&nbsp;-&gt;&nbsp;MemoryOpResult((bits(8&nbsp;*&nbsp;'n),&nbsp;mem_meta))&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">if&nbsp;&nbsp;&nbsp;not(plat_enable_pmp())<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 80%)">checked_mem_read(t,&nbsp;paddr,&nbsp;width,&nbsp;aq,&nbsp;rl,&nbsp;res,&nbsp;meta)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;pmpCheck(paddr,&nbsp;width,&nbsp;t,&nbsp;p)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">checked_mem_read(t,&nbsp;paddr,&nbsp;width,&nbsp;aq,&nbsp;rl,&nbsp;res,&nbsp;meta)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">MemException(e)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span></span><br>
+<br>
+/*&nbsp;Atomic&nbsp;accesses&nbsp;can&nbsp;be&nbsp;done&nbsp;to&nbsp;MMIO&nbsp;regions,&nbsp;e.g.&nbsp;in&nbsp;kernel&nbsp;access&nbsp;to&nbsp;device&nbsp;registers.&nbsp;*/<br>
+<br>
+$ifdef&nbsp;RVFI_DII<br>
+val&nbsp;rvfi_read&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;'n&nbsp;&gt;&nbsp;0.&nbsp;(xlenbits,&nbsp;atom('n),&nbsp;MemoryOpResult((bits(8&nbsp;*&nbsp;'n),&nbsp;mem_meta)))&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;rvfi_read&nbsp;(addr,&nbsp;width,&nbsp;result)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;rvfi_mem_data-&gt;rvfi_mem_addr()&nbsp;=&nbsp;zero_extend(addr);<br>
+&nbsp;&nbsp;rvfi_mem_data_present&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;match&nbsp;result&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;TODO:&nbsp;report&nbsp;tag&nbsp;bit&nbsp;for&nbsp;capability&nbsp;writes&nbsp;and&nbsp;extend&nbsp;mask&nbsp;by&nbsp;one&nbsp;bit.&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MemValue(v,&nbsp;_)&nbsp;=&gt;&nbsp;if&nbsp;width&nbsp;&lt;=&nbsp;16<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;{&nbsp;rvfi_mem_data-&gt;rvfi_mem_rdata()&nbsp;=&nbsp;sail_zero_extend(v,&nbsp;256);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rvfi_mem_data-&gt;rvfi_mem_rmask()&nbsp;=&nbsp;rvfi_encode_width_mask(width)&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;{&nbsp;internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;Expected&nbsp;at&nbsp;most&nbsp;16&nbsp;bytes&nbsp;here!&quot;)&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MemException(_)&nbsp;=&gt;&nbsp;()<br>
+&nbsp;&nbsp;};<br>
+}<br>
+$else<br>
+val&nbsp;rvfi_read&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;'n&nbsp;&gt;&nbsp;0.&nbsp;(xlenbits,&nbsp;atom('n),&nbsp;MemoryOpResult((bits(8&nbsp;*&nbsp;'n),&nbsp;mem_meta)))&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;rvfi_read&nbsp;(addr,&nbsp;width,&nbsp;result)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">()</span><br>
+$endif<br>
+<br>
+/*&nbsp;NOTE:&nbsp;The&nbsp;rreg&nbsp;effect&nbsp;is&nbsp;due&nbsp;to&nbsp;MMIO.&nbsp;*/<br>
+$ifdef&nbsp;RVFI_DII<br>
+val&nbsp;mem_read&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(AccessType(ext_access_type),&nbsp;xlenbits,&nbsp;atom('n),&nbsp;bool,&nbsp;bool,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;MemoryOpResult(bits(8&nbsp;*&nbsp;'n))<br>
+val&nbsp;mem_read_priv&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(AccessType(ext_access_type),&nbsp;Privilege,&nbsp;xlenbits,&nbsp;atom('n),&nbsp;bool,&nbsp;bool,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;MemoryOpResult(bits(8&nbsp;*&nbsp;'n))<br>
+val&nbsp;mem_read_meta&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(AccessType(ext_access_type),&nbsp;xlenbits,&nbsp;atom('n),&nbsp;bool,&nbsp;bool,&nbsp;bool,&nbsp;bool)&nbsp;-&gt;&nbsp;MemoryOpResult((bits(8&nbsp;*&nbsp;'n),&nbsp;mem_meta))<br>
+val&nbsp;mem_read_priv_meta&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(AccessType(ext_access_type),&nbsp;Privilege,&nbsp;xlenbits,&nbsp;atom('n),&nbsp;bool,&nbsp;bool,&nbsp;bool,&nbsp;bool)&nbsp;-&gt;&nbsp;MemoryOpResult((bits(8&nbsp;*&nbsp;'n),&nbsp;mem_meta))<br>
+$else<br>
+val&nbsp;mem_read&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(AccessType(ext_access_type),&nbsp;xlenbits,&nbsp;atom('n),&nbsp;bool,&nbsp;bool,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;MemoryOpResult(bits(8&nbsp;*&nbsp;'n))<br>
+val&nbsp;mem_read_priv&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(AccessType(ext_access_type),&nbsp;Privilege,&nbsp;xlenbits,&nbsp;atom('n),&nbsp;bool,&nbsp;bool,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;MemoryOpResult(bits(8&nbsp;*&nbsp;'n))<br>
+val&nbsp;mem_read_meta&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(AccessType(ext_access_type),&nbsp;xlenbits,&nbsp;atom('n),&nbsp;bool,&nbsp;bool,&nbsp;bool,&nbsp;bool)&nbsp;-&gt;&nbsp;MemoryOpResult((bits(8&nbsp;*&nbsp;'n),&nbsp;mem_meta))<br>
+val&nbsp;mem_read_priv_meta&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(AccessType(ext_access_type),&nbsp;Privilege,&nbsp;xlenbits,&nbsp;atom('n),&nbsp;bool,&nbsp;bool,&nbsp;bool,&nbsp;bool)&nbsp;-&gt;&nbsp;MemoryOpResult((bits(8&nbsp;*&nbsp;'n),&nbsp;mem_meta))<br>
+$endif<br>
+<br>
+/*&nbsp;The&nbsp;most&nbsp;generic&nbsp;memory&nbsp;read&nbsp;operation&nbsp;*/<br>
+function&nbsp;mem_read_priv_meta&nbsp;(typ,&nbsp;priv,&nbsp;paddr,&nbsp;width,&nbsp;aq,&nbsp;rl,&nbsp;res,&nbsp;meta)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;result&nbsp;:&nbsp;MemoryOpResult((bits(8&nbsp;*&nbsp;'n),&nbsp;mem_meta))&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(<span style="background-color: hsl(0, 85%, 70%)">aq&nbsp;|&nbsp;<span style="background-color: hsl(120, 85%, 75%)">res</span></span>)&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 75%)">not(is_aligned_addr(paddr,&nbsp;width))</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">MemException(E_Load_Addr_Align())</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">match&nbsp;(aq,&nbsp;rl,&nbsp;res)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(false,&nbsp;true,&nbsp;&nbsp;false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">throw(Error_not_implemented(&quot;load.rl&quot;))</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(false,&nbsp;true,&nbsp;&nbsp;true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">throw(Error_not_implemented(&quot;lr.rl&quot;))</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;_,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">pmp_mem_read(typ,&nbsp;priv,&nbsp;paddr,&nbsp;width,&nbsp;aq,&nbsp;rl,&nbsp;res,&nbsp;meta)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span>;<br>
+&nbsp;&nbsp;rvfi_read(paddr,&nbsp;width,&nbsp;result);<br>
+&nbsp;&nbsp;result<br>
+}</span><br>
+<br>
+function&nbsp;mem_read_meta&nbsp;(typ,&nbsp;paddr,&nbsp;width,&nbsp;aq,&nbsp;rl,&nbsp;res,&nbsp;meta)&nbsp;=<br>
+&nbsp;&nbsp;mem_read_priv_meta(typ,&nbsp;effectivePrivilege(typ,&nbsp;mstatus,&nbsp;cur_privilege),&nbsp;paddr,&nbsp;width,&nbsp;aq,&nbsp;rl,&nbsp;res,&nbsp;meta)<br>
+<br>
+/*&nbsp;Specialized&nbsp;mem_read_meta&nbsp;that&nbsp;drops&nbsp;the&nbsp;metadata&nbsp;*/<br>
+function&nbsp;mem_read_priv&nbsp;(typ,&nbsp;priv,&nbsp;paddr,&nbsp;width,&nbsp;aq,&nbsp;rl,&nbsp;res)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">MemoryOpResult_drop_meta(mem_read_priv_meta(typ,&nbsp;priv,&nbsp;paddr,&nbsp;width,&nbsp;aq,&nbsp;rl,&nbsp;res,&nbsp;false))</span><br>
+<br>
+/*&nbsp;Specialized&nbsp;mem_read_priv&nbsp;that&nbsp;operates&nbsp;at&nbsp;the&nbsp;default&nbsp;effective&nbsp;privilege&nbsp;*/<br>
+function&nbsp;mem_read&nbsp;(typ,&nbsp;paddr,&nbsp;width,&nbsp;aq,&nbsp;rel,&nbsp;res)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">mem_read_priv(typ,&nbsp;effectivePrivilege(typ,&nbsp;mstatus,&nbsp;cur_privilege),&nbsp;paddr,&nbsp;width,&nbsp;aq,&nbsp;rel,&nbsp;res)</span><br>
+<br>
+val&nbsp;mem_write_ea&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(xlenbits,&nbsp;atom('n),&nbsp;bool,&nbsp;bool,&nbsp;bool)&nbsp;-&gt;&nbsp;MemoryOpResult(unit)<br>
+<br>
+function&nbsp;mem_write_ea&nbsp;(addr,&nbsp;width,&nbsp;aq,&nbsp;rl,&nbsp;con)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(<span style="background-color: hsl(0, 85%, 70%)">rl&nbsp;|&nbsp;<span style="background-color: hsl(120, 85%, 75%)">con</span></span>)&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 75%)">not(is_aligned_addr(addr,&nbsp;width))</span></span><br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">MemException(E_SAMO_Addr_Align())</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">match&nbsp;(aq,&nbsp;rl,&nbsp;con)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(false,&nbsp;false,&nbsp;false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">MemValue(write_ram_ea(Write_plain,&nbsp;addr,&nbsp;width))</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(false,&nbsp;true,&nbsp;&nbsp;false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">MemValue(write_ram_ea(Write_RISCV_release,&nbsp;addr,&nbsp;width))</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(false,&nbsp;false,&nbsp;true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">MemValue(write_ram_ea(Write_RISCV_conditional,&nbsp;addr,&nbsp;width))</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(false,&nbsp;true&nbsp;,&nbsp;true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">MemValue(write_ram_ea(Write_RISCV_conditional_release,&nbsp;addr,&nbsp;width))</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(true,&nbsp;&nbsp;false,&nbsp;false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">throw(Error_not_implemented(&quot;store.aq&quot;))</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(true,&nbsp;&nbsp;true,&nbsp;&nbsp;false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">MemValue(write_ram_ea(Write_RISCV_strong_release,&nbsp;addr,&nbsp;width))</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(true,&nbsp;&nbsp;false,&nbsp;true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">throw(Error_not_implemented(&quot;sc.aq&quot;))</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(true,&nbsp;&nbsp;true&nbsp;,&nbsp;true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">MemValue(write_ram_ea(Write_RISCV_conditional_strong_release,&nbsp;addr,&nbsp;width))</span></span><br>
+&nbsp;&nbsp;}</span></span><br>
+}</span><br>
+<br>
+$ifdef&nbsp;RVFI_DII<br>
+val&nbsp;rvfi_write&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(xlenbits,&nbsp;atom('n),&nbsp;bits(8&nbsp;*&nbsp;'n),&nbsp;mem_meta,&nbsp;MemoryOpResult(bool))&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;rvfi_write&nbsp;(addr,&nbsp;width,&nbsp;value,&nbsp;meta,&nbsp;result)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;rvfi_mem_data-&gt;rvfi_mem_addr()&nbsp;=&nbsp;zero_extend(addr);<br>
+&nbsp;&nbsp;rvfi_mem_data_present&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;match&nbsp;result&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Log&nbsp;only&nbsp;the&nbsp;memory&nbsp;address&nbsp;(without&nbsp;the&nbsp;value)&nbsp;if&nbsp;the&nbsp;write&nbsp;fails.&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MemValue(_)&nbsp;=&gt;&nbsp;if&nbsp;width&nbsp;&lt;=&nbsp;16&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;TODO:&nbsp;report&nbsp;tag&nbsp;bit&nbsp;for&nbsp;capability&nbsp;writes&nbsp;and&nbsp;extend&nbsp;mask&nbsp;by&nbsp;one&nbsp;bit.&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rvfi_mem_data-&gt;rvfi_mem_wdata()&nbsp;=&nbsp;sail_zero_extend(value,256);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rvfi_mem_data-&gt;rvfi_mem_wmask()&nbsp;=&nbsp;rvfi_encode_width_mask(width);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;else&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;Expected&nbsp;at&nbsp;most&nbsp;16&nbsp;bytes&nbsp;here!&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MemException(_)&nbsp;=&gt;&nbsp;()<br>
+&nbsp;&nbsp;}<br>
+}<br>
+$else<br>
+val&nbsp;rvfi_write&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;'n&nbsp;&gt;&nbsp;0.&nbsp;(xlenbits,&nbsp;atom('n),&nbsp;bits(8&nbsp;*&nbsp;'n),&nbsp;mem_meta,&nbsp;MemoryOpResult(bool))&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;rvfi_write&nbsp;(addr,&nbsp;width,&nbsp;value,&nbsp;meta,&nbsp;result)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">()</span><br>
+$endif<br>
+<br>
+//&nbsp;only&nbsp;used&nbsp;for&nbsp;actual&nbsp;memory&nbsp;regions,&nbsp;to&nbsp;avoid&nbsp;MMIO&nbsp;effects<br>
+function&nbsp;phys_mem_write&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(wk&nbsp;:&nbsp;write_kind,&nbsp;paddr&nbsp;:&nbsp;xlenbits,&nbsp;width&nbsp;:&nbsp;atom('n),&nbsp;data&nbsp;:&nbsp;bits(8&nbsp;*&nbsp;'n),&nbsp;meta&nbsp;:&nbsp;mem_meta)&nbsp;-&gt;&nbsp;MemoryOpResult(bool)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;result&nbsp;=&nbsp;MemValue(write_ram(wk,&nbsp;paddr,&nbsp;width,&nbsp;data,&nbsp;meta));<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;&nbsp;&nbsp;get_config_print_mem()<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">print_mem(&quot;mem[&quot;&nbsp;^&nbsp;BitStr(paddr)&nbsp;^&nbsp;&quot;]&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(data))</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;result<br>
+}</span><br>
+<br>
+/*&nbsp;dispatches&nbsp;to&nbsp;MMIO&nbsp;regions&nbsp;or&nbsp;physical&nbsp;memory&nbsp;regions&nbsp;depending&nbsp;on&nbsp;physical&nbsp;memory&nbsp;map&nbsp;*/<br>
+function&nbsp;checked_mem_write&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(wk&nbsp;:&nbsp;write_kind,&nbsp;paddr&nbsp;:&nbsp;xlenbits,&nbsp;width&nbsp;:&nbsp;atom('n),&nbsp;data:&nbsp;bits(8&nbsp;*&nbsp;'n),&nbsp;meta:&nbsp;mem_meta)&nbsp;-&gt;&nbsp;MemoryOpResult(bool)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">if&nbsp;&nbsp;&nbsp;within_mmio_writable(paddr,&nbsp;width)<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">mmio_write(paddr,&nbsp;width,&nbsp;data)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">if&nbsp;within_phys_mem(paddr,&nbsp;width)<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">match&nbsp;ext_check_phys_mem_write&nbsp;(wk,&nbsp;paddr,&nbsp;width,&nbsp;data,&nbsp;meta)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_PhysAddr_OK()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">phys_mem_write(wk,&nbsp;paddr,&nbsp;width,&nbsp;data,&nbsp;meta)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_PhysAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">MemException(e)</span><br>
+&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 80%)">MemException(E_SAMO_Access_Fault())</span></span></span><br>
+<br>
+/*&nbsp;PMP&nbsp;checks&nbsp;if&nbsp;enabled&nbsp;*/<br>
+function&nbsp;pmp_mem_write&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(wk:&nbsp;write_kind,&nbsp;paddr&nbsp;:&nbsp;xlenbits,&nbsp;width&nbsp;:&nbsp;atom('n),&nbsp;data:&nbsp;bits(8&nbsp;*&nbsp;'n),&nbsp;typ:&nbsp;AccessType(ext_access_type),&nbsp;priv:&nbsp;Privilege,&nbsp;meta:&nbsp;mem_meta)&nbsp;-&gt;&nbsp;MemoryOpResult(bool)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">if&nbsp;&nbsp;&nbsp;not(plat_enable_pmp())<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 80%)">checked_mem_write(wk,&nbsp;paddr,&nbsp;width,&nbsp;data,&nbsp;meta)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;pmpCheck(paddr,&nbsp;width,&nbsp;typ,&nbsp;priv)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">checked_mem_write(wk,&nbsp;paddr,&nbsp;width,&nbsp;data,&nbsp;meta)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">MemException(e)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span></span><br>
+<br>
+/*&nbsp;Atomic&nbsp;accesses&nbsp;can&nbsp;be&nbsp;done&nbsp;to&nbsp;MMIO&nbsp;regions,&nbsp;e.g.&nbsp;in&nbsp;kernel&nbsp;access&nbsp;to&nbsp;device&nbsp;registers.&nbsp;*/<br>
+<br>
+/*&nbsp;Memory&nbsp;write&nbsp;with&nbsp;an&nbsp;explicit&nbsp;metadata&nbsp;value.&nbsp;&nbsp;Metadata&nbsp;writes&nbsp;are<br>
+&nbsp;*&nbsp;currently&nbsp;assumed&nbsp;to&nbsp;have&nbsp;the&nbsp;same&nbsp;alignment&nbsp;constraints&nbsp;as&nbsp;their<br>
+&nbsp;*&nbsp;data.<br>
+&nbsp;*&nbsp;NOTE:&nbsp;The&nbsp;wreg&nbsp;effect&nbsp;is&nbsp;due&nbsp;to&nbsp;MMIO,&nbsp;the&nbsp;rreg&nbsp;is&nbsp;due&nbsp;to&nbsp;checking&nbsp;mtime.<br>
+&nbsp;*/<br>
+val&nbsp;mem_write_value_priv_meta&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(xlenbits,&nbsp;atom('n),&nbsp;bits(8&nbsp;*&nbsp;'n),&nbsp;AccessType(ext_access_type),&nbsp;Privilege,&nbsp;mem_meta,&nbsp;bool,&nbsp;bool,&nbsp;bool)&nbsp;-&gt;&nbsp;MemoryOpResult(bool)<br>
+function&nbsp;mem_write_value_priv_meta&nbsp;(paddr,&nbsp;width,&nbsp;value,&nbsp;typ,&nbsp;priv,&nbsp;meta,&nbsp;aq,&nbsp;rl,&nbsp;con)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(<span style="background-color: hsl(0, 85%, 70%)">rl&nbsp;|&nbsp;<span style="background-color: hsl(120, 85%, 75%)">con</span></span>)&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 75%)">not(is_aligned_addr(paddr,&nbsp;width))</span></span><br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">MemException(E_SAMO_Addr_Align())</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;wk&nbsp;:&nbsp;write_kind&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;(aq,&nbsp;rl,&nbsp;con)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(false,&nbsp;false,&nbsp;false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">Write_plain</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(false,&nbsp;true,&nbsp;&nbsp;false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">Write_RISCV_release</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(false,&nbsp;false,&nbsp;true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">Write_RISCV_conditional</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(false,&nbsp;true&nbsp;,&nbsp;true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">Write_RISCV_conditional_release</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(true,&nbsp;&nbsp;true,&nbsp;&nbsp;false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">Write_RISCV_strong_release</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(true,&nbsp;&nbsp;true&nbsp;,&nbsp;true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">Write_RISCV_conditional_strong_release</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;throw&nbsp;an&nbsp;illegal&nbsp;instruction&nbsp;here?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(true,&nbsp;&nbsp;false,&nbsp;false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">throw(Error_not_implemented(&quot;store.aq&quot;))</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(true,&nbsp;&nbsp;false,&nbsp;true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">throw(Error_not_implemented(&quot;sc.aq&quot;))</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;result&nbsp;=&nbsp;pmp_mem_write(wk,&nbsp;paddr,&nbsp;width,&nbsp;value,&nbsp;typ,&nbsp;priv,&nbsp;meta);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;rvfi_write(paddr,&nbsp;width,&nbsp;value,&nbsp;meta,&nbsp;result);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result<br>
+&nbsp;&nbsp;}</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;Memory&nbsp;write&nbsp;with&nbsp;explicit&nbsp;Privilege,&nbsp;implicit&nbsp;AccessType&nbsp;and&nbsp;metadata&nbsp;*/<br>
+val&nbsp;mem_write_value_priv&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(xlenbits,&nbsp;atom('n),&nbsp;bits(8&nbsp;*&nbsp;'n),&nbsp;Privilege,&nbsp;bool,&nbsp;bool,&nbsp;bool)&nbsp;-&gt;&nbsp;MemoryOpResult(bool)<br>
+function&nbsp;mem_write_value_priv&nbsp;(paddr,&nbsp;width,&nbsp;value,&nbsp;priv,&nbsp;aq,&nbsp;rl,&nbsp;con)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">mem_write_value_priv_meta(paddr,&nbsp;width,&nbsp;value,&nbsp;Write(default_write_acc),&nbsp;priv,&nbsp;default_meta,&nbsp;aq,&nbsp;rl,&nbsp;con)</span><br>
+<br>
+/*&nbsp;Memory&nbsp;write&nbsp;with&nbsp;explicit&nbsp;metadata&nbsp;and&nbsp;AccessType,&nbsp;implicit&nbsp;and&nbsp;Privilege&nbsp;*/<br>
+val&nbsp;mem_write_value_meta&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(xlenbits,&nbsp;atom('n),&nbsp;bits(8&nbsp;*&nbsp;'n),&nbsp;ext_access_type,&nbsp;mem_meta,&nbsp;bool,&nbsp;bool,&nbsp;bool)&nbsp;-&gt;&nbsp;MemoryOpResult(bool)<br>
+function&nbsp;mem_write_value_meta&nbsp;(paddr,&nbsp;width,&nbsp;value,&nbsp;ext_acc,&nbsp;meta,&nbsp;aq,&nbsp;rl,&nbsp;con)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;typ&nbsp;=&nbsp;Write(ext_acc);<br>
+&nbsp;&nbsp;let&nbsp;ep&nbsp;=&nbsp;effectivePrivilege(typ,&nbsp;mstatus,&nbsp;cur_privilege);<br>
+&nbsp;&nbsp;mem_write_value_priv_meta(paddr,&nbsp;width,&nbsp;value,&nbsp;typ,&nbsp;ep,&nbsp;meta,&nbsp;aq,&nbsp;rl,&nbsp;con)<br>
+}</span><br>
+<br>
+/*&nbsp;Memory&nbsp;write&nbsp;with&nbsp;default&nbsp;AccessType,&nbsp;Privilege,&nbsp;and&nbsp;metadata&nbsp;*/<br>
+val&nbsp;mem_write_value&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;&nbsp;'n&nbsp;&lt;=&nbsp;max_mem_access&nbsp;.&nbsp;(xlenbits,&nbsp;atom('n),&nbsp;bits(8&nbsp;*&nbsp;'n),&nbsp;bool,&nbsp;bool,&nbsp;bool)&nbsp;-&gt;&nbsp;MemoryOpResult(bool)<br>
+function&nbsp;mem_write_value&nbsp;(paddr,&nbsp;width,&nbsp;value,&nbsp;aq,&nbsp;rl,&nbsp;con)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;mem_write_value_meta(paddr,&nbsp;width,&nbsp;value,&nbsp;default_write_acc,&nbsp;default_meta,&nbsp;aq,&nbsp;rl,&nbsp;con)<br>
+}</span><br>
+</code>
+</body>
+</html>

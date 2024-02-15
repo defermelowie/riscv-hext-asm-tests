@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>riscv_types</title></head>
+<body>
+<h1>riscv_types.sail (132/221) 60%</h1>
+<code style="display: block">
+/*=======================================================================================*/<br>
+/*&nbsp;&nbsp;RISCV&nbsp;Sail&nbsp;Model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;Sail&nbsp;RISC-V&nbsp;architecture&nbsp;model,&nbsp;comprising&nbsp;all&nbsp;files&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;directories&nbsp;except&nbsp;for&nbsp;the&nbsp;snapshots&nbsp;of&nbsp;the&nbsp;Lem&nbsp;and&nbsp;Sail&nbsp;libraries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;in&nbsp;the&nbsp;prover_snapshots&nbsp;directory&nbsp;(which&nbsp;include&nbsp;copies&nbsp;of&nbsp;their&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;licences),&nbsp;is&nbsp;subject&nbsp;to&nbsp;the&nbsp;BSD&nbsp;two-clause&nbsp;licence&nbsp;below.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2017-2023&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Prashanth&nbsp;Mundkur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Rishiyur&nbsp;S.&nbsp;Nikhil&nbsp;and&nbsp;Bluespec,&nbsp;Inc.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jon&nbsp;French&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Brian&nbsp;Campbell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Robert&nbsp;Norton-Wright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alasdair&nbsp;Armstrong&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Thomas&nbsp;Bauereiss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Shaked&nbsp;Flur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Christopher&nbsp;Pulte&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Sewell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alexander&nbsp;Richardson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Hesham&nbsp;Almatary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jessica&nbsp;Clarke&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Microsoft,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Robert&nbsp;Norton-Wright&nbsp;and&nbsp;Nathaniel&nbsp;Wesley&nbsp;Filardo&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Rugg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Aril&nbsp;Computer&nbsp;Corp.,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Scott&nbsp;Johnson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Philipp&nbsp;Tomsich&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;VRULL&nbsp;GmbH,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;its&nbsp;employees&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;All&nbsp;rights&nbsp;reserved.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;the&nbsp;above&nbsp;within&nbsp;the&nbsp;Rigorous&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Engineering&nbsp;of&nbsp;Mainstream&nbsp;Systems&nbsp;(REMS)&nbsp;project,&nbsp;partly&nbsp;funded&nbsp;by&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;EPSRC&nbsp;grant&nbsp;EP/K008528/1,&nbsp;at&nbsp;the&nbsp;Universities&nbsp;of&nbsp;Cambridge&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Edinburgh.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;SRI&nbsp;International&nbsp;and&nbsp;the&nbsp;University&nbsp;of&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Cambridge&nbsp;Computer&nbsp;Laboratory&nbsp;(Department&nbsp;of&nbsp;Computer&nbsp;Science&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Technology)&nbsp;under&nbsp;DARPA/AFRL&nbsp;contract&nbsp;FA8650-18-C-7809&nbsp;(&quot;CIFV&quot;),&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;under&nbsp;DARPA&nbsp;contract&nbsp;HR0011-18-C-0016&nbsp;(&quot;ECATS&quot;)&nbsp;as&nbsp;part&nbsp;of&nbsp;the&nbsp;DARPA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SSITH&nbsp;research&nbsp;programme.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;project&nbsp;has&nbsp;received&nbsp;funding&nbsp;from&nbsp;the&nbsp;European&nbsp;Research&nbsp;Council&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;(ERC)&nbsp;under&nbsp;the&nbsp;European&nbsp;Union’s&nbsp;Horizon&nbsp;2020&nbsp;research&nbsp;and&nbsp;innovation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;programme&nbsp;(grant&nbsp;agreement&nbsp;789108,&nbsp;ELVER).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Redistribution&nbsp;and&nbsp;use&nbsp;in&nbsp;source&nbsp;and&nbsp;binary&nbsp;forms,&nbsp;with&nbsp;or&nbsp;without&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;modification,&nbsp;are&nbsp;permitted&nbsp;provided&nbsp;that&nbsp;the&nbsp;following&nbsp;conditions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;are&nbsp;met:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;1.&nbsp;Redistributions&nbsp;of&nbsp;source&nbsp;code&nbsp;must&nbsp;retain&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;2.&nbsp;Redistributions&nbsp;in&nbsp;binary&nbsp;form&nbsp;must&nbsp;reproduce&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;documentation&nbsp;and/or&nbsp;other&nbsp;materials&nbsp;provided&nbsp;with&nbsp;the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;distribution.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;THIS&nbsp;SOFTWARE&nbsp;IS&nbsp;PROVIDED&nbsp;BY&nbsp;THE&nbsp;AUTHOR&nbsp;AND&nbsp;CONTRIBUTORS&nbsp;``AS&nbsp;IS''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;AND&nbsp;ANY&nbsp;EXPRESS&nbsp;OR&nbsp;IMPLIED&nbsp;WARRANTIES,&nbsp;INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;TO,&nbsp;THE&nbsp;IMPLIED&nbsp;WARRANTIES&nbsp;OF&nbsp;MERCHANTABILITY&nbsp;AND&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;PARTICULAR&nbsp;PURPOSE&nbsp;ARE&nbsp;DISCLAIMED.&nbsp;&nbsp;IN&nbsp;NO&nbsp;EVENT&nbsp;SHALL&nbsp;THE&nbsp;AUTHOR&nbsp;OR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;CONTRIBUTORS&nbsp;BE&nbsp;LIABLE&nbsp;FOR&nbsp;ANY&nbsp;DIRECT,&nbsp;INDIRECT,&nbsp;INCIDENTAL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SPECIAL,&nbsp;EXEMPLARY,&nbsp;OR&nbsp;CONSEQUENTIAL&nbsp;DAMAGES&nbsp;(INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;LIMITED&nbsp;TO,&nbsp;PROCUREMENT&nbsp;OF&nbsp;SUBSTITUTE&nbsp;GOODS&nbsp;OR&nbsp;SERVICES;&nbsp;LOSS&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;USE,&nbsp;DATA,&nbsp;OR&nbsp;PROFITS;&nbsp;OR&nbsp;BUSINESS&nbsp;INTERRUPTION)&nbsp;HOWEVER&nbsp;CAUSED&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;ON&nbsp;ANY&nbsp;THEORY&nbsp;OF&nbsp;LIABILITY,&nbsp;WHETHER&nbsp;IN&nbsp;CONTRACT,&nbsp;STRICT&nbsp;LIABILITY,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OR&nbsp;TORT&nbsp;(INCLUDING&nbsp;NEGLIGENCE&nbsp;OR&nbsp;OTHERWISE)&nbsp;ARISING&nbsp;IN&nbsp;ANY&nbsp;WAY&nbsp;OUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OF&nbsp;THE&nbsp;USE&nbsp;OF&nbsp;THIS&nbsp;SOFTWARE,&nbsp;EVEN&nbsp;IF&nbsp;ADVISED&nbsp;OF&nbsp;THE&nbsp;POSSIBILITY&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SUCH&nbsp;DAMAGE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*=======================================================================================*/<br>
+<br>
+/*&nbsp;Basic&nbsp;type&nbsp;and&nbsp;function&nbsp;definitions&nbsp;used&nbsp;pervasively&nbsp;in&nbsp;the&nbsp;model.&nbsp;*/<br>
+<br>
+/*&nbsp;this&nbsp;value&nbsp;is&nbsp;only&nbsp;defined&nbsp;for&nbsp;the&nbsp;runtime&nbsp;platform&nbsp;for&nbsp;ELF&nbsp;loading<br>
+&nbsp;*&nbsp;checks,&nbsp;and&nbsp;not&nbsp;used&nbsp;in&nbsp;the&nbsp;model.<br>
+&nbsp;*/<br>
+let&nbsp;xlen_val&nbsp;=&nbsp;sizeof(xlen)<br>
+<br>
+let&nbsp;xlen_max_unsigned&nbsp;=&nbsp;2&nbsp;^&nbsp;sizeof(xlen)&nbsp;-&nbsp;1<br>
+let&nbsp;xlen_max_signed&nbsp;=&nbsp;2&nbsp;^&nbsp;(sizeof(xlen)&nbsp;-&nbsp;1)&nbsp;-&nbsp;1<br>
+let&nbsp;xlen_min_signed&nbsp;=&nbsp;0&nbsp;-&nbsp;2&nbsp;^&nbsp;(sizeof(xlen)&nbsp;-&nbsp;1)<br>
+<br>
+type&nbsp;half&nbsp;=&nbsp;bits(16)<br>
+type&nbsp;word&nbsp;=&nbsp;bits(32)<br>
+<br>
+/*&nbsp;max&nbsp;instruction&nbsp;length&nbsp;*/<br>
+type&nbsp;ilenbits&nbsp;=&nbsp;bits(32)<br>
+<br>
+/*&nbsp;register&nbsp;identifiers&nbsp;*/<br>
+<br>
+type&nbsp;regidx&nbsp;&nbsp;=&nbsp;bits(5)<br>
+type&nbsp;cregidx&nbsp;=&nbsp;bits(3)&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;identifiers&nbsp;in&nbsp;RVC&nbsp;instructions&nbsp;*/<br>
+type&nbsp;csreg&nbsp;&nbsp;&nbsp;=&nbsp;bits(12)&nbsp;&nbsp;&nbsp;/*&nbsp;CSR&nbsp;addressing&nbsp;*/<br>
+<br>
+/*&nbsp;register&nbsp;file&nbsp;indexing&nbsp;*/<br>
+<br>
+type&nbsp;regno&nbsp;('n&nbsp;:&nbsp;Int),&nbsp;0&nbsp;&lt;=&nbsp;'n&nbsp;&lt;&nbsp;32&nbsp;=&nbsp;atom('n)<br>
+<br>
+val&nbsp;regidx_to_regno&nbsp;:&nbsp;bits(5)&nbsp;-&gt;&nbsp;{'n,&nbsp;0&nbsp;&lt;=&nbsp;'n&nbsp;&lt;&nbsp;32.&nbsp;regno('n)}<br>
+function&nbsp;regidx_to_regno&nbsp;b&nbsp;=&nbsp;let&nbsp;'r&nbsp;=&nbsp;unsigned(b)&nbsp;in&nbsp;r<br>
+<br>
+/*&nbsp;mapping&nbsp;RVC&nbsp;register&nbsp;indices&nbsp;into&nbsp;normal&nbsp;indices&nbsp;*/<br>
+val&nbsp;creg2reg_idx&nbsp;:&nbsp;cregidx&nbsp;-&gt;&nbsp;regidx<br>
+function&nbsp;creg2reg_idx(creg)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b01&nbsp;@&nbsp;creg</span><br>
+<br>
+/*&nbsp;some&nbsp;architecture&nbsp;and&nbsp;ABI&nbsp;relevant&nbsp;register&nbsp;identifiers&nbsp;*/<br>
+let&nbsp;zreg&nbsp;:&nbsp;regidx&nbsp;=&nbsp;0b00000&nbsp;&nbsp;/*&nbsp;x0,&nbsp;zero&nbsp;register&nbsp;&nbsp;*/<br>
+let&nbsp;ra&nbsp;&nbsp;&nbsp;:&nbsp;regidx&nbsp;=&nbsp;0b00001&nbsp;&nbsp;/*&nbsp;x1,&nbsp;return&nbsp;address&nbsp;*/<br>
+let&nbsp;sp&nbsp;&nbsp;&nbsp;:&nbsp;regidx&nbsp;=&nbsp;0b00010&nbsp;&nbsp;/*&nbsp;x2,&nbsp;stack&nbsp;pointer&nbsp;&nbsp;*/<br>
+<br>
+/*&nbsp;instruction&nbsp;fields&nbsp;*/<br>
+<br>
+type&nbsp;opcode&nbsp;=&nbsp;bits(7)<br>
+type&nbsp;imm12&nbsp;&nbsp;=&nbsp;bits(12)<br>
+type&nbsp;imm20&nbsp;&nbsp;=&nbsp;bits(20)<br>
+type&nbsp;amo&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;bits(1)&nbsp;&nbsp;/*&nbsp;amo&nbsp;opcode&nbsp;flags&nbsp;*/<br>
+<br>
+/*&nbsp;base&nbsp;architecture&nbsp;definitions&nbsp;*/<br>
+<br>
+enum&nbsp;Architecture&nbsp;=&nbsp;{RV32,&nbsp;RV64,&nbsp;RV128}<br>
+type&nbsp;arch_xlen&nbsp;=&nbsp;bits(2)<br>
+function&nbsp;architecture(a&nbsp;:&nbsp;arch_xlen)&nbsp;-&gt;&nbsp;option(Architecture)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(a)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">Some(RV32)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Some(RV64)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">Some(RV128)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">None()</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+function&nbsp;arch_to_bits(a&nbsp;:&nbsp;Architecture)&nbsp;-&gt;&nbsp;arch_xlen&nbsp;=<br>
+&nbsp;&nbsp;match&nbsp;(a)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RV32&nbsp;&nbsp;=&gt;&nbsp;0b01,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RV64&nbsp;&nbsp;=&gt;&nbsp;0b10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RV128&nbsp;=&gt;&nbsp;0b11<br>
+&nbsp;&nbsp;}<br>
+<br>
+<br>
+/*&nbsp;model-internal&nbsp;exceptions&nbsp;*/<br>
+<br>
+union&nbsp;exception&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;Error_not_implemented&nbsp;:&nbsp;string,<br>
+&nbsp;&nbsp;Error_internal_error&nbsp;&nbsp;:&nbsp;unit<br>
+}<br>
+<br>
+val&nbsp;not_implemented&nbsp;:&nbsp;forall&nbsp;('a&nbsp;:&nbsp;Type).&nbsp;string&nbsp;-&gt;&nbsp;'a<br>
+function&nbsp;not_implemented&nbsp;message&nbsp;=&nbsp;throw(Error_not_implemented(message))<br>
+<br>
+val&nbsp;internal_error&nbsp;:&nbsp;forall&nbsp;('a&nbsp;:&nbsp;Type).&nbsp;(string,&nbsp;int,&nbsp;string)&nbsp;-&gt;&nbsp;'a<br>
+function&nbsp;internal_error(file,&nbsp;line,&nbsp;s)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;assert&nbsp;(false,&nbsp;file&nbsp;^&nbsp;&quot;:&quot;&nbsp;^&nbsp;string_of_int(line)&nbsp;^&nbsp;&quot;:&nbsp;&quot;&nbsp;^&nbsp;s);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;Error_internal_error()<br>
+}</span><br>
+<br>
+/*&nbsp;privilege&nbsp;levels&nbsp;*/<br>
+<br>
+type&nbsp;priv_level&nbsp;=&nbsp;bits(2)<br>
+enum&nbsp;Privilege&nbsp;&nbsp;=&nbsp;{User,&nbsp;Supervisor,&nbsp;Machine}<br>
+<br>
+val&nbsp;privLevel_to_bits&nbsp;:&nbsp;Privilege&nbsp;-&gt;&nbsp;priv_level<br>
+function&nbsp;privLevel_to_bits&nbsp;(p)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(p)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0b00</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Supervisor&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0b01</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Machine&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0b11</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+/*!<br>
+&nbsp;*&nbsp;Converts&nbsp;the&nbsp;given&nbsp;2-bit&nbsp;privilege&nbsp;level&nbsp;code&nbsp;to&nbsp;the&nbsp;[Privilege]&nbsp;enum.<br>
+&nbsp;*&nbsp;Calling&nbsp;with&nbsp;a&nbsp;reserved&nbsp;code&nbsp;will&nbsp;result&nbsp;in&nbsp;an&nbsp;internal&nbsp;error.<br>
+&nbsp;*/<br>
+val&nbsp;privLevel_of_bits&nbsp;:&nbsp;priv_level&nbsp;-&gt;&nbsp;Privilege<br>
+function&nbsp;privLevel_of_bits&nbsp;(p)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(p)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">User</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Supervisor</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Machine</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;Invalid&nbsp;privilege&nbsp;level:&nbsp;&quot;&nbsp;^&nbsp;BitStr(p))</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+val&nbsp;privLevel_to_str&nbsp;:&nbsp;Privilege&nbsp;-&gt;&nbsp;string<br>
+function&nbsp;privLevel_to_str&nbsp;(p)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(p)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;U&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Supervisor&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;S&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Machine&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;M&quot;</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+overload&nbsp;to_str&nbsp;=&nbsp;{privLevel_to_str}<br>
+<br>
+/*&nbsp;enum&nbsp;denoting&nbsp;whether&nbsp;an&nbsp;executed&nbsp;instruction&nbsp;retires&nbsp;*/<br>
+<br>
+enum&nbsp;Retired&nbsp;=&nbsp;{RETIRE_SUCCESS,&nbsp;RETIRE_FAIL}<br>
+<br>
+/*&nbsp;memory&nbsp;access&nbsp;types&nbsp;*/<br>
+<br>
+union&nbsp;AccessType&nbsp;('a&nbsp;:&nbsp;Type)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;Read&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;'a,<br>
+&nbsp;&nbsp;Write&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;'a,<br>
+&nbsp;&nbsp;ReadWrite&nbsp;:&nbsp;('a,&nbsp;'a),<br>
+&nbsp;&nbsp;Execute&nbsp;&nbsp;&nbsp;:&nbsp;unit<br>
+}<br>
+<br>
+val&nbsp;AccessType_to_str&nbsp;:&nbsp;AccessType(ext_access_type)&nbsp;-&gt;&nbsp;string<br>
+function&nbsp;AccessType_to_str(ac)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;ac&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Read(_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;R&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Write(_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;W&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ReadWrite(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;RW&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Execute(_)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;E&quot;</span>,<br>
+&nbsp;&nbsp;}</span><br>
+<br>
+overload&nbsp;to_str&nbsp;=&nbsp;{AccessType_to_str}<br>
+<br>
+enum&nbsp;word_width&nbsp;=&nbsp;{BYTE,&nbsp;HALF,&nbsp;WORD,&nbsp;DOUBLE}<br>
+<br>
+/*&nbsp;architectural&nbsp;interrupt&nbsp;definitions&nbsp;*/<br>
+<br>
+enum&nbsp;InterruptType&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;I_U_Software,<br>
+&nbsp;&nbsp;I_S_Software,<br>
+&nbsp;&nbsp;I_VS_Software,<br>
+&nbsp;&nbsp;I_M_Software,<br>
+&nbsp;&nbsp;I_U_Timer,<br>
+&nbsp;&nbsp;I_S_Timer,<br>
+&nbsp;&nbsp;I_VS_Timer,<br>
+&nbsp;&nbsp;I_M_Timer,<br>
+&nbsp;&nbsp;I_U_External,<br>
+&nbsp;&nbsp;I_S_External,<br>
+&nbsp;&nbsp;I_VS_External,<br>
+&nbsp;&nbsp;I_M_External,<br>
+&nbsp;&nbsp;I_G_External<br>
+}<br>
+<br>
+val&nbsp;interruptType_to_bits&nbsp;:&nbsp;InterruptType&nbsp;-&gt;&nbsp;exc_code<br>
+function&nbsp;interruptType_to_bits&nbsp;(i)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(i)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_U_Software&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x00</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_S_Software&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x01</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_VS_Software&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x02</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_M_Software&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x03</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_U_Timer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x04</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_S_Timer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x05</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_VS_Timer&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x06</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_M_Timer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x07</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_U_External&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x08</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_S_External&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x09</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_VS_External&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x0a</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_M_External&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x0b</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_G_External&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x0c</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+val&nbsp;interruptType_to_str&nbsp;:&nbsp;InterruptType&nbsp;-&gt;&nbsp;string<br>
+function&nbsp;interruptType_to_str&nbsp;(i)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(i)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_U_Software&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;user-software-interrupt&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_S_Software&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;supervisor-software-interrupt&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_VS_Software&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;virtual-supervisor-software-interrupt&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_M_Software&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;machine-software-interrupt&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_U_Timer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;user-timer-interrupt&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_S_Timer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;supervisor-timer-interrupt&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_VS_Timer&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;virtual-supervisor-timer-interrupt&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_M_Timer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;machine-timer-interrupt&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_U_External&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;user-external-interrupt&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_S_External&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;supervisor-external-interrupt&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_VS_External&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;virtual-supervisor-external-interrupt&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_M_External&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;machine-external-interrupt&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;I_G_External&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;guest-external-interrupt&quot;</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+overload&nbsp;to_str&nbsp;=&nbsp;{interruptType_to_str}<br>
+<br>
+/*&nbsp;architectural&nbsp;exception&nbsp;definitions&nbsp;*/<br>
+<br>
+union&nbsp;ExceptionType&nbsp;=&nbsp;{<br>
+&nbsp;E_Fetch_Addr_Align&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Fetch_Access_Fault&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Illegal_Instr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Breakpoint&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Load_Addr_Align&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Load_Access_Fault&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_SAMO_Addr_Align&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_SAMO_Access_Fault&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_U_EnvCall&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_S_EnvCall&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_VS_EnvCall&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_M_EnvCall&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Fetch_Page_Fault&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Load_Page_Fault&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Reserved_14&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_SAMO_Page_Fault&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Reserved_16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Reserved_17&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Reserved_18&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Reserved_19&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Fetch_GPage_Fault&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Load_GPage_Fault&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_Virtual_Instr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+&nbsp;E_SAMO_GPage_Fault&nbsp;&nbsp;&nbsp;:&nbsp;unit,<br>
+<br>
+&nbsp;/*&nbsp;extensions&nbsp;*/<br>
+&nbsp;E_Extension&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;ext_exc_type<br>
+}<br>
+<br>
+val&nbsp;exceptionType_to_bits&nbsp;:&nbsp;ExceptionType&nbsp;-&gt;&nbsp;exc_code<br>
+function&nbsp;exceptionType_to_bits(e)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(e)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Addr_Align()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x00</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Access_Fault()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x01</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Illegal_Instr()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x02</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Breakpoint()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x03</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Addr_Align()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x04</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Access_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x05</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Addr_Align()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x06</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Access_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x07</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_U_EnvCall()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x08</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_S_EnvCall()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x09</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_VS_EnvCall()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x0a</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_M_EnvCall()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x0b</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Page_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x0c</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Page_Fault()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x0d</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_14()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x0e</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Page_Fault()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x0f</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_16()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x10</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_17()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x11</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_18()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x12</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_19()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x13</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_GPage_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x14</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_GPage_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x15</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Virtual_Instr()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x16</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_GPage_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x17</span>,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;extensions&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Extension(e)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">ext_exc_type_to_bits(e)</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+val&nbsp;num_of_ExceptionType&nbsp;:&nbsp;ExceptionType&nbsp;-&gt;&nbsp;{'n,&nbsp;(0&nbsp;&lt;=&nbsp;'n&nbsp;&lt;&nbsp;xlen).&nbsp;int('n)}<br>
+function&nbsp;num_of_ExceptionType(e)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(e)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Addr_Align()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;0,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Access_Fault()&nbsp;=&gt;&nbsp;1,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Illegal_Instr()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;2,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Breakpoint()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;3,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Addr_Align()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;4,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Access_Fault()&nbsp;&nbsp;=&gt;&nbsp;5,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Addr_Align()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;6,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Access_Fault()&nbsp;&nbsp;=&gt;&nbsp;7,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_U_EnvCall()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;8,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_S_EnvCall()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;9,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_VS_EnvCall()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">10</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_M_EnvCall()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">11</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Page_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">12</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Page_Fault()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">13</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_14()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">14</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Page_Fault()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">15</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_16()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">16</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_17()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">17</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_18()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">18</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_19()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">19</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_GPage_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">20</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_GPage_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">21</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Virtual_Instr()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">22</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_GPage_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">23</span>,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;extensions&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Extension(e)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">num_of_ext_exc_type(e)</span><br>
+<br>
+&nbsp;&nbsp;}</span><br>
+<br>
+val&nbsp;exceptionType_to_str&nbsp;:&nbsp;ExceptionType&nbsp;-&gt;&nbsp;string<br>
+function&nbsp;exceptionType_to_str(e)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(e)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Addr_Align()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;misaligned-fetch&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Access_Fault()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fetch-access-fault&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Illegal_Instr()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;illegal-instruction&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Breakpoint()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;breakpoint&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Addr_Align()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;misaligned-load&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Access_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;load-access-fault&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Addr_Align()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;misaliged-store/amo&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Access_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;store/amo-access-fault&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_U_EnvCall()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;u-call&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_S_EnvCall()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;s-call&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_VS_EnvCall()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;vs-call&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_M_EnvCall()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;m-call&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Page_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fetch-page-fault&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Page_Fault()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;load-page-fault&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_14()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;reserved-14&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Page_Fault()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;store/amo-page-fault&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_16()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;reserved-16&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_17()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;reserved-17&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_18()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;reserved-18&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Reserved_19()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;reserved-19&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_GPage_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;fetch-guest-page-fault&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_GPage_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;load-guest-page-fault&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Virtual_Instr()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;virtual-instruction&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_GPage_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">&quot;store/amo-guest-page-fault&quot;</span>,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;extensions&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Extension(e)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">ext_exc_type_to_str(e)</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+overload&nbsp;to_str&nbsp;=&nbsp;{exceptionType_to_str}<br>
+<br>
+/*<br>
+&nbsp;*&nbsp;Update&nbsp;exception&nbsp;type&nbsp;with&nbsp;a&nbsp;given&nbsp;memory&nbsp;access&nbsp;type.<br>
+&nbsp;*<br>
+&nbsp;*&nbsp;Note:&nbsp;could&nbsp;probably&nbsp;be&nbsp;modeled&nbsp;in&nbsp;a&nbsp;nicer,&nbsp;more&nbsp;intuitive&nbsp;manner<br>
+&nbsp;*/<br>
+<br>
+function&nbsp;E_Addr_Align_of_AccessType(a:&nbsp;AccessType(ext_access_type))&nbsp;-&gt;&nbsp;ExceptionType&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;a&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Read(_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Load_Addr_Align()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Write(_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_SAMO_Addr_Align()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ReadWrite(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_SAMO_Addr_Align()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Execute(_)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Fetch_Addr_Align()</span>,<br>
+&nbsp;&nbsp;}</span><br>
+<br>
+function&nbsp;E_Access_Fault_of_AccessType(a:&nbsp;AccessType(ext_access_type))&nbsp;-&gt;&nbsp;ExceptionType&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;a&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Read(_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Load_Access_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Write(_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_SAMO_Access_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ReadWrite(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_SAMO_Access_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Execute(_)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Fetch_Access_Fault()</span>,<br>
+&nbsp;&nbsp;}</span><br>
+<br>
+function&nbsp;E_Page_Fault_of_AccessType(a:&nbsp;AccessType(ext_access_type))&nbsp;-&gt;&nbsp;ExceptionType&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;a&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Read(_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_Load_Page_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Write(_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">E_SAMO_Page_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ReadWrite(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">E_SAMO_Page_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Execute(_)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">E_Fetch_Page_Fault()</span>,<br>
+&nbsp;&nbsp;}</span><br>
+<br>
+function&nbsp;E_GPage_Fault_of_AccessType(a:&nbsp;AccessType(ext_access_type))&nbsp;-&gt;&nbsp;ExceptionType&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;a&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Read(_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_Load_GPage_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Write(_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_SAMO_GPage_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ReadWrite(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_SAMO_GPage_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Execute(_)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_Fetch_GPage_Fault()</span>,<br>
+&nbsp;&nbsp;}</span><br>
+<br>
+val&nbsp;exceptionType_update_AccessType&nbsp;:&nbsp;(ExceptionType,&nbsp;AccessType(ext_access_type))&nbsp;-&gt;&nbsp;ExceptionType<br>
+function&nbsp;exceptionType_update_AccessType(e,&nbsp;a)&nbsp;=<br>
+<span style="background-color: hsl(120, 85%, 80%)">match(e)&nbsp;{<br>
+&nbsp;&nbsp;E_Fetch_Addr_Align()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">E_Addr_Align_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;E_Load_Addr_Align()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">E_Addr_Align_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;E_SAMO_Addr_Align()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">E_Addr_Align_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;E_Fetch_Access_Fault()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">E_Access_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;E_Load_Access_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">E_Access_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;E_SAMO_Access_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">E_Access_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;E_Fetch_Page_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_Page_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;E_Load_Page_Fault()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">E_Page_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;E_SAMO_Page_Fault()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">E_Page_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;E_Fetch_GPage_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_GPage_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;E_Load_GPage_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">E_GPage_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;E_SAMO_GPage_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">E_GPage_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;_&nbsp;=&gt;&nbsp;e&nbsp;/*&nbsp;Other&nbsp;exceptions&nbsp;are&nbsp;not&nbsp;access&nbsp;type&nbsp;specific&nbsp;*/<br>
+}</span><br>
+<br>
+/*&nbsp;Possible&nbsp;trap&nbsp;causes:&nbsp;either&nbsp;a&nbsp;synchronous&nbsp;exception&nbsp;or&nbsp;asynchronous&nbsp;interrupt&nbsp;*/<br>
+<br>
+union&nbsp;TrapCause&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;I&nbsp;:&nbsp;InterruptType,<br>
+&nbsp;&nbsp;E&nbsp;:&nbsp;ExceptionType,<br>
+}<br>
+<br>
+val&nbsp;trapCause_to_bits&nbsp;:&nbsp;TrapCause&nbsp;-&gt;&nbsp;exc_code<br>
+function&nbsp;trapCause_to_bits(t)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;t&nbsp;{<br>
+&nbsp;&nbsp;I(i)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">interruptType_to_bits(i)</span>,<br>
+&nbsp;&nbsp;E(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">exceptionType_to_bits(e)</span>,<br>
+}</span><br>
+<br>
+val&nbsp;trapCause_is_interrupt&nbsp;:&nbsp;TrapCause&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;trapCause_is_interrupt(t)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;t&nbsp;{<br>
+&nbsp;&nbsp;I(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">false</span>,<br>
+}</span><br>
+<br>
+val&nbsp;trapCause_to_str&nbsp;:&nbsp;TrapCause&nbsp;-&gt;&nbsp;string<br>
+function&nbsp;trapCause_to_str(t)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;t&nbsp;{<br>
+&nbsp;&nbsp;I(i)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">interruptType_to_str(i)</span>,<br>
+&nbsp;&nbsp;E(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">exceptionType_to_str(e)</span>,<br>
+}</span><br>
+<br>
+overload&nbsp;to_str&nbsp;=&nbsp;{trapCause_to_str}<br>
+<br>
+/*&nbsp;trap&nbsp;modes&nbsp;*/<br>
+<br>
+type&nbsp;tv_mode&nbsp;=&nbsp;bits(2)<br>
+enum&nbsp;TrapVectorMode&nbsp;=&nbsp;{TV_Direct,&nbsp;TV_Vector,&nbsp;TV_Reserved}<br>
+<br>
+val&nbsp;trapVectorMode_of_bits&nbsp;:&nbsp;tv_mode&nbsp;-&gt;&nbsp;TrapVectorMode<br>
+function&nbsp;trapVectorMode_of_bits&nbsp;(m)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(m)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">TV_Direct</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">TV_Vector</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">TV_Reserved</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+/*&nbsp;extension&nbsp;context&nbsp;status&nbsp;*/<br>
+<br>
+type&nbsp;ext_status&nbsp;=&nbsp;bits(2)<br>
+enum&nbsp;ExtStatus&nbsp;=&nbsp;{Off,&nbsp;Initial,&nbsp;Clean,&nbsp;Dirty}<br>
+<br>
+val&nbsp;extStatus_to_bits&nbsp;:&nbsp;ExtStatus&nbsp;-&gt;&nbsp;ext_status<br>
+function&nbsp;extStatus_to_bits(e)&nbsp;=<br>
+&nbsp;&nbsp;match&nbsp;(e)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Off&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;0b00,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Initial&nbsp;=&gt;&nbsp;0b01,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Clean&nbsp;&nbsp;&nbsp;=&gt;&nbsp;0b10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Dirty&nbsp;&nbsp;&nbsp;=&gt;&nbsp;0b11<br>
+&nbsp;&nbsp;}<br>
+<br>
+val&nbsp;extStatus_of_bits&nbsp;:&nbsp;ext_status&nbsp;-&gt;&nbsp;ExtStatus<br>
+function&nbsp;extStatus_of_bits(e)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(e)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Off</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Initial</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Clean</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">Dirty</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+/*&nbsp;address&nbsp;translation&nbsp;stages&nbsp;&&nbsp;modes&nbsp;*/<br>
+<br>
+/*<br>
+&nbsp;*&nbsp;We&nbsp;model&nbsp;3&nbsp;stages:<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;-&nbsp;S:&nbsp;&nbsp;va&nbsp;--&gt;&nbsp;pa&nbsp;&nbsp;(V=0)<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;-&nbsp;VS:&nbsp;va&nbsp;--&gt;&nbsp;gpa&nbsp;(V=1)<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;-&nbsp;G:&nbsp;&nbsp;gpa&nbsp;-&gt;&nbsp;spa&nbsp;(V=1)<br>
+&nbsp;*/<br>
+enum&nbsp;AddressTranslationStage&nbsp;=&nbsp;{S,&nbsp;VS,&nbsp;G}<br>
+<br>
+function&nbsp;AddressTranslationStage_to_str(s&nbsp;:&nbsp;AddressTranslationStage)&nbsp;-&gt;&nbsp;string&nbsp;=<br>
+&nbsp;&nbsp;match&nbsp;s&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;S&nbsp;&nbsp;=&gt;&nbsp;&quot;S&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;VS&nbsp;=&gt;&nbsp;&quot;VS&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;G&nbsp;&nbsp;=&gt;&nbsp;&quot;G&quot;<br>
+&nbsp;&nbsp;}<br>
+overload&nbsp;to_str&nbsp;=&nbsp;{AddressTranslationStage_to_str}<br>
+<br>
+enum&nbsp;AddressTranslationMode&nbsp;=&nbsp;{Bare,&nbsp;Sv32,&nbsp;Sv39,&nbsp;Sv48,&nbsp;Sv57,&nbsp;Sv32x4,&nbsp;Sv39x4,&nbsp;Sv48x4,&nbsp;Sv57x4}<br>
+<br>
+type&nbsp;atp64_mode&nbsp;=&nbsp;bits(4)<br>
+<br>
+function&nbsp;satp64Mode_of_bits(a&nbsp;:&nbsp;Architecture,&nbsp;m&nbsp;:&nbsp;atp64_mode)&nbsp;-&gt;&nbsp;option(AddressTranslationMode)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(a,&nbsp;m)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;&nbsp;&nbsp;&nbsp;0x0)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Some(Bare)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(RV32,&nbsp;0x1)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">Some(Sv32)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(RV64,&nbsp;0x8)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Some(Sv39)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(RV64,&nbsp;0x9)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Some(Sv48)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(RV64,&nbsp;0xa)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">Some(Sv57)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">None()</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+function&nbsp;hgatp64Mode_of_bits(a&nbsp;:&nbsp;Architecture,&nbsp;m&nbsp;:&nbsp;atp64_mode)&nbsp;-&gt;&nbsp;option(AddressTranslationMode)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;(a,&nbsp;m)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;&nbsp;&nbsp;&nbsp;0x0)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Some(Bare)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(RV32,&nbsp;0x1)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">Some(Sv32x4)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(RV64,&nbsp;0x8)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Some(Sv39x4)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(RV64,&nbsp;0x9)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">Some(Sv48x4)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(RV64,&nbsp;0xa)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">Some(Sv57x4)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">None()</span><br>
+&nbsp;&nbsp;}</span><br>
+<br>
+function&nbsp;AddressTranslationMode_to_str(atm:&nbsp;AddressTranslationMode)&nbsp;-&gt;&nbsp;string&nbsp;=&nbsp;match&nbsp;atm&nbsp;{<br>
+&nbsp;&nbsp;Bare&nbsp;=&gt;&nbsp;&quot;Bare&quot;,<br>
+&nbsp;&nbsp;Sv32&nbsp;=&gt;&nbsp;&quot;Sv32&quot;,<br>
+&nbsp;&nbsp;Sv39&nbsp;=&gt;&nbsp;&quot;Sv39&quot;,<br>
+&nbsp;&nbsp;Sv48&nbsp;=&gt;&nbsp;&quot;Sv48&quot;,<br>
+&nbsp;&nbsp;Sv57&nbsp;=&gt;&nbsp;&quot;Sv57&quot;,<br>
+&nbsp;&nbsp;Sv32x4&nbsp;=&gt;&nbsp;&quot;Sv32x4&quot;,<br>
+&nbsp;&nbsp;Sv39x4&nbsp;=&gt;&nbsp;&quot;Sv39x4&quot;,<br>
+&nbsp;&nbsp;Sv48x4&nbsp;=&gt;&nbsp;&quot;Sv48x4&quot;,<br>
+&nbsp;&nbsp;Sv57x4&nbsp;=&gt;&nbsp;&quot;Sv57x4&quot;<br>
+}<br>
+<br>
+overload&nbsp;to_str&nbsp;=&nbsp;{AddressTranslationMode_to_str}<br>
+<br>
+/*&nbsp;CSR&nbsp;access&nbsp;control&nbsp;bits&nbsp;(from&nbsp;CSR&nbsp;addresses)&nbsp;*/<br>
+<br>
+type&nbsp;csrRW&nbsp;=&nbsp;bits(2)&nbsp;&nbsp;/*&nbsp;read/write&nbsp;*/<br>
+<br>
+/*&nbsp;instruction&nbsp;opcode&nbsp;grouping&nbsp;*/<br>
+enum&nbsp;uop&nbsp;=&nbsp;{RISCV_LUI,&nbsp;RISCV_AUIPC}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;upper&nbsp;immediate&nbsp;ops&nbsp;*/<br>
+enum&nbsp;bop&nbsp;=&nbsp;{RISCV_BEQ,&nbsp;RISCV_BNE,&nbsp;RISCV_BLT,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RISCV_BGE,&nbsp;RISCV_BLTU,&nbsp;RISCV_BGEU}&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;branch&nbsp;ops&nbsp;*/<br>
+enum&nbsp;iop&nbsp;=&nbsp;{RISCV_ADDI,&nbsp;RISCV_SLTI,&nbsp;RISCV_SLTIU,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RISCV_XORI,&nbsp;RISCV_ORI,&nbsp;RISCV_ANDI}&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;immediate&nbsp;ops&nbsp;*/<br>
+enum&nbsp;sop&nbsp;=&nbsp;{RISCV_SLLI,&nbsp;RISCV_SRLI,&nbsp;RISCV_SRAI}&nbsp;&nbsp;&nbsp;/*&nbsp;shift&nbsp;ops&nbsp;*/<br>
+enum&nbsp;rop&nbsp;=&nbsp;{RISCV_ADD,&nbsp;RISCV_SUB,&nbsp;RISCV_SLL,&nbsp;RISCV_SLT,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RISCV_SLTU,&nbsp;RISCV_XOR,&nbsp;RISCV_SRL,&nbsp;RISCV_SRA,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RISCV_OR,&nbsp;RISCV_AND}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;reg-reg&nbsp;ops&nbsp;*/<br>
+<br>
+enum&nbsp;ropw&nbsp;&nbsp;=&nbsp;{RISCV_ADDW,&nbsp;RISCV_SUBW,&nbsp;RISCV_SLLW,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RISCV_SRLW,&nbsp;RISCV_SRAW}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;reg-reg&nbsp;32-bit&nbsp;ops&nbsp;*/<br>
+enum&nbsp;sopw&nbsp;=&nbsp;{RISCV_SLLIW,&nbsp;RISCV_SRLIW,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RISCV_SRAIW}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;RV64-only&nbsp;shift&nbsp;ops&nbsp;*/<br>
+enum&nbsp;amoop&nbsp;=&nbsp;{AMOSWAP,&nbsp;AMOADD,&nbsp;AMOXOR,&nbsp;AMOAND,&nbsp;AMOOR,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AMOMIN,&nbsp;AMOMAX,&nbsp;AMOMINU,&nbsp;AMOMAXU}&nbsp;&nbsp;&nbsp;/*&nbsp;AMO&nbsp;ops&nbsp;*/<br>
+enum&nbsp;csrop&nbsp;=&nbsp;{CSRRW,&nbsp;CSRRS,&nbsp;CSRRC}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;CSR&nbsp;ops&nbsp;*/<br>
+<br>
+enum&nbsp;brop_zba&nbsp;=&nbsp;{RISCV_SH1ADD,&nbsp;RISCV_SH2ADD,&nbsp;RISCV_SH3ADD}<br>
+<br>
+enum&nbsp;brop_zbb&nbsp;=&nbsp;{RISCV_ANDN,&nbsp;RISCV_ORN,&nbsp;RISCV_XNOR,&nbsp;RISCV_MAX,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RISCV_MAXU,&nbsp;RISCV_MIN,&nbsp;RISCV_MINU,&nbsp;RISCV_ROL,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RISCV_ROR}<br>
+<br>
+enum&nbsp;brop_zbkb&nbsp;=&nbsp;{RISCV_PACK,&nbsp;RISCV_PACKH}<br>
+<br>
+enum&nbsp;brop_zbs&nbsp;=&nbsp;{RISCV_BCLR,&nbsp;RISCV_BEXT,&nbsp;RISCV_BINV,&nbsp;RISCV_BSET}<br>
+<br>
+enum&nbsp;bropw_zba&nbsp;=&nbsp;{RISCV_ADDUW,&nbsp;RISCV_SH1ADDUW,&nbsp;RISCV_SH2ADDUW,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RISCV_SH3ADDUW}<br>
+<br>
+enum&nbsp;bropw_zbb&nbsp;=&nbsp;{RISCV_ROLW,&nbsp;RISCV_RORW}<br>
+<br>
+enum&nbsp;biop_zbs&nbsp;=&nbsp;{RISCV_BCLRI,&nbsp;RISCV_BEXTI,&nbsp;RISCV_BINVI,&nbsp;RISCV_BSETI}<br>
+<br>
+enum&nbsp;extop_zbb&nbsp;=&nbsp;{RISCV_SEXTB,&nbsp;RISCV_SEXTH,&nbsp;RISCV_ZEXTH}<br>
+<br>
+enum&nbsp;zicondop&nbsp;=&nbsp;{RISCV_CZERO_EQZ,&nbsp;RISCV_CZERO_NEZ}<br>
+<br>
+val&nbsp;sep&nbsp;:&nbsp;unit&nbsp;&lt;-&gt;&nbsp;string<br>
+mapping&nbsp;sep&nbsp;:&nbsp;unit&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;opt_spc()&nbsp;^&nbsp;&quot;,&quot;&nbsp;^&nbsp;def_spc()<br>
+}<br>
+<br>
+mapping&nbsp;bool_bits&nbsp;:&nbsp;bool&nbsp;&lt;-&gt;&nbsp;bits(1)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">true</span>&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b1</span>,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">false</span>&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b0</span><br>
+}<br>
+<br>
+mapping&nbsp;bool_not_bits&nbsp;:&nbsp;bool&nbsp;&lt;-&gt;&nbsp;bits(1)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">true</span>&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b0,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">false</span>&nbsp;&nbsp;&lt;-&gt;&nbsp;0b1<br>
+}<br>
+<br>
+mapping&nbsp;size_bits&nbsp;:&nbsp;word_width&nbsp;&lt;-&gt;&nbsp;bits(2)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">BYTE</span>&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b00</span>,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">HALF</span>&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b01</span>,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">WORD</span>&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b10</span>,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">DOUBLE</span>&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b11</span><br>
+}<br>
+<br>
+mapping&nbsp;size_mnemonic&nbsp;:&nbsp;word_width&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;BYTE&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">&quot;b&quot;</span>,<br>
+&nbsp;&nbsp;HALF&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">&quot;h&quot;</span>,<br>
+&nbsp;&nbsp;WORD&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">&quot;w&quot;</span>,<br>
+&nbsp;&nbsp;DOUBLE&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">&quot;d&quot;</span><br>
+}<br>
+<br>
+val&nbsp;word_width_bytes&nbsp;:&nbsp;word_width&nbsp;-&gt;&nbsp;{'s,&nbsp;'s&nbsp;==&nbsp;1&nbsp;|&nbsp;'s&nbsp;==&nbsp;2&nbsp;|&nbsp;'s&nbsp;==&nbsp;4&nbsp;|&nbsp;'s&nbsp;==&nbsp;8&nbsp;.&nbsp;atom('s)}<br>
+function&nbsp;word_width_bytes&nbsp;width&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;width&nbsp;{<br>
+&nbsp;&nbsp;BYTE&nbsp;&nbsp;&nbsp;=&gt;&nbsp;1,<br>
+&nbsp;&nbsp;HALF&nbsp;&nbsp;&nbsp;=&gt;&nbsp;2,<br>
+&nbsp;&nbsp;WORD&nbsp;&nbsp;&nbsp;=&gt;&nbsp;4,<br>
+&nbsp;&nbsp;DOUBLE&nbsp;=&gt;&nbsp;8<br>
+}</span><br>
+<br>
+/*!<br>
+&nbsp;*&nbsp;Raise&nbsp;an&nbsp;internal&nbsp;error&nbsp;reporting&nbsp;that&nbsp;width&nbsp;w&nbsp;is&nbsp;invalid&nbsp;for&nbsp;access&nbsp;kind,&nbsp;k,<br>
+&nbsp;*&nbsp;and&nbsp;current&nbsp;xlen.&nbsp;The&nbsp;file&nbsp;name&nbsp;and&nbsp;line&nbsp;number&nbsp;should&nbsp;be&nbsp;passed&nbsp;in&nbsp;as&nbsp;the<br>
+&nbsp;*&nbsp;first&nbsp;two&nbsp;arguments&nbsp;using&nbsp;the&nbsp;__FILE__&nbsp;and&nbsp;__LINE__&nbsp;built-in&nbsp;macros.<br>
+&nbsp;*&nbsp;This&nbsp;is&nbsp;mainly&nbsp;used&nbsp;to&nbsp;supress&nbsp;Sail&nbsp;warnings&nbsp;about&nbsp;incomplete&nbsp;matches&nbsp;and<br>
+&nbsp;*&nbsp;should&nbsp;be&nbsp;unreachable.&nbsp;See&nbsp;https://github.com/riscv/sail-riscv/issues/194<br>
+&nbsp;*&nbsp;and&nbsp;https://github.com/riscv/sail-riscv/pull/197&nbsp;.<br>
+&nbsp;*/<br>
+val&nbsp;report_invalid_width&nbsp;:&nbsp;forall&nbsp;('a&nbsp;:&nbsp;Type).&nbsp;(string,&nbsp;int,&nbsp;word_width,&nbsp;string)&nbsp;-&gt;&nbsp;'a<br>
+function&nbsp;report_invalid_width(f&nbsp;,&nbsp;l,&nbsp;w,&nbsp;k)&nbsp;-&gt;&nbsp;'a&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;/*<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;Ideally&nbsp;we&nbsp;would&nbsp;call&nbsp;internal_error&nbsp;here&nbsp;but&nbsp;this&nbsp;triggers&nbsp;a&nbsp;Sail&nbsp;bug,<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;https://github.com/rems-project/sail/issues/203&nbsp;in&nbsp;versions&nbsp;&lt;&nbsp;0.15.1,&nbsp;so<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;we&nbsp;work&nbsp;around&nbsp;this&nbsp;by&nbsp;manually&nbsp;inlining.<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;TODO&nbsp;when&nbsp;we&nbsp;are&nbsp;happy&nbsp;to&nbsp;require&nbsp;Sail&nbsp;&gt;=&nbsp;0.15.1&nbsp;uncomment&nbsp;the&nbsp;following<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;and&nbsp;remove&nbsp;the&nbsp;rest&nbsp;of&nbsp;the&nbsp;function.<br>
+&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;//&nbsp;internal_error(f,&nbsp;l,&nbsp;&quot;Invalid&nbsp;width,&nbsp;&quot;&nbsp;^&nbsp;size_mnemonic(w)&nbsp;^&nbsp;&quot;,&nbsp;for&nbsp;&quot;&nbsp;^&nbsp;k&nbsp;^<br>
+&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;&quot;&nbsp;with&nbsp;xlen=&quot;&nbsp;^&nbsp;string_of_int(sizeof(xlen)));<br>
+&nbsp;&nbsp;assert&nbsp;(false,&nbsp;f&nbsp;^&nbsp;&quot;:&quot;&nbsp;^&nbsp;string_of_int(l)&nbsp;^&nbsp;&quot;:&nbsp;&quot;&nbsp;^&nbsp;&quot;Invalid&nbsp;width,&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;size_mnemonic(w)&nbsp;^&nbsp;&quot;,&nbsp;for&nbsp;&quot;&nbsp;^&nbsp;k&nbsp;^&nbsp;&quot;&nbsp;with&nbsp;xlen=&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;string_of_int(sizeof(xlen)));<br>
+&nbsp;&nbsp;throw&nbsp;Error_internal_error()<br>
+}</span><br>
+</code>
+</body>
+</html>

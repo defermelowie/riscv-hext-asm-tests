@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>riscv_vmem</title></head>
+<body>
+<h1>riscv_vmem.sail (156/284) 55%</h1>
+<code style="display: block">
+/*=======================================================================================*/<br>
+/*&nbsp;&nbsp;RISCV&nbsp;Sail&nbsp;Model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;Sail&nbsp;RISC-V&nbsp;architecture&nbsp;model,&nbsp;comprising&nbsp;all&nbsp;files&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;directories&nbsp;except&nbsp;for&nbsp;the&nbsp;snapshots&nbsp;of&nbsp;the&nbsp;Lem&nbsp;and&nbsp;Sail&nbsp;libraries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;in&nbsp;the&nbsp;prover_snapshots&nbsp;directory&nbsp;(which&nbsp;include&nbsp;copies&nbsp;of&nbsp;their&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;licences),&nbsp;is&nbsp;subject&nbsp;to&nbsp;the&nbsp;BSD&nbsp;two-clause&nbsp;licence&nbsp;below.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2017-2023&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Prashanth&nbsp;Mundkur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Rishiyur&nbsp;S.&nbsp;Nikhil&nbsp;and&nbsp;Bluespec,&nbsp;Inc.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jon&nbsp;French&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Brian&nbsp;Campbell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Robert&nbsp;Norton-Wright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alasdair&nbsp;Armstrong&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Thomas&nbsp;Bauereiss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Shaked&nbsp;Flur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Christopher&nbsp;Pulte&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Sewell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alexander&nbsp;Richardson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Hesham&nbsp;Almatary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jessica&nbsp;Clarke&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Microsoft,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Robert&nbsp;Norton-Wright&nbsp;and&nbsp;Nathaniel&nbsp;Wesley&nbsp;Filardo&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Rugg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Aril&nbsp;Computer&nbsp;Corp.,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Scott&nbsp;Johnson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Philipp&nbsp;Tomsich&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;VRULL&nbsp;GmbH,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;its&nbsp;employees&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;All&nbsp;rights&nbsp;reserved.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;the&nbsp;above&nbsp;within&nbsp;the&nbsp;Rigorous&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Engineering&nbsp;of&nbsp;Mainstream&nbsp;Systems&nbsp;(REMS)&nbsp;project,&nbsp;partly&nbsp;funded&nbsp;by&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;EPSRC&nbsp;grant&nbsp;EP/K008528/1,&nbsp;at&nbsp;the&nbsp;Universities&nbsp;of&nbsp;Cambridge&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Edinburgh.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;SRI&nbsp;International&nbsp;and&nbsp;the&nbsp;University&nbsp;of&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Cambridge&nbsp;Computer&nbsp;Laboratory&nbsp;(Department&nbsp;of&nbsp;Computer&nbsp;Science&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Technology)&nbsp;under&nbsp;DARPA/AFRL&nbsp;contract&nbsp;FA8650-18-C-7809&nbsp;(&quot;CIFV&quot;),&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;under&nbsp;DARPA&nbsp;contract&nbsp;HR0011-18-C-0016&nbsp;(&quot;ECATS&quot;)&nbsp;as&nbsp;part&nbsp;of&nbsp;the&nbsp;DARPA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SSITH&nbsp;research&nbsp;programme.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;project&nbsp;has&nbsp;received&nbsp;funding&nbsp;from&nbsp;the&nbsp;European&nbsp;Research&nbsp;Council&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;(ERC)&nbsp;under&nbsp;the&nbsp;European&nbsp;Union’s&nbsp;Horizon&nbsp;2020&nbsp;research&nbsp;and&nbsp;innovation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;programme&nbsp;(grant&nbsp;agreement&nbsp;789108,&nbsp;ELVER).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Redistribution&nbsp;and&nbsp;use&nbsp;in&nbsp;source&nbsp;and&nbsp;binary&nbsp;forms,&nbsp;with&nbsp;or&nbsp;without&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;modification,&nbsp;are&nbsp;permitted&nbsp;provided&nbsp;that&nbsp;the&nbsp;following&nbsp;conditions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;are&nbsp;met:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;1.&nbsp;Redistributions&nbsp;of&nbsp;source&nbsp;code&nbsp;must&nbsp;retain&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;2.&nbsp;Redistributions&nbsp;in&nbsp;binary&nbsp;form&nbsp;must&nbsp;reproduce&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;documentation&nbsp;and/or&nbsp;other&nbsp;materials&nbsp;provided&nbsp;with&nbsp;the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;distribution.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;THIS&nbsp;SOFTWARE&nbsp;IS&nbsp;PROVIDED&nbsp;BY&nbsp;THE&nbsp;AUTHOR&nbsp;AND&nbsp;CONTRIBUTORS&nbsp;``AS&nbsp;IS''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;AND&nbsp;ANY&nbsp;EXPRESS&nbsp;OR&nbsp;IMPLIED&nbsp;WARRANTIES,&nbsp;INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;TO,&nbsp;THE&nbsp;IMPLIED&nbsp;WARRANTIES&nbsp;OF&nbsp;MERCHANTABILITY&nbsp;AND&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;PARTICULAR&nbsp;PURPOSE&nbsp;ARE&nbsp;DISCLAIMED.&nbsp;&nbsp;IN&nbsp;NO&nbsp;EVENT&nbsp;SHALL&nbsp;THE&nbsp;AUTHOR&nbsp;OR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;CONTRIBUTORS&nbsp;BE&nbsp;LIABLE&nbsp;FOR&nbsp;ANY&nbsp;DIRECT,&nbsp;INDIRECT,&nbsp;INCIDENTAL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SPECIAL,&nbsp;EXEMPLARY,&nbsp;OR&nbsp;CONSEQUENTIAL&nbsp;DAMAGES&nbsp;(INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;LIMITED&nbsp;TO,&nbsp;PROCUREMENT&nbsp;OF&nbsp;SUBSTITUTE&nbsp;GOODS&nbsp;OR&nbsp;SERVICES;&nbsp;LOSS&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;USE,&nbsp;DATA,&nbsp;OR&nbsp;PROFITS;&nbsp;OR&nbsp;BUSINESS&nbsp;INTERRUPTION)&nbsp;HOWEVER&nbsp;CAUSED&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;ON&nbsp;ANY&nbsp;THEORY&nbsp;OF&nbsp;LIABILITY,&nbsp;WHETHER&nbsp;IN&nbsp;CONTRACT,&nbsp;STRICT&nbsp;LIABILITY,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OR&nbsp;TORT&nbsp;(INCLUDING&nbsp;NEGLIGENCE&nbsp;OR&nbsp;OTHERWISE)&nbsp;ARISING&nbsp;IN&nbsp;ANY&nbsp;WAY&nbsp;OUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OF&nbsp;THE&nbsp;USE&nbsp;OF&nbsp;THIS&nbsp;SOFTWARE,&nbsp;EVEN&nbsp;IF&nbsp;ADVISED&nbsp;OF&nbsp;THE&nbsp;POSSIBILITY&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SUCH&nbsp;DAMAGE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*=======================================================================================*/<br>
+<br>
+//&nbsp;****************************************************************<br>
+//&nbsp;Virtual&nbsp;memory&nbsp;address&nbsp;translation&nbsp;and&nbsp;memory&nbsp;protection,<br>
+//&nbsp;including&nbsp;PTWs&nbsp;(Page&nbsp;Table&nbsp;Walks)&nbsp;and&nbsp;TLBs&nbsp;(Translation&nbsp;Look-aside&nbsp;Buffers)<br>
+//&nbsp;Supported&nbsp;VM&nbsp;modes:&nbsp;Sv32,&nbsp;Sv39,&nbsp;Sv48.&nbsp;&nbsp;FUTURE:&nbsp;Sv57<br>
+<br>
+//&nbsp;STYLE&nbsp;NOTES:<br>
+//&nbsp;&nbsp;&nbsp;PRIVATE&nbsp;items&nbsp;are&nbsp;used&nbsp;only&nbsp;within&nbsp;this&nbsp;VM&nbsp;code.<br>
+//&nbsp;&nbsp;&nbsp;PUBLIC&nbsp;&nbsp;items&nbsp;are&nbsp;invoked&nbsp;from&nbsp;other&nbsp;parts&nbsp;of&nbsp;sail-riscv.<br>
+<br>
+//&nbsp;TLB&nbsp;NOTE:<br>
+//&nbsp;TLBs&nbsp;are&nbsp;not&nbsp;part&nbsp;of&nbsp;the&nbsp;RISC-V&nbsp;architecture&nbsp;specification.<br>
+//&nbsp;However,&nbsp;we&nbsp;model&nbsp;a&nbsp;simple&nbsp;TLB&nbsp;so&nbsp;that<br>
+//&nbsp;(1)&nbsp;we&nbsp;can&nbsp;meaningfully&nbsp;test&nbsp;SFENCE.VMA&nbsp;which&nbsp;is&nbsp;a&nbsp;no-op&nbsp;wihout&nbsp;TLBs;<br>
+//&nbsp;(2)&nbsp;we&nbsp;can&nbsp;greatly&nbsp;speed&nbsp;up&nbsp;simulation&nbsp;speed<br>
+//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(e.g.,&nbsp;from&nbsp;10s&nbsp;or&nbsp;minutes&nbsp;to&nbsp;few&nbsp;minutes&nbsp;for&nbsp;Linux&nbsp;boot)<br>
+//&nbsp;The&nbsp;TLB&nbsp;implementation&nbsp;is&nbsp;in&nbsp;a&nbsp;separate&nbsp;file:&nbsp;riscv_vmem_tlb.sail<br>
+//&nbsp;The&nbsp;code&nbsp;in&nbsp;this&nbsp;file&nbsp;is&nbsp;structured&nbsp;and&nbsp;commented&nbsp;so&nbsp;you&nbsp;can&nbsp;easily<br>
+//&nbsp;ignore&nbsp;TLB&nbsp;functionality&nbsp;at&nbsp;first&nbsp;reading.<br>
+<br>
+//&nbsp;****************************************************************<br>
+//&nbsp;Parameters&nbsp;for&nbsp;VM&nbsp;modes&nbsp;Sv32,&nbsp;Sv39,&nbsp;Sv48,&nbsp;Sv57,&nbsp;Sv32x4,&nbsp;Sv39x4,&nbsp;Sv48x4&nbsp;and&nbsp;Sv57x4<br>
+<br>
+//&nbsp;All&nbsp;VM&nbsp;modes&nbsp;use&nbsp;the&nbsp;same&nbsp;page&nbsp;size&nbsp;(4KB,&nbsp;with&nbsp;12-bit&nbsp;index)<br>
+<br>
+//&nbsp;This&nbsp;two-line&nbsp;idiom&nbsp;constrains&nbsp;the&nbsp;value&nbsp;(2nd&nbsp;line)&nbsp;to&nbsp;be&nbsp;a&nbsp;singleton,<br>
+//&nbsp;which&nbsp;helps&nbsp;in&nbsp;type-checking&nbsp;wherever&nbsp;it&nbsp;is&nbsp;used.<br>
+type&nbsp;PAGESIZE_BITS&nbsp;:&nbsp;Int&nbsp;=&nbsp;12<br>
+let&nbsp;&nbsp;PAGESIZE_BITS&nbsp;=&nbsp;sizeof(PAGESIZE_BITS)<br>
+<br>
+//&nbsp;PRIVATE<br>
+struct&nbsp;SV_Params&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;//&nbsp;SATP/HGATP&nbsp;CSR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Sv32&nbsp;&nbsp;Sv39&nbsp;&nbsp;Sv48&nbsp;&nbsp;Sv57&nbsp;&nbsp;Sv32x4&nbsp;&nbsp;Sv39x4&nbsp;&nbsp;Sv48x4&nbsp;&nbsp;Sv57x4<br>
+&nbsp;&nbsp;xatp_id_size_bits&nbsp;:&nbsp;{&nbsp;7,&nbsp;9,&nbsp;14,&nbsp;16},&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;14&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;14&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;14<br>
+&nbsp;&nbsp;xatp_id_lsb_index&nbsp;:&nbsp;{22,&nbsp;44},&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;22&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;44<br>
+&nbsp;&nbsp;//&nbsp;SATP/HGATP&nbsp;PPN<br>
+&nbsp;&nbsp;xatp_ppn_size_bits&nbsp;&nbsp;:&nbsp;{22,&nbsp;44},&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;22&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;44<br>
+&nbsp;&nbsp;xatp_ppn_lsb_index&nbsp;&nbsp;:&nbsp;{&nbsp;0},&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0<br>
+<br>
+&nbsp;&nbsp;//&nbsp;VA<br>
+&nbsp;&nbsp;va_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;{32,&nbsp;34,&nbsp;39,&nbsp;41,&nbsp;48,&nbsp;50,&nbsp;57,&nbsp;59},&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;&nbsp;&nbsp;39&nbsp;&nbsp;&nbsp;&nbsp;48&nbsp;&nbsp;&nbsp;&nbsp;57&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;34&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;41&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;59<br>
+&nbsp;&nbsp;vpn_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;{10,&nbsp;&nbsp;9},&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9<br>
+&nbsp;&nbsp;root_vpn_size_bits&nbsp;&nbsp;:&nbsp;{9,&nbsp;&nbsp;10,&nbsp;11,&nbsp;12},&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11<br>
+&nbsp;&nbsp;va_sign_extends&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bool,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;true&nbsp;&nbsp;true&nbsp;&nbsp;true&nbsp;&nbsp;true&nbsp;&nbsp;&nbsp;false&nbsp;&nbsp;&nbsp;false&nbsp;&nbsp;&nbsp;false&nbsp;&nbsp;&nbsp;false<br>
+<br>
+&nbsp;&nbsp;//&nbsp;PTE<br>
+&nbsp;&nbsp;levels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;{&nbsp;2,&nbsp;&nbsp;3,&nbsp;&nbsp;4,&nbsp;&nbsp;5},&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5<br>
+&nbsp;&nbsp;log_pte_size_bytes&nbsp;&nbsp;:&nbsp;{&nbsp;2,&nbsp;&nbsp;3},&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3<br>
+&nbsp;&nbsp;pte_msbs_lsb_index&nbsp;&nbsp;:&nbsp;{32,&nbsp;54},&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;&nbsp;&nbsp;54&nbsp;&nbsp;&nbsp;&nbsp;54&nbsp;&nbsp;&nbsp;&nbsp;54&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;54&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;54&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;54<br>
+&nbsp;&nbsp;pte_msbs_size_bits&nbsp;&nbsp;:&nbsp;{&nbsp;0,&nbsp;10},&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10<br>
+&nbsp;&nbsp;pte_PPNs_lsb_index&nbsp;&nbsp;:&nbsp;{10},&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10<br>
+&nbsp;&nbsp;pte_PPNs_size_bits&nbsp;&nbsp;:&nbsp;{22,&nbsp;44},&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;22&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;44&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;44<br>
+&nbsp;&nbsp;pte_PPN_j_size_bits&nbsp;:&nbsp;{10,&nbsp;&nbsp;9}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9<br>
+}<br>
+<br>
+//&nbsp;PRIVATE<br>
+let&nbsp;sv32_params&nbsp;:&nbsp;SV_Params&nbsp;=&nbsp;struct&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;CSR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_size_bits&nbsp;&nbsp;&nbsp;=&nbsp;9,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_lsb_index&nbsp;&nbsp;&nbsp;=&nbsp;22,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;PPN<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_size_bits&nbsp;&nbsp;=&nbsp;22,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_lsb_index&nbsp;&nbsp;=&nbsp;0,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;VA<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;32,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vpn_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root_vpn_size_bits&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_sign_extends&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;true,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;PTE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;levels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log_pte_size_bytes&nbsp;&nbsp;=&nbsp;2,&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;4&nbsp;Bytes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_lsb_index&nbsp;&nbsp;=&nbsp;32,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_size_bits&nbsp;&nbsp;=&nbsp;0,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_lsb_index&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_size_bits&nbsp;&nbsp;=&nbsp;22,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPN_j_size_bits&nbsp;=&nbsp;10<br>
+}<br>
+<br>
+//&nbsp;PRIVATE<br>
+let&nbsp;sv32x4_params&nbsp;:&nbsp;SV_Params&nbsp;=&nbsp;struct&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;CSR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_size_bits&nbsp;&nbsp;&nbsp;=&nbsp;7,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_lsb_index&nbsp;&nbsp;&nbsp;=&nbsp;22,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;PPN<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_size_bits&nbsp;&nbsp;=&nbsp;22,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_lsb_index&nbsp;&nbsp;=&nbsp;0,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;VA<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;34,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vpn_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root_vpn_size_bits&nbsp;&nbsp;=&nbsp;12,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_sign_extends&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;false,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;PTE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;levels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log_pte_size_bytes&nbsp;&nbsp;=&nbsp;2,&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;4&nbsp;Bytes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_lsb_index&nbsp;&nbsp;=&nbsp;32,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_size_bits&nbsp;&nbsp;=&nbsp;0,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_lsb_index&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_size_bits&nbsp;&nbsp;=&nbsp;22,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPN_j_size_bits&nbsp;=&nbsp;10<br>
+}<br>
+<br>
+//&nbsp;PRIVATE<br>
+let&nbsp;sv39_params&nbsp;:&nbsp;SV_Params&nbsp;=&nbsp;struct&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;CSR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_size_bits&nbsp;&nbsp;&nbsp;=&nbsp;14,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_lsb_index&nbsp;&nbsp;&nbsp;=&nbsp;44,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;PPN<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_size_bits&nbsp;&nbsp;=&nbsp;44,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_lsb_index&nbsp;&nbsp;=&nbsp;0,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;VA<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;39,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vpn_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;9,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root_vpn_size_bits&nbsp;&nbsp;=&nbsp;9,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_sign_extends&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;true,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;PTE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;levels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log_pte_size_bytes&nbsp;&nbsp;=&nbsp;3,&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;8&nbsp;Bytes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_lsb_index&nbsp;&nbsp;=&nbsp;54,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_size_bits&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_lsb_index&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_size_bits&nbsp;&nbsp;=&nbsp;44,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPN_j_size_bits&nbsp;=&nbsp;9<br>
+}<br>
+<br>
+//&nbsp;PRIVATE<br>
+let&nbsp;sv39x4_params&nbsp;:&nbsp;SV_Params&nbsp;=&nbsp;struct&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;CSR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_size_bits&nbsp;&nbsp;&nbsp;=&nbsp;16,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_lsb_index&nbsp;&nbsp;&nbsp;=&nbsp;44,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;PPN<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_size_bits&nbsp;&nbsp;=&nbsp;44,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_lsb_index&nbsp;&nbsp;=&nbsp;0,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;VA<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;41,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vpn_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;9,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root_vpn_size_bits&nbsp;&nbsp;=&nbsp;11,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_sign_extends&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;false,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;PTE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;levels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log_pte_size_bytes&nbsp;&nbsp;=&nbsp;3,&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;8&nbsp;Bytes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_lsb_index&nbsp;&nbsp;=&nbsp;54,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_size_bits&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_lsb_index&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_size_bits&nbsp;&nbsp;=&nbsp;44,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPN_j_size_bits&nbsp;=&nbsp;9<br>
+}<br>
+<br>
+//&nbsp;PRIVATE<br>
+let&nbsp;sv48_params&nbsp;:&nbsp;SV_Params&nbsp;=&nbsp;struct&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;CSR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_size_bits&nbsp;&nbsp;&nbsp;=&nbsp;16,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_lsb_index&nbsp;&nbsp;&nbsp;=&nbsp;44,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;PPN<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_size_bits&nbsp;&nbsp;=&nbsp;44,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_lsb_index&nbsp;&nbsp;=&nbsp;0,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;VA<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;48,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vpn_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;9,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root_vpn_size_bits&nbsp;&nbsp;=&nbsp;9,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_sign_extends&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;true,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;PTE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;levels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log_pte_size_bytes&nbsp;&nbsp;=&nbsp;3,&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;8&nbsp;Bytes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_lsb_index&nbsp;&nbsp;=&nbsp;54,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_size_bits&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_lsb_index&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_size_bits&nbsp;&nbsp;=&nbsp;44,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPN_j_size_bits&nbsp;=&nbsp;9<br>
+}<br>
+<br>
+//&nbsp;PRIVATE<br>
+let&nbsp;sv48x4_params&nbsp;:&nbsp;SV_Params&nbsp;=&nbsp;struct&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;CSR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_size_bits&nbsp;&nbsp;&nbsp;=&nbsp;14,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_lsb_index&nbsp;&nbsp;&nbsp;=&nbsp;44,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;PPN<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_size_bits&nbsp;&nbsp;=&nbsp;44,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_lsb_index&nbsp;&nbsp;=&nbsp;0,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;VA<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;50,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vpn_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;9,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root_vpn_size_bits&nbsp;&nbsp;=&nbsp;11,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_sign_extends&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;false,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;PTE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;levels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log_pte_size_bytes&nbsp;&nbsp;=&nbsp;3,&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;8&nbsp;Bytes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_lsb_index&nbsp;&nbsp;=&nbsp;54,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_size_bits&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_lsb_index&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_size_bits&nbsp;&nbsp;=&nbsp;44,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPN_j_size_bits&nbsp;=&nbsp;9<br>
+}<br>
+<br>
+//&nbsp;For&nbsp;future;&nbsp;not&nbsp;currently&nbsp;used<br>
+/*<br>
+//&nbsp;PRIVATE<br>
+let&nbsp;sv57_params&nbsp;:&nbsp;SV_Params&nbsp;=&nbsp;struct&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;CSR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_size_bits&nbsp;&nbsp;&nbsp;=&nbsp;16,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_lsb_index&nbsp;&nbsp;&nbsp;=&nbsp;44,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;PPN<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_size_bits&nbsp;&nbsp;=&nbsp;44,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_lsb_index&nbsp;&nbsp;=&nbsp;0,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;VA<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;57,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vpn_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;9,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root_vpn_size_bits&nbsp;&nbsp;=&nbsp;9,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_sign_extends&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;true,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;PTE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;levels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log_pte_size_bytes&nbsp;&nbsp;=&nbsp;3,&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;8&nbsp;Bytes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_lsb_index&nbsp;&nbsp;=&nbsp;54,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_size_bits&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_lsb_index&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_size_bits&nbsp;&nbsp;=&nbsp;44,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPN_j_size_bits&nbsp;=&nbsp;9<br>
+}<br>
+<br>
+//&nbsp;PRIVATE<br>
+let&nbsp;sv57x4_params&nbsp;:&nbsp;SV_Params&nbsp;=&nbsp;struct&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;CSR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_size_bits&nbsp;&nbsp;&nbsp;=&nbsp;14,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_id_lsb_index&nbsp;&nbsp;&nbsp;=&nbsp;44,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;SATP&nbsp;PPN<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_size_bits&nbsp;&nbsp;=&nbsp;44,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xatp_ppn_lsb_index&nbsp;&nbsp;=&nbsp;0,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;VA<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;59,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vpn_size_bits&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;9,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root_vpn_size_bits&nbsp;&nbsp;=&nbsp;11,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va_sign_extends&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;false,<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;PTE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;levels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log_pte_size_bytes&nbsp;&nbsp;=&nbsp;3,&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;8&nbsp;Bytes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_lsb_index&nbsp;&nbsp;=&nbsp;54,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_msbs_size_bits&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_lsb_index&nbsp;&nbsp;=&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPNs_size_bits&nbsp;&nbsp;=&nbsp;44,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_PPN_j_size_bits&nbsp;=&nbsp;9<br>
+}<br>
+//&nbsp;*/<br>
+<br>
+//&nbsp;This&nbsp;'undefined_SV_Params()'&nbsp;function&nbsp;is&nbsp;not&nbsp;used&nbsp;anywhere,&nbsp;but&nbsp;is<br>
+//&nbsp;currently&nbsp;(2023-12)&nbsp;needed&nbsp;to&nbsp;work&nbsp;around&nbsp;an&nbsp;issue&nbsp;where&nbsp;Sail&nbsp;tries<br>
+//&nbsp;to&nbsp;figure&nbsp;out&nbsp;how&nbsp;it&nbsp;could&nbsp;do<br>
+//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;x&nbsp;:&nbsp;SV_Params&nbsp;=&nbsp;undefined<br>
+//&nbsp;even&nbsp;though&nbsp;the&nbsp;code&nbsp;never&nbsp;does&nbsp;this.&nbsp;&nbsp;This&nbsp;has&nbsp;been&nbsp;fixed&nbsp;in&nbsp;Sail.<br>
+//&nbsp;The&nbsp;fix&nbsp;will&nbsp;become&nbsp;available&nbsp;in&nbsp;a&nbsp;new&nbsp;Sail&nbsp;release,&nbsp;at&nbsp;which&nbsp;point<br>
+//&nbsp;this&nbsp;function&nbsp;can&nbsp;be&nbsp;deleted&nbsp;(TODO).<br>
+//&nbsp;PRIVATE<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;undefined_SV_Params&nbsp;:&nbsp;unit&nbsp;-&gt;&nbsp;SV_Params<br>
+function&nbsp;undefined_SV_Params()&nbsp;=&nbsp;sv32_params<br>
+<br>
+//&nbsp;****************************************************************<br>
+//&nbsp;Fields&nbsp;of&nbsp;virtual&nbsp;addresses<br>
+<br>
+//&nbsp;PRIVATE:&nbsp;Extract&nbsp;full&nbsp;VPN&nbsp;field&nbsp;from&nbsp;VA<br>
+function&nbsp;vpns_of_va(sv_params&nbsp;:&nbsp;SV_Params,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bits(64)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;mask&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend(ones(sv_params.va_size_bits));<br>
+&nbsp;&nbsp;(va&nbsp;&&nbsp;mask)&nbsp;&gt;&gt;&nbsp;PAGESIZE_BITS<br>
+}</span><br>
+<br>
+//&nbsp;PRIVATE:&nbsp;Extract&nbsp;VPN[level]&nbsp;from&nbsp;&nbsp;VA<br>
+function&nbsp;vpn_j_of_va(sv_params&nbsp;:&nbsp;SV_Params,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;nat)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;bits(64)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;lsb&nbsp;&nbsp;:&nbsp;nat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PAGESIZE_BITS&nbsp;+&nbsp;level&nbsp;*&nbsp;sv_params.vpn_size_bits;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;mask&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;(level&nbsp;==&nbsp;sv_params.levels&nbsp;-&nbsp;1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">zero_extend(ones(sv_params.root_vpn_size_bits))</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">zero_extend(ones(sv_params.vpn_size_bits))</span></span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;((va&nbsp;&gt;&gt;&nbsp;lsb)&nbsp;&&nbsp;mask)<br>
+}</span><br>
+<br>
+//&nbsp;PRIVATE:&nbsp;Extract&nbsp;offset&nbsp;within&nbsp;page&nbsp;from&nbsp;VA<br>
+function&nbsp;offset_of_va(va&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bits(64)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;mask&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend(ones(PAGESIZE_BITS));<br>
+&nbsp;&nbsp;va&nbsp;&&nbsp;mask<br>
+}</span><br>
+<br>
+//&nbsp;Valid&nbsp;xlen-wide&nbsp;values&nbsp;containing&nbsp;virtual&nbsp;addrs&nbsp;must&nbsp;have&nbsp;upper<br>
+//&nbsp;bits&nbsp;equal&nbsp;to&nbsp;the&nbsp;MSB&nbsp;of&nbsp;the&nbsp;virtual&nbsp;address&nbsp;for&nbsp;S-&nbsp;and&nbsp;VS-stage<br>
+//&nbsp;address&nbsp;translation.&nbsp;G-stage&nbsp;address&nbsp;translation&nbsp;schemes&nbsp;require<br>
+//&nbsp;the&nbsp;upper&nbsp;bits&nbsp;to&nbsp;be&nbsp;zero.<br>
+//&nbsp;Virtual&nbsp;address&nbsp;widths&nbsp;depend&nbsp;on&nbsp;the&nbsp;virtual&nbsp;memory&nbsp;mode.<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;is_valid_vAddr(struct&nbsp;{&nbsp;va_size_bits,&nbsp;va_sign_extends,&nbsp;_&nbsp;}&nbsp;:&nbsp;SV_Params,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vAddr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64))&nbsp;&nbsp;-&gt;&nbsp;bool&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;va_sign_extends<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">vAddr&nbsp;==&nbsp;sign_extend(vAddr[va_size_bits&nbsp;-&nbsp;1&nbsp;..&nbsp;0])</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">vAddr&nbsp;==&nbsp;zero_extend(vAddr[va_size_bits&nbsp;-&nbsp;1&nbsp;..&nbsp;0])</span></span><br>
+}</span><br>
+<br>
+//&nbsp;****************************************************************<br>
+//&nbsp;PTE&nbsp;(Page&nbsp;Table&nbsp;Entry)&nbsp;in&nbsp;PTN&nbsp;(Page&nbsp;Table&nbsp;Node)<br>
+<br>
+//&nbsp;PTE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSBs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PPNs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RSW&nbsp;&nbsp;&nbsp;&nbsp;BITs<br>
+//&nbsp;Sv32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31..10&nbsp;&nbsp;&nbsp;&nbsp;9..8&nbsp;&nbsp;&nbsp;&nbsp;7..0<br>
+//&nbsp;Sv39&nbsp;&nbsp;&nbsp;&nbsp;63..54&nbsp;&nbsp;&nbsp;&nbsp;53..10&nbsp;&nbsp;&nbsp;&nbsp;9..8&nbsp;&nbsp;&nbsp;&nbsp;7..0<br>
+//&nbsp;Sv48&nbsp;&nbsp;&nbsp;&nbsp;63..54&nbsp;&nbsp;&nbsp;&nbsp;53..10&nbsp;&nbsp;&nbsp;&nbsp;9..8&nbsp;&nbsp;&nbsp;&nbsp;7..0<br>
+//&nbsp;Sv32x4&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31..10&nbsp;&nbsp;&nbsp;&nbsp;9..8&nbsp;&nbsp;&nbsp;&nbsp;7..0<br>
+//&nbsp;Sv39x4&nbsp;&nbsp;63..54&nbsp;&nbsp;&nbsp;&nbsp;53..10&nbsp;&nbsp;&nbsp;&nbsp;9..8&nbsp;&nbsp;&nbsp;&nbsp;7..0<br>
+//&nbsp;Sv48x4&nbsp;&nbsp;63..54&nbsp;&nbsp;&nbsp;&nbsp;53..10&nbsp;&nbsp;&nbsp;&nbsp;9..8&nbsp;&nbsp;&nbsp;&nbsp;7..0<br>
+<br>
+//&nbsp;MSBs&nbsp;of&nbsp;PTE&nbsp;are&nbsp;reserved&nbsp;for&nbsp;RV64&nbsp;extensions.<br>
+//&nbsp;There&nbsp;are&nbsp;no&nbsp;available&nbsp;bits&nbsp;on&nbsp;RV32,&nbsp;so&nbsp;these&nbsp;bits&nbsp;will&nbsp;be&nbsp;zeros&nbsp;on&nbsp;RV32.<br>
+<br>
+//&nbsp;For&nbsp;PTW&nbsp;extensions&nbsp;(non-standard)<br>
+type&nbsp;extPte&nbsp;=&nbsp;bits(64)<br>
+<br>
+//&nbsp;PRIVATE:&nbsp;extract&nbsp;msbs&nbsp;of&nbsp;PTE&nbsp;above&nbsp;the&nbsp;PPN<br>
+function&nbsp;msbs_of_PTE(sv_params&nbsp;:&nbsp;SV_Params,&nbsp;pte&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bits(64)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;mask&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend(ones(sv_params.pte_msbs_size_bits));<br>
+&nbsp;&nbsp;(pte&nbsp;&gt;&gt;&nbsp;sv_params.pte_msbs_lsb_index)&nbsp;&&nbsp;mask<br>
+}</span><br>
+<br>
+//&nbsp;PRIVATE:&nbsp;extract&nbsp;PPNs&nbsp;of&nbsp;PTE<br>
+function&nbsp;PPNs_of_PTE(sv_params&nbsp;:&nbsp;SV_Params,&nbsp;pte&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bits(64)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;mask&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend(ones(sv_params.pte_PPNs_size_bits));<br>
+&nbsp;&nbsp;(pte&nbsp;&gt;&gt;&nbsp;sv_params.pte_PPNs_lsb_index)&nbsp;&&nbsp;mask<br>
+}</span><br>
+<br>
+//&nbsp;PRIVATE:&nbsp;extract&nbsp;LSBs&nbsp;(including&nbsp;permissions)&nbsp;of&nbsp;PTE<br>
+function&nbsp;D_of_PTE(pte&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bit&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">pte[7]</span><br>
+function&nbsp;A_of_PTE(pte&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bit&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">pte[6]</span><br>
+function&nbsp;G_of_PTE(pte&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bit&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">pte[5]</span><br>
+function&nbsp;U_of_PTE(pte&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bit&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">pte[4]</span><br>
+function&nbsp;X_of_PTE(pte&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bit&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">pte[3]</span><br>
+function&nbsp;W_of_PTE(pte&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bit&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">pte[2]</span><br>
+function&nbsp;R_of_PTE(pte&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bit&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">pte[1]</span><br>
+function&nbsp;V_of_PTE(pte&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bit&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">pte[0]</span><br>
+<br>
+//&nbsp;PRIVATE:&nbsp;check&nbsp;if&nbsp;a&nbsp;PTE&nbsp;is&nbsp;a&nbsp;pointer&nbsp;to&nbsp;next&nbsp;level&nbsp;(non-leaf)<br>
+function&nbsp;pte_is_ptr(pte&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bool&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;x&nbsp;=&nbsp;X_of_PTE(pte);<br>
+&nbsp;&nbsp;let&nbsp;w&nbsp;=&nbsp;W_of_PTE(pte);<br>
+&nbsp;&nbsp;let&nbsp;r&nbsp;=&nbsp;R_of_PTE(pte);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(x&nbsp;==&nbsp;bitzero)&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 75%)">(w&nbsp;==&nbsp;bitzero)&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 70%)">r&nbsp;==&nbsp;bitzero</span>)</span></span><br>
+}</span><br>
+<br>
+//&nbsp;PRIVATE:&nbsp;check&nbsp;if&nbsp;a&nbsp;PTE&nbsp;is&nbsp;valid<br>
+function&nbsp;pte_is_invalid(pte&nbsp;:&nbsp;bits(64))&nbsp;-&gt;&nbsp;bool&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;w&nbsp;=&nbsp;W_of_PTE(pte);<br>
+&nbsp;&nbsp;let&nbsp;r&nbsp;=&nbsp;R_of_PTE(pte);<br>
+&nbsp;&nbsp;let&nbsp;v&nbsp;=&nbsp;V_of_PTE(pte);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(v&nbsp;==&nbsp;bitzero)&nbsp;|&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">(w&nbsp;==&nbsp;bitone)&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 70%)">r&nbsp;==&nbsp;bitzero</span>)</span>)</span><br>
+}</span><br>
+<br>
+//&nbsp;----------------<br>
+//&nbsp;Check&nbsp;access&nbsp;permissions&nbsp;in&nbsp;PTE<br>
+<br>
+//&nbsp;For&nbsp;(non-standard)&nbsp;extensions:&nbsp;this&nbsp;function&nbsp;gets&nbsp;the&nbsp;extension-available&nbsp;bits<br>
+//&nbsp;of&nbsp;the&nbsp;PTE&nbsp;in&nbsp;extPte,&nbsp;and&nbsp;the&nbsp;accumulated&nbsp;information&nbsp;of&nbsp;the&nbsp;page-table-walk<br>
+//&nbsp;in&nbsp;ext_ptw.&nbsp;It&nbsp;should&nbsp;return&nbsp;the&nbsp;updated&nbsp;ext_ptw&nbsp;in&nbsp;both&nbsp;success&nbsp;and&nbsp;failure&nbsp;cases.<br>
+<br>
+union&nbsp;PTE_Check&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;PTE_Check_Success&nbsp;:&nbsp;ext_ptw,<br>
+&nbsp;&nbsp;PTE_Check_Failure&nbsp;:&nbsp;(ext_ptw,&nbsp;ext_ptw_fail)<br>
+}<br>
+<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;check_PTE_permission(ac&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;AccessType(ext_access_type),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;priv&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;Privilege,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mxr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bool,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do_sum&nbsp;&nbsp;:&nbsp;bool,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_U&nbsp;&nbsp;&nbsp;:&nbsp;bit,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_X&nbsp;&nbsp;&nbsp;:&nbsp;bit,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_W&nbsp;&nbsp;&nbsp;:&nbsp;bit,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_R&nbsp;&nbsp;&nbsp;:&nbsp;bit,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;extPte,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw&nbsp;:&nbsp;ext_ptw)&nbsp;-&gt;&nbsp;PTE_Check&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;b&nbsp;:&nbsp;bool&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;(ac,&nbsp;priv)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Read(_),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;User)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">(pte_U&nbsp;==&nbsp;bitone)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 70%)">(pte_R&nbsp;==&nbsp;bitone)&nbsp;|&nbsp;((<span style="background-color: hsl(0, 85%, 75%)">pte_X&nbsp;==&nbsp;bitone&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">mxr</span></span>))</span>)</span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Write(_),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;User)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">(pte_U&nbsp;==&nbsp;bitone)&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 70%)">pte_W&nbsp;==&nbsp;bitone</span>)</span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(ReadWrite(_,&nbsp;_),&nbsp;User)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">(pte_U&nbsp;==&nbsp;bitone)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 70%)">(pte_W&nbsp;==&nbsp;bitone)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 65%)">(pte_R&nbsp;==&nbsp;bitone)&nbsp;|&nbsp;(<span style="background-color: hsl(0, 85%, 75%)">(pte_X&nbsp;==&nbsp;bitone)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">mxr</span></span>)</span>)</span></span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Execute(),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;User)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">(pte_U&nbsp;==&nbsp;bitone)&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 70%)">pte_X&nbsp;==&nbsp;bitone</span>)</span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Read(_),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Supervisor)&nbsp;=&gt;&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">(<span style="background-color: hsl(0, 85%, 75%)">(pte_U&nbsp;==&nbsp;bitzero)&nbsp;|&nbsp;<span style="background-color: hsl(120, 85%, 70%)">do_sum</span></span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 70%)">(pte_R&nbsp;==&nbsp;bitone)&nbsp;|&nbsp;(<span style="background-color: hsl(0, 85%, 75%)">(pte_X&nbsp;==&nbsp;bitone)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">mxr</span></span>)</span>)</span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Write(_),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Supervisor)&nbsp;=&gt;&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">(<span style="background-color: hsl(0, 85%, 75%)">(pte_U&nbsp;==&nbsp;bitzero)&nbsp;|&nbsp;<span style="background-color: hsl(120, 85%, 70%)">do_sum</span></span>)&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 70%)">pte_W&nbsp;==&nbsp;bitone</span>)</span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(ReadWrite(_,&nbsp;_),&nbsp;Supervisor)&nbsp;=&gt;&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">(<span style="background-color: hsl(0, 85%, 75%)">(pte_U&nbsp;==&nbsp;bitzero)&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">do_sum</span></span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 70%)">(pte_W&nbsp;==&nbsp;bitone)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 65%)">(pte_R&nbsp;==&nbsp;bitone)&nbsp;|&nbsp;(<span style="background-color: hsl(0, 85%, 75%)">(pte_X&nbsp;==&nbsp;bitone)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">mxr</span></span>)</span>)</span></span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Execute(),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Supervisor)&nbsp;=&gt;&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">(pte_U&nbsp;==&nbsp;bitzero)&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 70%)">pte_X&nbsp;==&nbsp;bitone</span>)</span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Machine)&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">internal_error(__FILE__,&nbsp;__LINE__,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;m-mode&nbsp;mem&nbsp;perm&nbsp;check&quot;)</span>}</span>;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;b&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">PTE_Check_Success(())</span><br>
+&nbsp;&nbsp;else&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">PTE_Check_Failure((),&nbsp;())</span></span><br>
+}</span><br>
+<br>
+//&nbsp;Update&nbsp;PTE&nbsp;bits&nbsp;if&nbsp;needed;&nbsp;return&nbsp;new&nbsp;PTE&nbsp;if&nbsp;updated<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;update_PTE_Bits(sv_params&nbsp;:&nbsp;SV_Params,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;AccessType(ext_access_type),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;extPte)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;option(bits(64))&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;//&nbsp;Update&nbsp;'dirty'&nbsp;bit?<br>
+&nbsp;&nbsp;let&nbsp;update_d&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(D_of_PTE(pte)&nbsp;==&nbsp;bitzero)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">match&nbsp;a&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Execute()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">false</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Read()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">false</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Write(_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ReadWrite(_,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">true</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>)</span>;<br>
+&nbsp;&nbsp;//&nbsp;Update&nbsp;'accessed'-bit?<br>
+&nbsp;&nbsp;let&nbsp;update_a&nbsp;=&nbsp;A_of_PTE(pte)&nbsp;==&nbsp;bitzero;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;<span style="background-color: hsl(0, 85%, 75%)">update_d&nbsp;|&nbsp;<span style="background-color: hsl(120, 85%, 75%)">update_a</span></span>&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;pte1&nbsp;=&nbsp;pte&nbsp;|&nbsp;(zero_extend(0b1)&nbsp;&lt;&lt;&nbsp;6);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;pte2&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;update_d&nbsp;then&nbsp;(<span style="background-color: hsl(120, 85%, 70%)">pte1&nbsp;|&nbsp;(zero_extend(0b1)&nbsp;&lt;&lt;&nbsp;7)</span>)&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 70%)">pte1</span></span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(pte2&nbsp;|&nbsp;(ext&nbsp;&lt;&lt;&nbsp;sv_params.pte_msbs_lsb_index))<br>
+&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">None()</span></span><br>
+}</span><br>
+<br>
+//&nbsp;****************************************************************<br>
+//&nbsp;Architectural&nbsp;SATP&nbsp;CSR<br>
+<br>
+//&nbsp;PUBLIC:&nbsp;see&nbsp;also&nbsp;riscv_insts_zicsr.sail&nbsp;and&nbsp;other&nbsp;CSR-related&nbsp;files<br>
+register&nbsp;satp&nbsp;:&nbsp;xlenbits<br>
+<br>
+//&nbsp;See&nbsp;riscv_sys_regs.sail&nbsp;for&nbsp;legalize_satp{32,64}().<br>
+//&nbsp;WARNING:&nbsp;those&nbsp;functions&nbsp;legalize&nbsp;Mode&nbsp;but&nbsp;not&nbsp;ASID?<br>
+//&nbsp;PUBLIC:&nbsp;invoked&nbsp;from&nbsp;writeCSR()&nbsp;to&nbsp;fixup&nbsp;WARL&nbsp;fields<br>
+function&nbsp;legalize_satp(a&nbsp;:&nbsp;Architecture,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;o&nbsp;:&nbsp;xlenbits,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;previous&nbsp;value&nbsp;of&nbsp;satp<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;:&nbsp;xlenbits)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;proposed&nbsp;new&nbsp;value&nbsp;of&nbsp;satp<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;xlenbits&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;new&nbsp;legal&nbsp;value&nbsp;of&nbsp;satp<br>
+&nbsp;&nbsp;if&nbsp;sizeof(xlen)&nbsp;==&nbsp;32&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;The&nbsp;slice&nbsp;and&nbsp;extend&nbsp;ops&nbsp;below&nbsp;are&nbsp;no-ops&nbsp;when&nbsp;xlen==32,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;but&nbsp;appease&nbsp;the&nbsp;type-checker&nbsp;when&nbsp;xlen==64&nbsp;(when&nbsp;this&nbsp;code&nbsp;is&nbsp;not&nbsp;executed!)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;o32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(32)&nbsp;=&nbsp;o[31&nbsp;..&nbsp;0];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;v32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(32)&nbsp;=&nbsp;v[31&nbsp;..&nbsp;0];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;new_satp&nbsp;:&nbsp;bits(32)&nbsp;=&nbsp;legalize_satp32(a,&nbsp;o32,&nbsp;v32);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;zero_extend(new_satp);<br>
+&nbsp;&nbsp;}&nbsp;else&nbsp;if&nbsp;sizeof(xlen)&nbsp;==&nbsp;64&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;The&nbsp;extend&nbsp;and&nbsp;truncate&nbsp;ops&nbsp;below&nbsp;are&nbsp;no-ops&nbsp;when&nbsp;xlen==64,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;but&nbsp;appease&nbsp;the&nbsp;type-checker&nbsp;when&nbsp;xlen==32&nbsp;(when&nbsp;this&nbsp;code&nbsp;is&nbsp;not&nbsp;executed!)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;o64&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend(o);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;v64&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend(v);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;new_satp&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;legalize_satp64(a,&nbsp;o64,&nbsp;v64);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;truncate(new_satp,&nbsp;sizeof(xlen))<br>
+&nbsp;&nbsp;}&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;Unsupported&nbsp;xlen&quot;&nbsp;^&nbsp;string_of_int(sizeof(xlen)))<br>
+}</span><br>
+<br>
+//&nbsp;----------------<br>
+//&nbsp;Fields&nbsp;of&nbsp;SATP<br>
+<br>
+//&nbsp;ASID&nbsp;is&nbsp;9b&nbsp;in&nbsp;Sv32,&nbsp;16b&nbsp;in&nbsp;Sv39/Sv48/Sv57:&nbsp;we&nbsp;use&nbsp;16b&nbsp;for&nbsp;both<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;satp_to_asid(sv_params&nbsp;:&nbsp;SV_Params,&nbsp;satp_val&nbsp;:&nbsp;xlenbits)&nbsp;-&gt;&nbsp;bits(16)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;//&nbsp;This&nbsp;extend&nbsp;op&nbsp;is&nbsp;a&nbsp;no-op&nbsp;when&nbsp;xlen==64,&nbsp;extends&nbsp;when&nbsp;xlen==32<br>
+&nbsp;&nbsp;let&nbsp;satp_64b&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend&nbsp;(satp_val);<br>
+&nbsp;&nbsp;let&nbsp;mask_64b&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;(zero_extend(0b1)&nbsp;&lt;&lt;&nbsp;sv_params.xatp_id_size_bits)&nbsp;-&nbsp;zero_extend(0b1);<br>
+&nbsp;&nbsp;let&nbsp;asid_64b&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;(satp_64b&nbsp;&gt;&gt;&nbsp;&nbsp;sv_params.xatp_id_lsb_index)&nbsp;&&nbsp;mask_64b;<br>
+&nbsp;&nbsp;asid_64b[15&nbsp;..&nbsp;0]<br>
+}</span><br>
+<br>
+//&nbsp;Result&nbsp;is&nbsp;64b&nbsp;to&nbsp;cover&nbsp;both&nbsp;RV32&nbsp;and&nbsp;RV64&nbsp;addrs<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;satp_to_PT_base(sv_params&nbsp;:&nbsp;SV_Params,&nbsp;satp_val&nbsp;:&nbsp;xlenbits)&nbsp;-&gt;&nbsp;bits(64)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;//&nbsp;This&nbsp;extend&nbsp;op&nbsp;is&nbsp;a&nbsp;no-op&nbsp;when&nbsp;xlen==64,&nbsp;extends&nbsp;when&nbsp;xlen==32<br>
+&nbsp;&nbsp;let&nbsp;satp_64b&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend&nbsp;(satp_val);<br>
+&nbsp;&nbsp;let&nbsp;mask_64b&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;(zero_extend(0b1)&nbsp;&lt;&lt;&nbsp;sv_params.xatp_ppn_size_bits)&nbsp;-&nbsp;zero_extend(0b1);<br>
+&nbsp;&nbsp;let&nbsp;ppn_64b&nbsp;&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;(satp_64b&nbsp;&gt;&gt;&nbsp;&nbsp;sv_params.xatp_ppn_lsb_index)&nbsp;&&nbsp;mask_64b;<br>
+&nbsp;&nbsp;ppn_64b&nbsp;&lt;&lt;&nbsp;PAGESIZE_BITS<br>
+}</span><br>
+<br>
+//&nbsp;****************************************************************<br>
+//&nbsp;Architectural&nbsp;HGATP&nbsp;CSR<br>
+<br>
+register&nbsp;hgatp&nbsp;:&nbsp;xlenbits<br>
+<br>
+//&nbsp;See&nbsp;riscv_hext_regs.sail&nbsp;for&nbsp;legalize_hgatp{32,64}().<br>
+//&nbsp;WARNING:&nbsp;those&nbsp;functions&nbsp;legalize&nbsp;Mode&nbsp;but&nbsp;not&nbsp;VMID?<br>
+//&nbsp;PUBLIC:&nbsp;invoked&nbsp;from&nbsp;writeCSR()&nbsp;to&nbsp;fixup&nbsp;WARL&nbsp;fields<br>
+function&nbsp;legalize_hgatp(a&nbsp;:&nbsp;Architecture,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;o&nbsp;:&nbsp;xlenbits,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;previous&nbsp;value&nbsp;of&nbsp;hgatp<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&nbsp;:&nbsp;xlenbits)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;proposed&nbsp;new&nbsp;value&nbsp;of&nbsp;hgatp<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;xlenbits&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;new&nbsp;legal&nbsp;value&nbsp;of&nbsp;hgatp<br>
+&nbsp;&nbsp;if&nbsp;sizeof(xlen)&nbsp;==&nbsp;32&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;The&nbsp;slice&nbsp;and&nbsp;extend&nbsp;ops&nbsp;below&nbsp;are&nbsp;no-ops&nbsp;when&nbsp;xlen==32,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;but&nbsp;appease&nbsp;the&nbsp;type-checker&nbsp;when&nbsp;xlen==64&nbsp;(when&nbsp;this&nbsp;code&nbsp;is&nbsp;not&nbsp;executed!)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;o32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(32)&nbsp;=&nbsp;o[31&nbsp;..&nbsp;0];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;v32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(32)&nbsp;=&nbsp;v[31&nbsp;..&nbsp;0];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;new_hgatp&nbsp;:&nbsp;bits(32)&nbsp;=&nbsp;legalize_hgatp32(a,&nbsp;o32,&nbsp;v32);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;zero_extend(new_hgatp);<br>
+&nbsp;&nbsp;}&nbsp;else&nbsp;if&nbsp;sizeof(xlen)&nbsp;==&nbsp;64&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;The&nbsp;extend&nbsp;and&nbsp;truncate&nbsp;ops&nbsp;below&nbsp;are&nbsp;no-ops&nbsp;when&nbsp;xlen==64,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;but&nbsp;appease&nbsp;the&nbsp;type-checker&nbsp;when&nbsp;xlen==32&nbsp;(when&nbsp;this&nbsp;code&nbsp;is&nbsp;not&nbsp;executed!)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;o64&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend(o);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;v64&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend(v);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;new_hgatp&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;legalize_hgatp64(a,&nbsp;o64,&nbsp;v64);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;truncate(new_hgatp,&nbsp;sizeof(xlen))<br>
+&nbsp;&nbsp;}&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;Unsupported&nbsp;xlen&quot;&nbsp;^&nbsp;string_of_int(sizeof(xlen)))<br>
+}</span><br>
+<br>
+//&nbsp;----------------<br>
+//&nbsp;Fields&nbsp;of&nbsp;HGATP<br>
+<br>
+//&nbsp;VMID&nbsp;is&nbsp;7b&nbsp;in&nbsp;Sv32x4,&nbsp;14b&nbsp;in&nbsp;Sv39x4/Sv48x4/Sv57x4:&nbsp;we&nbsp;use&nbsp;14b&nbsp;for&nbsp;both<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;hgatp_to_vmid(sv_params&nbsp;:&nbsp;SV_Params,&nbsp;hgatp_val&nbsp;:&nbsp;xlenbits)&nbsp;-&gt;&nbsp;bits(14)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;//&nbsp;This&nbsp;extend&nbsp;op&nbsp;is&nbsp;a&nbsp;no-op&nbsp;when&nbsp;xlen==64,&nbsp;extends&nbsp;when&nbsp;xlen==32<br>
+&nbsp;&nbsp;let&nbsp;hgatp_64b&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend&nbsp;(hgatp_val);<br>
+&nbsp;&nbsp;let&nbsp;mask_64b&nbsp;&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;(zero_extend(0b1)&nbsp;&lt;&lt;&nbsp;sv_params.xatp_id_size_bits)&nbsp;-&nbsp;zero_extend(0b1);<br>
+&nbsp;&nbsp;let&nbsp;vmid_64b&nbsp;&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;(hgatp_64b&nbsp;&gt;&gt;&nbsp;&nbsp;sv_params.xatp_id_lsb_index)&nbsp;&&nbsp;mask_64b;<br>
+&nbsp;&nbsp;vmid_64b[13&nbsp;..&nbsp;0]<br>
+}</span><br>
+<br>
+//&nbsp;Result&nbsp;is&nbsp;64b&nbsp;to&nbsp;cover&nbsp;both&nbsp;RV32&nbsp;and&nbsp;RV64&nbsp;addrs<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;hgatp_to_PT_base(sv_params&nbsp;:&nbsp;SV_Params,&nbsp;hgatp_val&nbsp;:&nbsp;xlenbits)&nbsp;-&gt;&nbsp;bits(64)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;//&nbsp;This&nbsp;extend&nbsp;op&nbsp;is&nbsp;a&nbsp;no-op&nbsp;when&nbsp;xlen==64,&nbsp;extends&nbsp;when&nbsp;xlen==32<br>
+&nbsp;&nbsp;let&nbsp;hgatp_64b&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend&nbsp;(hgatp_val);<br>
+&nbsp;&nbsp;let&nbsp;mask_64b&nbsp;&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;(zero_extend(0b1)&nbsp;&lt;&lt;&nbsp;sv_params.xatp_ppn_size_bits)&nbsp;-&nbsp;zero_extend(0b1);<br>
+&nbsp;&nbsp;let&nbsp;ppn_64b&nbsp;&nbsp;&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;(hgatp_64b&nbsp;&gt;&gt;&nbsp;&nbsp;sv_params.xatp_ppn_lsb_index)&nbsp;&&nbsp;mask_64b;<br>
+&nbsp;&nbsp;ppn_64b&nbsp;&lt;&lt;&nbsp;PAGESIZE_BITS<br>
+}</span><br>
+<br>
+//&nbsp;****************************************************************<br>
+//&nbsp;Address&nbsp;translation&nbsp;mode<br>
+<br>
+//&nbsp;Compute&nbsp;address&nbsp;translation&nbsp;mode&nbsp;from&nbsp;SATP/HGATP<br>
+//&nbsp;TODO:&nbsp;shouldn't&nbsp;we&nbsp;look&nbsp;at&nbsp;mstatus_UXL&nbsp;if&nbsp;priv&nbsp;is&nbsp;User?<br>
+<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;translationMode(priv&nbsp;:&nbsp;Privilege,&nbsp;stage&nbsp;:&nbsp;AddressTranslationStage)&nbsp;-&gt;&nbsp;AddressTranslationMode&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;mode&nbsp;:&nbsp;option(AddressTranslationMode)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;priv&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Machine&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Some(Bare)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sizeof(xlen)&nbsp;==&nbsp;32&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;match&nbsp;stage&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S&nbsp;&nbsp;=&gt;&nbsp;satp64Mode_of_bits(RV32,&nbsp;zero_extend(Mk_Satp32(satp).Mode())),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VS&nbsp;=&gt;&nbsp;satp64Mode_of_bits(RV32,&nbsp;zero_extend(Mk_Satp32(vsatp).Mode())),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G&nbsp;&nbsp;=&gt;&nbsp;hgatp64Mode_of_bits(RV32,&nbsp;zero_extend(Mk_Hgatp32(hgatp).Mode())),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;sizeof(xlen)&nbsp;==&nbsp;64&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;When&nbsp;xlen&nbsp;is&nbsp;64,&nbsp;mstatus.SXL&nbsp;(S/HS-mode)&nbsp;or&nbsp;hstatus.VSXL&nbsp;(VS-mode)&nbsp;can&nbsp;be&nbsp;RV32<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;stage&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">match&nbsp;architecture(get_mstatus_SXL(mstatus))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(RV32)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">satp64Mode_of_bits(RV32,&nbsp;zero_extend(Mk_Satp32(satp[31&nbsp;..&nbsp;0]).Mode()))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(RV64)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">satp64Mode_of_bits(RV64,&nbsp;Mk_Satp64(satp).Mode())</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;unsupported&nbsp;address&nbsp;translation&nbsp;arch&quot;)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VS&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">match&nbsp;architecture(get_hstatus_VSXL(hstatus))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(RV32)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">satp64Mode_of_bits(RV32,&nbsp;zero_extend(Mk_Satp32(vsatp[31&nbsp;..&nbsp;0]).Mode()))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(RV64)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">satp64Mode_of_bits(RV64,&nbsp;Mk_Satp64(vsatp).Mode())</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;unsupported&nbsp;address&nbsp;translation&nbsp;arch&quot;)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">match&nbsp;architecture(get_mstatus_SXL(mstatus))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(RV32)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">hgatp64Mode_of_bits(RV32,&nbsp;zero_extend(Mk_Hgatp32(hgatp[31&nbsp;..&nbsp;0]).Mode()))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(RV64)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">hgatp64Mode_of_bits(RV64,&nbsp;Mk_Hgatp64(hgatp).Mode())</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;unsupported&nbsp;address&nbsp;translation&nbsp;arch&quot;)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;unsupported&nbsp;xlen&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span>&nbsp;in<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;mode&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(m)&nbsp;=&gt;&nbsp;m,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;invalid&nbsp;translation&nbsp;mode&nbsp;in&nbsp;xatp&quot;)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+//&nbsp;****************************************************************<br>
+//&nbsp;Results&nbsp;of&nbsp;Page&nbsp;Table&nbsp;Walk&nbsp;(PTW)<br>
+<br>
+//&nbsp;Note:&nbsp;Idealy&nbsp;we&nbsp;could&nbsp;use&nbsp;'PTW_Implicit&nbsp;:&nbsp;(PTW_Error,&nbsp;...)'&nbsp;in&nbsp;'PTW_Error'&nbsp;but&nbsp;recursive&nbsp;types&nbsp;are&nbsp;not&nbsp;supported<br>
+<br>
+//&nbsp;Failure&nbsp;modes&nbsp;for&nbsp;implicit&nbsp;address-translation/page-table-walks<br>
+//&nbsp;PRIVATE<br>
+union&nbsp;PTW_Implicit_Error&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;PTW_I_Invalid_Addr&nbsp;&nbsp;:&nbsp;unit,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;invalid&nbsp;source&nbsp;address<br>
+&nbsp;&nbsp;PTW_I_Access&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;physical&nbsp;memory&nbsp;access&nbsp;error&nbsp;for&nbsp;a&nbsp;PTE<br>
+&nbsp;&nbsp;PTW_I_Invalid_PTE&nbsp;&nbsp;&nbsp;:&nbsp;unit,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;invalid&nbsp;page&nbsp;table&nbsp;entry&nbsp;or&nbsp;ptr&nbsp;PTE&nbsp;when&nbsp;level&nbsp;=&nbsp;0<br>
+&nbsp;&nbsp;PTW_I_No_Permission&nbsp;:&nbsp;unit,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;insufficient&nbsp;page&nbsp;permissions<br>
+&nbsp;&nbsp;PTW_I_Misaligned&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;misaligned&nbsp;superpage<br>
+&nbsp;&nbsp;PTW_I_PTE_Update&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;PTE&nbsp;update&nbsp;needed&nbsp;but&nbsp;not&nbsp;enabled<br>
+&nbsp;&nbsp;PTW_I_Ext_Error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;ext_ptw_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;parameterized&nbsp;for&nbsp;errors&nbsp;from&nbsp;extensions<br>
+}<br>
+<br>
+//&nbsp;Failure&nbsp;modes&nbsp;for&nbsp;address-translation/page-table-walks<br>
+//&nbsp;PRIVATE<br>
+union&nbsp;PTW_Error&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;PTW_Invalid_Addr&nbsp;&nbsp;:&nbsp;unit,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;invalid&nbsp;source&nbsp;address<br>
+&nbsp;&nbsp;PTW_Access&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;physical&nbsp;memory&nbsp;access&nbsp;error&nbsp;for&nbsp;a&nbsp;PTE<br>
+&nbsp;&nbsp;PTW_Invalid_PTE&nbsp;&nbsp;&nbsp;:&nbsp;unit,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;invalid&nbsp;page&nbsp;table&nbsp;entry&nbsp;or&nbsp;ptr&nbsp;PTE&nbsp;when&nbsp;level&nbsp;=&nbsp;0<br>
+&nbsp;&nbsp;PTW_No_Permission&nbsp;:&nbsp;unit,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;insufficient&nbsp;page&nbsp;permissions<br>
+&nbsp;&nbsp;PTW_Misaligned&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;misaligned&nbsp;superpage<br>
+&nbsp;&nbsp;PTW_PTE_Update&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;PTE&nbsp;update&nbsp;needed&nbsp;but&nbsp;not&nbsp;enabled<br>
+&nbsp;&nbsp;PTW_Implicit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;(PTW_Implicit_Error,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;error&nbsp;during&nbsp;implicit&nbsp;access/page-walk<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bits(64),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;faulting&nbsp;address&nbsp;of&nbsp;implicit&nbsp;access/page-walk<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AccessType(ext_access_type)),&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;access&nbsp;type&nbsp;of&nbsp;implicit&nbsp;access/page-walk<br>
+&nbsp;&nbsp;PTW_Ext_Error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;ext_ptw_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;parameterized&nbsp;for&nbsp;errors&nbsp;from&nbsp;extensions<br>
+}<br>
+<br>
+//&nbsp;Convert&nbsp;PTW_Error&nbsp;to&nbsp;PTW_Implicit_Error<br>
+function&nbsp;implicit_error(f&nbsp;:&nbsp;PTW_Error)&nbsp;-&gt;&nbsp;PTW_Implicit_Error&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;f&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Invalid_Addr()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">PTW_I_Invalid_Addr()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Access()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">PTW_I_Access()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Invalid_PTE()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">PTW_I_Invalid_PTE()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_No_Permission()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">PTW_I_No_Permission()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Misaligned()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">PTW_I_Misaligned()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_PTE_Update()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">PTW_I_PTE_Update()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Ext_Error()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">PTW_I_Ext_Error()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Implicit(_,&nbsp;_,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;cannot&nbsp;convert&nbsp;implicit&nbsp;PTW&nbsp;error&quot;)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+//&nbsp;PRIVATE:&nbsp;only&nbsp;'to_str'&nbsp;overload&nbsp;is&nbsp;public<br>
+function&nbsp;ptw_error_to_str(e&nbsp;:&nbsp;PTW_Error)&nbsp;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;match&nbsp;e&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Invalid_Addr()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;&quot;invalid-source-addr&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Access()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;&quot;mem-access-error&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Invalid_PTE()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;&quot;invalid-pte&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_No_Permission()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;&quot;no-permission&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Misaligned()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;&quot;misaligned-superpage&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_PTE_Update()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;&quot;pte-update-needed&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Implicit(_,&nbsp;_,&nbsp;_)&nbsp;=&gt;&nbsp;&quot;implicit-access-error&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Ext_Error(e)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;&quot;extension-error&quot;<br>
+&nbsp;&nbsp;}<br>
+}<br>
+<br>
+//&nbsp;PUBLIC<br>
+overload&nbsp;to_str&nbsp;=&nbsp;{ptw_error_to_str}<br>
+<br>
+//&nbsp;hook&nbsp;for&nbsp;(non-standard)&nbsp;extensions&nbsp;to&nbsp;customize&nbsp;errors&nbsp;reported&nbsp;by&nbsp;page-table<br>
+//&nbsp;walks&nbsp;during&nbsp;address&nbsp;translation;&nbsp;it&nbsp;typically&nbsp;works&nbsp;in&nbsp;conjunction<br>
+//&nbsp;with&nbsp;any&nbsp;customization&nbsp;to&nbsp;check_PTE_permission().<br>
+<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;ext_get_ptw_error(eptwf&nbsp;:&nbsp;ext_ptw_fail)&nbsp;-&gt;&nbsp;PTW_Error&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">PTW_No_Permission()</span><br>
+<br>
+//&nbsp;Convert&nbsp;translation/PTW&nbsp;failures&nbsp;into&nbsp;architectural&nbsp;exceptions<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;translationException(a&nbsp;:&nbsp;AccessType(ext_access_type),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f&nbsp;:&nbsp;PTW_Error)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;ExceptionType&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;(a,&nbsp;f)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;PTW_Ext_Error(e))&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Extension(ext_translate_exception(e))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;PTW_Implicit(fi,&nbsp;_,&nbsp;_))&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">match&nbsp;(a,&nbsp;fi)&nbsp;{&nbsp;//&nbsp;Report&nbsp;exception&nbsp;for&nbsp;the&nbsp;original&nbsp;access&nbsp;type&nbsp;(of&nbsp;explicit&nbsp;page-walk)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;PTW_I_Ext_Error(e))&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Extension(ext_translate_exception(e))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(ReadWrite(_),&nbsp;PTW_I_Access())&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_SAMO_Access_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(ReadWrite(_),&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_SAMO_GPage_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Read(_),&nbsp;PTW_I_Access())&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Load_Access_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Read(_),&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">E_Load_GPage_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Write(_),&nbsp;PTW_I_Access())&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_SAMO_Access_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Write(_),&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_SAMO_GPage_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Execute(),&nbsp;PTW_I_Access())&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Fetch_Access_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Execute(),&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">E_Fetch_GPage_Fault()</span>}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(ReadWrite(_),&nbsp;PTW_Access())&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_SAMO_Access_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(ReadWrite(_),&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_SAMO_Page_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Read(_),&nbsp;PTW_Access())&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Load_Access_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Read(_),&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_Load_Page_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Write(_),&nbsp;PTW_Access())&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_SAMO_Access_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Write(_),&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_SAMO_Page_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Execute(),&nbsp;PTW_Access())&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Fetch_Access_Fault()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Execute(),&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_Fetch_Page_Fault()</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;pseudoinst(ac&nbsp;:&nbsp;AccessType(ext_access_type),&nbsp;arch&nbsp;:&nbsp;Architecture)&nbsp;-&gt;&nbsp;bits(32)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;(arch,&nbsp;ac)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(RV32,&nbsp;Read(_))&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">0x00002000</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(RV32,&nbsp;Write(_))&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">0x00002020</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(RV64,&nbsp;Read(_))&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x00003000</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(RV64,&nbsp;Write(_))&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0x00003020</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;Illegal&nbsp;pseudoinst&nbsp;architecture/access&nbsp;type&quot;)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+//&nbsp;Build&nbsp;architectural&nbsp;exception&nbsp;context&nbsp;for&nbsp;translation/PTW&nbsp;failures<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;translationEContext(f&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;PTW_Error,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vaddr&nbsp;:&nbsp;bits(64),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gva&nbsp;&nbsp;&nbsp;:&nbsp;bool)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;ExceptionContext&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;f&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Ext_Error(e)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">ext_exception_context(e)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Implicit(f,&nbsp;gpaddr,&nbsp;ac)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;pinst&nbsp;:&nbsp;option(xlenbits)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;f&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PTW_I_Access()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">None()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PTW_I_Ext_Error(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">None()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">Some(zero_extend(pseudoinst(ac,&nbsp;if&nbsp;sizeof(xlen)&nbsp;==&nbsp;32&nbsp;then&nbsp;RV32&nbsp;else&nbsp;RV64)))</span>,&nbsp;//&nbsp;FIXME:&nbsp;This&nbsp;does&nbsp;not&nbsp;support&nbsp;dynamic&nbsp;XLEN&nbsp;changes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;in<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vmem_exception_context(truncate(vaddr,&nbsp;sizeof(xlen)),&nbsp;true,&nbsp;Some(truncate(gpaddr&nbsp;&gt;&gt;&nbsp;2,&nbsp;sizeof(xlen))),&nbsp;pinst)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">vmem_exception_context(truncate(vaddr,&nbsp;sizeof(xlen)),&nbsp;gva,&nbsp;None(),&nbsp;None())</span>,<br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+//&nbsp;PRIVATE<br>
+union&nbsp;PTW_Result&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;PTW_Success:&nbsp;(bits(64),&nbsp;bits(64),&nbsp;bits(64),&nbsp;nat,&nbsp;bool,&nbsp;ext_ptw),<br>
+&nbsp;&nbsp;PTW_Failure:&nbsp;(PTW_Error,&nbsp;ext_ptw)<br>
+}<br>
+<br>
+//&nbsp;****************************************************************<br>
+//&nbsp;Translate&nbsp;VA&nbsp;-&gt;&nbsp;PA&nbsp;(S-stage),&nbsp;VA&nbsp;-&gt;&nbsp;GPA&nbsp;(VS-stage)&nbsp;or&nbsp;GPA&nbsp;-&gt;&nbsp;SPA(G-stage)<br>
+<br>
+//&nbsp;Result&nbsp;of&nbsp;Address&nbsp;Translation&nbsp;(for&nbsp;internal,&nbsp;private&nbsp;functions)<br>
+//&nbsp;PRIVATE<br>
+union&nbsp;TRi_Result&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;TRi_Address&nbsp;:&nbsp;(bits(64),&nbsp;ext_ptw),<br>
+&nbsp;&nbsp;TRi_Failure&nbsp;:&nbsp;(PTW_Error,&nbsp;ext_ptw)<br>
+}<br>
+<br>
+//&nbsp;Note:&nbsp;translate_stage&nbsp;is&nbsp;used&nbsp;for&nbsp;translation&nbsp;of&nbsp;implicit&nbsp;accesses&nbsp;during&nbsp;page&nbsp;walk<br>
+//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;'val'&nbsp;declaration&nbsp;should&nbsp;occur&nbsp;before&nbsp;'function'&nbsp;definition&nbsp;of&nbsp;pt_walk,<br>
+//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;'function'&nbsp;definition&nbsp;of&nbsp;translate_stage&nbsp;is&nbsp;further&nbsp;down&nbsp;in&nbsp;this&nbsp;file<br>
+<br>
+//&nbsp;PRIVATE<br>
+val&nbsp;translate_stage&nbsp;:&nbsp;(bits(64),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;virtual&nbsp;address<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AccessType(ext_access_type),&nbsp;//&nbsp;Read/Write/ReadWrite/Execute<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Privilege,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Machine/Supervisor/User<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AddressTranslationStage,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;S/VS/G<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;ext_ptw<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)&nbsp;-&gt;&nbsp;TRi_Result<br>
+<br>
+//&nbsp;****************************************************************<br>
+//&nbsp;Page&nbsp;Table&nbsp;Walk&nbsp;(PTW)<br>
+<br>
+//&nbsp;Note:&nbsp;'pt_walk()'&nbsp;is&nbsp;recursive&nbsp;=&gt;&nbsp;cannot&nbsp;merge&nbsp;'val'&nbsp;and&nbsp;'function'&nbsp;decls<br>
+<br>
+//&nbsp;PRIVATE<br>
+val&nbsp;pt_walk&nbsp;:&nbsp;(SV_Params,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AddressTranslationStage,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bits(64),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;virtual&nbsp;addr<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AccessType(ext_access_type),&nbsp;&nbsp;//&nbsp;Read/Write/ReadWWrite/Execute<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Privilege,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;User/Supervisor/Machine<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;mstatus.MXR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;do_sum<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bits(64),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;PT&nbsp;base&nbsp;addr<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nat,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;tree&nbsp;level&nbsp;for&nbsp;this&nbsp;recursive&nbsp;call<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;global&nbsp;translation,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;ext_ptw<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;PTW_Result<br>
+<br>
+function&nbsp;pt_walk(sv_params,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stage,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;va,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ac,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;priv,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mxr,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do_sum,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pt_base,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;level,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;global,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;vpn_j&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vpn_j_of_va(sv_params,&nbsp;va,&nbsp;level);<br>
+&nbsp;&nbsp;let&nbsp;pte_offset&nbsp;=&nbsp;vpn_j&nbsp;&lt;&lt;&nbsp;sv_params.log_pte_size_bytes;<br>
+&nbsp;&nbsp;let&nbsp;pte_addr&nbsp;&nbsp;&nbsp;=&nbsp;pt_base&nbsp;+&nbsp;pte_offset;<br>
+&nbsp;&nbsp;let&nbsp;pte_phys_addr&nbsp;:&nbsp;xlenbits&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;stage&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;VS&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">match&nbsp;translate_stage(pte_addr,&nbsp;Read(Data),&nbsp;User,&nbsp;G,&nbsp;ext_ptw)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Address(pte_pa,&nbsp;ext_ptw)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">pte_pa[(sizeof(xlen)&nbsp;-&nbsp;1)&nbsp;..&nbsp;0]</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Failure(f,&nbsp;ext_ptw)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">return&nbsp;PTW_Failure(PTW_Implicit(implicit_error(f),&nbsp;pte_addr,&nbsp;Read(Data)),&nbsp;ext_ptw)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">pte_addr[(sizeof(xlen)&nbsp;-&nbsp;1)&nbsp;..&nbsp;0]</span><br>
+&nbsp;&nbsp;}</span>;<br>
+<br>
+&nbsp;&nbsp;//&nbsp;Read&nbsp;this-level&nbsp;PTE&nbsp;from&nbsp;mem<br>
+&nbsp;&nbsp;let&nbsp;mem_result&nbsp;=&nbsp;mem_read_priv(Read(Data),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;AccessType<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Supervisor,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Privilege<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte_phys_addr,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;atom&nbsp;(8)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;aq<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;rl<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;res<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;mem_result&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MemException(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">PTW_Failure(PTW_Access(),&nbsp;ext_ptw)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MemValue(pte)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;ppns&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;PPNs_of_PTE(sv_params,&nbsp;pte);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;ext_pte&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;msbs_of_PTE(sv_params,&nbsp;pte);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;global'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">global&nbsp;|&nbsp;(<span style="background-color: hsl(120, 85%, 70%)">G_of_PTE(pte)&nbsp;==&nbsp;bitone</span>)</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;pte_is_invalid(pte)&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">PTW_Failure(PTW_Invalid_PTE(),&nbsp;ext_ptw)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Non-Leaf&nbsp;PTE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;pte_is_ptr(pte)&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 65%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;level&nbsp;&gt;&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;follow&nbsp;the&nbsp;pointer&nbsp;to&nbsp;walk&nbsp;next&nbsp;level<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;pt_base'&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;shiftl(ppns,&nbsp;PAGESIZE_BITS);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;level'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;level&nbsp;-&nbsp;1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pt_walk(sv_params,&nbsp;stage,&nbsp;va,&nbsp;ac,&nbsp;priv,&nbsp;mxr,&nbsp;do_sum,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pt_base',&nbsp;level',&nbsp;global',&nbsp;ext_ptw)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;level&nbsp;0&nbsp;PTE,&nbsp;but&nbsp;contains&nbsp;a&nbsp;pointer&nbsp;instead&nbsp;of&nbsp;a&nbsp;leaf<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 60%)">PTW_Failure(PTW_Invalid_PTE(),&nbsp;ext_ptw)</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Leaf&nbsp;PTE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 65%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;pte_check&nbsp;=&nbsp;check_PTE_permission(ac,&nbsp;priv,&nbsp;mxr,&nbsp;do_sum,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;U_of_PTE(pte),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_of_PTE(pte),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;W_of_PTE(pte),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_of_PTE(pte),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_pte,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;pte_check&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PTE_Check_Failure(ext_ptw,&nbsp;ext_ptw_fail)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 60%)">PTW_Failure(ext_get_ptw_error(ext_ptw_fail),&nbsp;ext_ptw)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PTE_Check_Success(ext_ptw)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 60%)">if&nbsp;level&nbsp;&gt;&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Superpage;&nbsp;construct&nbsp;mask&nbsp;for&nbsp;lower-level&nbsp;PPNs&nbsp;from&nbsp;the&nbsp;PTE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;mask_PPN_j&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend(ones(sv_params.pte_PPN_j_size_bits));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(level&nbsp;-&nbsp;1))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask&nbsp;=&nbsp;((mask&nbsp;&lt;&lt;&nbsp;sv_params.pte_PPN_j_size_bits)&nbsp;|&nbsp;mask_PPN_j);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Lower-level&nbsp;PPNs&nbsp;must&nbsp;be&nbsp;zero&nbsp;(for&nbsp;aligned&nbsp;superpage)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;not((ppns&nbsp;&&nbsp;mask)&nbsp;==&nbsp;zero_extend(0b0))&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;misaligned&nbsp;superpage&nbsp;mapping<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">PTW_Failure(PTW_Misaligned(),&nbsp;ext_ptw)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Compose&nbsp;final&nbsp;PA&nbsp;in&nbsp;superpage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Superpage&nbsp;PPN&nbsp;+&nbsp;lower&nbsp;VPNs&nbsp;+&nbsp;PAGESIZE_BITS&nbsp;page-offset<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;ppn&nbsp;=&nbsp;ppns&nbsp;|&nbsp;(vpns_of_va&nbsp;(sv_params,&nbsp;va)&nbsp;&&nbsp;mask);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;pa&nbsp;&nbsp;=&nbsp;((ppn&nbsp;&lt;&lt;&nbsp;PAGESIZE_BITS)&nbsp;|&nbsp;offset_of_va(va));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PTW_Success(pa,&nbsp;pte,&nbsp;pte_addr,&nbsp;level,&nbsp;global',&nbsp;ext_ptw)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;pa&nbsp;=&nbsp;((ppns&nbsp;&lt;&lt;&nbsp;PAGESIZE_BITS)&nbsp;|&nbsp;offset_of_va&nbsp;(va));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PTW_Success(pa,&nbsp;pte,&nbsp;pte_addr,&nbsp;level,&nbsp;global',&nbsp;ext_ptw)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+//&nbsp;****************************************************************<br>
+//&nbsp;VA&nbsp;to&nbsp;PA&nbsp;translation<br>
+<br>
+//&nbsp;This&nbsp;function&nbsp;can&nbsp;be&nbsp;ignored&nbsp;on&nbsp;first&nbsp;reading&nbsp;since&nbsp;TLBs&nbsp;are&nbsp;not<br>
+//&nbsp;part&nbsp;of&nbsp;RISC-V&nbsp;architecture&nbsp;spec&nbsp;(see&nbsp;TLB_NOTE&nbsp;above).<br>
+//&nbsp;PRIVATE:&nbsp;translate&nbsp;on&nbsp;TLB&nbsp;hit,&nbsp;and&nbsp;maintenance&nbsp;of&nbsp;PTE&nbsp;in&nbsp;TLB<br>
+function&nbsp;translate_TLB_hit(sv_params&nbsp;:&nbsp;SV_Params,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stage&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;AddressTranslationStage,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xxid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(16),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ptb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vAddr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ac&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;AccessType(ext_access_type),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;priv&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;Privilege,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mxr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bool,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do_sum&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bool,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;nat,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw&nbsp;&nbsp;&nbsp;:&nbsp;ext_ptw,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tlb_index&nbsp;:&nbsp;nat,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ent&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;TLB_Entry)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;TRi_Result&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;pte&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ent.pte;<br>
+&nbsp;&nbsp;let&nbsp;ext_pte&nbsp;&nbsp;&nbsp;=&nbsp;msbs_of_PTE(sv_params,&nbsp;pte);<br>
+&nbsp;&nbsp;let&nbsp;pte_check&nbsp;=&nbsp;check_PTE_permission(ac,&nbsp;priv,&nbsp;mxr,&nbsp;do_sum,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;U_of_PTE(pte),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_of_PTE(pte),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;W_of_PTE(pte),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_of_PTE(pte),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_pte,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw);<br>
+&nbsp;&nbsp;let&nbsp;tr_result&nbsp;:&nbsp;TRi_Result<br>
+&nbsp;&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;pte_check&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PTE_Check_Failure(ext_ptw,&nbsp;ext_ptw_fail)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">TRi_Failure(ext_get_ptw_error(ext_ptw_fail),&nbsp;ext_ptw)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PTE_Check_Success(ext_ptw)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">match&nbsp;update_PTE_Bits(sv_params,&nbsp;pte,&nbsp;ac,&nbsp;ext_pte)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">TRi_Address(ent.pAddr&nbsp;|&nbsp;(vAddr&nbsp;&&nbsp;ent.vAddrMask),&nbsp;ext_ptw)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(pte')&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;See&nbsp;riscv_platform.sail<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;not(plat_enable_dirty_update())&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;pte&nbsp;needs&nbsp;dirty/accessed&nbsp;update&nbsp;but&nbsp;that&nbsp;is&nbsp;not&nbsp;enabled<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">TRi_Failure(PTW_PTE_Update(),&nbsp;ext_ptw)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Writeback&nbsp;the&nbsp;PTE&nbsp;(which&nbsp;has&nbsp;new&nbsp;A/D&nbsp;bits)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n_ent&nbsp;:&nbsp;TLB_Entry&nbsp;=&nbsp;ent;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n_ent.pte&nbsp;=&nbsp;pte';<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write_TLB(tlb_index,&nbsp;n_ent,&nbsp;stage);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;pte_phys_addr&nbsp;:&nbsp;xlenbits&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;stage&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VS&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">match&nbsp;translate_stage(ent.pteAddr,&nbsp;Write(Data),&nbsp;User,&nbsp;G,&nbsp;ext_ptw)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Address(pte_pa,&nbsp;ext_ptw)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">pte_pa[(sizeof(xlen)&nbsp;-&nbsp;1)&nbsp;..&nbsp;0]</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Failure(f,&nbsp;ext_ptw)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">return&nbsp;TRi_Failure(PTW_Implicit(implicit_error(f),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ent.pteAddr,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Write(Data)),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">ent.pteAddr[(sizeof(xlen)&nbsp;-&nbsp;1)&nbsp;..&nbsp;0]</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;mv&nbsp;=&nbsp;mem_write_value_priv(pte_phys_addr,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Supervisor,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;mv&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">internal_error(__FILE__,&nbsp;__LINE__,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;invalid&nbsp;physical&nbsp;address&nbsp;in&nbsp;TLB&quot;)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Address(ent.pAddr&nbsp;|&nbsp;(vAddr&nbsp;&&nbsp;ent.vAddrMask),&nbsp;ext_ptw)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;tr_result<br>
+}</span><br>
+<br>
+//&nbsp;PRIVATE:&nbsp;translate&nbsp;on&nbsp;TLB&nbsp;miss&nbsp;(do&nbsp;a&nbsp;page-table&nbsp;walk)<br>
+function&nbsp;translate_TLB_miss(sv_params&nbsp;:&nbsp;SV_Params,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stage&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;AddressTranslationStage,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xxid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(16),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ptb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vAddr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ac&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;AccessType(ext_access_type),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;priv&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;Privilege,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mxr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bool,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do_sum&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bool,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;nat,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw&nbsp;&nbsp;&nbsp;:&nbsp;ext_ptw)&nbsp;-&gt;&nbsp;TRi_Result&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;ptw_result&nbsp;=&nbsp;pt_walk(sv_params,&nbsp;stage,&nbsp;vAddr,&nbsp;ac,&nbsp;priv,&nbsp;mxr,&nbsp;do_sum,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ptb,&nbsp;level,&nbsp;false,&nbsp;ext_ptw);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;ptw_result&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Failure(f,&nbsp;ext_ptw)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">TRi_Failure(f,&nbsp;ext_ptw)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PTW_Success(pAddr,&nbsp;pte,&nbsp;pteAddr,&nbsp;level,&nbsp;global,&nbsp;ext_ptw)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;ext_pte&nbsp;&nbsp;&nbsp;=&nbsp;msbs_of_PTE(sv_params,&nbsp;pte);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Without&nbsp;TLBs,&nbsp;this&nbsp;'match'&nbsp;expression&nbsp;can&nbsp;be&nbsp;replaced&nbsp;simply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;by:&nbsp;'TRi_Address(pAddr,&nbsp;ext_ptw)'&nbsp;&nbsp;&nbsp;&nbsp;(see&nbsp;TLB_NOTE&nbsp;above)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;update_PTE_Bits(sv_params,&nbsp;pte,&nbsp;ac,&nbsp;ext_pte)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add_to_TLB(xxid,&nbsp;stage,&nbsp;vAddr,&nbsp;pAddr,&nbsp;pte,&nbsp;pteAddr,&nbsp;level,&nbsp;global,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sv_params.vpn_size_bits,&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;TODO:&nbsp;ppn_size_bits?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PAGESIZE_BITS);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Address(pAddr,&nbsp;ext_ptw)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(pte')&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;See&nbsp;riscv_platform.sail<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">if&nbsp;not(plat_enable_dirty_update())&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;pte&nbsp;needs&nbsp;dirty/accessed&nbsp;update&nbsp;but&nbsp;that&nbsp;is&nbsp;not&nbsp;enabled<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">TRi_Failure(PTW_PTE_Update(),&nbsp;ext_ptw)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 65%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Writeback&nbsp;the&nbsp;PTE&nbsp;(which&nbsp;has&nbsp;new&nbsp;A/D&nbsp;bits)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;pte_phys_addr&nbsp;:&nbsp;xlenbits&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;stage&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VS&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 60%)">match&nbsp;translate_stage(pteAddr,&nbsp;Write(Data),&nbsp;User,&nbsp;G,&nbsp;ext_ptw)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Address(pte_pa,&nbsp;ext_ptw)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 55%)">pte_pa[(sizeof(xlen)&nbsp;-&nbsp;1)&nbsp;..&nbsp;0]</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Failure(f,&nbsp;ext_ptw)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 55%)">return&nbsp;TRi_Failure(PTW_Implicit(implicit_error(f),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pteAddr,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Write(Data)),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 60%)">pteAddr[(sizeof(xlen)&nbsp;-&nbsp;1)&nbsp;..&nbsp;0]</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;mv&nbsp;=&nbsp;mem_write_value_priv(pte_phys_addr,&nbsp;//&nbsp;pteAddr,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pte',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Supervisor,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;mv&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add_to_TLB(xxid,&nbsp;stage,&nbsp;vAddr,&nbsp;pAddr,&nbsp;pte',&nbsp;pteAddr,&nbsp;level,&nbsp;global,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sv_params.vpn_size_bits,&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;TODO:&nbsp;ppn_size_bits?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PAGESIZE_BITS);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Address(pAddr,&nbsp;ext_ptw)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">TRi_Failure(PTW_Access(),&nbsp;ext_ptw)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;translate(sv_params&nbsp;:&nbsp;SV_Params,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stage&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;AddressTranslationStage,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xxid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(16),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ptb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vAddr_arg&nbsp;:&nbsp;bits(64),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ac&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;AccessType(ext_access_type),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;priv&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;Privilege,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mxr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bool,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do_sum&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bool,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;nat,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw&nbsp;&nbsp;&nbsp;:&nbsp;ext_ptw)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;TRi_Result&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;va_mask&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend(ones(sv_params.va_size_bits));<br>
+&nbsp;&nbsp;let&nbsp;vAddr&nbsp;&nbsp;&nbsp;=&nbsp;(vAddr_arg&nbsp;&&nbsp;va_mask);<br>
+<br>
+&nbsp;&nbsp;//&nbsp;On&nbsp;first&nbsp;reading,&nbsp;assume&nbsp;lookup_TLB&nbsp;returns&nbsp;None(),&nbsp;since&nbsp;TLBs<br>
+&nbsp;&nbsp;//&nbsp;are&nbsp;not&nbsp;part&nbsp;of&nbsp;RISC-V&nbsp;archticture&nbsp;spec&nbsp;(see&nbsp;TLB_NOTE&nbsp;above)<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;lookup_TLB(xxid,&nbsp;stage,&nbsp;vAddr)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Some(index,&nbsp;ent)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">translate_TLB_hit(sv_params,&nbsp;stage,&nbsp;xxid,&nbsp;ptb,&nbsp;vAddr,&nbsp;ac,&nbsp;priv,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mxr,&nbsp;do_sum,&nbsp;level,&nbsp;ext_ptw,&nbsp;index,&nbsp;ent)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">translate_TLB_miss(sv_params,&nbsp;stage,&nbsp;xxid,&nbsp;ptb,&nbsp;vAddr,&nbsp;ac,&nbsp;priv,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mxr,&nbsp;do_sum,&nbsp;level,&nbsp;ext_ptw)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+//&nbsp;PRIVATE:&nbsp;perform&nbsp;address&nbsp;translation&nbsp;for&nbsp;a&nbsp;specific&nbsp;stage<br>
+function&nbsp;translate_stage(vAddr,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ac,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;priv,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stage,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;stage&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;S&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mode&nbsp;=&nbsp;translationMode(priv,&nbsp;stage);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;print(&quot;[DEBUG]&nbsp;Using&nbsp;&quot;&nbsp;^&nbsp;to_str(mode)&nbsp;^&nbsp;&quot;&nbsp;for&nbsp;S-stage&nbsp;address&nbsp;translation&quot;);&nbsp;/*&nbsp;Debug:&nbsp;Print&nbsp;address&nbsp;translation&nbsp;mode&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(valid_va,&nbsp;sv_params)&nbsp;:&nbsp;(bool,&nbsp;SV_Params)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;mode&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Bare&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">return&nbsp;TRi_Address(vAddr,&nbsp;ext_ptw)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sv32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(true,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sv32_params)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sv39&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">(is_valid_vAddr(sv39_params,&nbsp;vAddr),&nbsp;sv39_params)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sv48&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">(is_valid_vAddr(sv48_params,&nbsp;vAddr),&nbsp;sv48_params)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Sv57&nbsp;=&gt;&nbsp;(is_valid_vAddr(sv57_params,&nbsp;vAddr),&nbsp;sv57_params),&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;FUTURE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;Invalid&nbsp;S-stage&nbsp;address&nbsp;translation&nbsp;mode&quot;)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;not(valid_va)&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">TRi_Failure(PTW_Invalid_Addr(),&nbsp;ext_ptw)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;mxr&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bool&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;mstatus.MXR()&nbsp;==&nbsp;0b1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;do_sum&nbsp;:&nbsp;bool&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;mstatus.SUM()&nbsp;==&nbsp;0b1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;asid&nbsp;&nbsp;&nbsp;:&nbsp;bits(16)&nbsp;=&nbsp;satp_to_asid(sv_params,&nbsp;satp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;ptb&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;satp_to_PT_base(sv_params,&nbsp;satp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;translate(sv_params,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;asid,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ptb,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vAddr,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ac,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;priv,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mxr,&nbsp;do_sum,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sv_params.levels&nbsp;-&nbsp;1,&nbsp;//&nbsp;Initial&nbsp;level<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;VS&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mode&nbsp;=&nbsp;translationMode(priv,&nbsp;stage);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;print(&quot;[DEBUG]&nbsp;Using&nbsp;&quot;&nbsp;^&nbsp;to_str(mode)&nbsp;^&nbsp;&quot;&nbsp;for&nbsp;VS-stage&nbsp;address&nbsp;translation&quot;);&nbsp;/*&nbsp;Debug:&nbsp;Print&nbsp;address&nbsp;translation&nbsp;mode&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(valid_va,&nbsp;sv_params)&nbsp;:&nbsp;(bool,&nbsp;SV_Params)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;mode&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Bare&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">return&nbsp;TRi_Address(vAddr,&nbsp;ext_ptw)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sv32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(true,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sv32_params)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sv39&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">(is_valid_vAddr(sv39_params,&nbsp;vAddr),&nbsp;sv39_params)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sv48&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">(is_valid_vAddr(sv48_params,&nbsp;vAddr),&nbsp;sv48_params)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Sv57&nbsp;=&gt;&nbsp;(is_valid_vAddr(sv57_params,&nbsp;vAddr),&nbsp;sv57_params),&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;FUTURE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;Invalid&nbsp;VS-stage&nbsp;address&nbsp;translation&nbsp;mode&quot;)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;not(valid_va)&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">TRi_Failure(PTW_Invalid_Addr(),&nbsp;ext_ptw)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;mxr&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bool&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 65%)">mstatus.MXR()&nbsp;==&nbsp;0b1&nbsp;|&nbsp;<span style="background-color: hsl(120, 85%, 65%)">vsstatus.MXR()&nbsp;==&nbsp;0b1</span></span>;&nbsp;//&nbsp;HS-level&nbsp;MXR&nbsp;overwrites&nbsp;VS-stage&nbsp;page&nbsp;protections<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;do_sum&nbsp;:&nbsp;bool&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vsstatus.SUM()&nbsp;==&nbsp;0b1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;asid&nbsp;&nbsp;&nbsp;:&nbsp;bits(16)&nbsp;=&nbsp;satp_to_asid(sv_params,&nbsp;vsatp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;ptb&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;satp_to_PT_base(sv_params,&nbsp;vsatp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;translate(sv_params,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VS,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;asid,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ptb,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vAddr,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ac,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;priv,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mxr,&nbsp;do_sum,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sv_params.levels&nbsp;-&nbsp;1,&nbsp;//&nbsp;Initial&nbsp;level<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;G&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mode&nbsp;=&nbsp;translationMode(priv,&nbsp;stage);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;print(&quot;[DEBUG]&nbsp;Using&nbsp;&quot;&nbsp;^&nbsp;to_str(mode)&nbsp;^&nbsp;&quot;&nbsp;for&nbsp;G-stage&nbsp;address&nbsp;translation&quot;);&nbsp;/*&nbsp;Debug:&nbsp;Print&nbsp;address&nbsp;translation&nbsp;mode&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(valid_va,&nbsp;sv_params)&nbsp;:&nbsp;(bool,&nbsp;SV_Params)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;mode&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Bare&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">return&nbsp;TRi_Address(vAddr,&nbsp;ext_ptw)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sv32x4&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(true,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sv32x4_params)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sv39x4&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">(is_valid_vAddr(sv39x4_params,&nbsp;vAddr),&nbsp;sv39x4_params)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sv48x4&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(is_valid_vAddr(sv48x4_params,&nbsp;vAddr),&nbsp;sv48x4_params)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Sv57x4&nbsp;&nbsp;=&gt;&nbsp;(is_valid_vAddr(sv57x4_params,&nbsp;vAddr),&nbsp;sv57x4_params),&nbsp;//&nbsp;FUTURE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;Invalid&nbsp;G-stage&nbsp;address&nbsp;translation&nbsp;mode&quot;)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;not(valid_va)&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">TRi_Failure(PTW_Invalid_Addr(),&nbsp;ext_ptw)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;mxr&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bool&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;mstatus.MXR()&nbsp;==&nbsp;0b1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;do_sum&nbsp;:&nbsp;bool&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;mstatus.SUM()&nbsp;==&nbsp;0b1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;vmid&nbsp;&nbsp;&nbsp;:&nbsp;bits(16)&nbsp;=&nbsp;zero_extend(hgatp_to_vmid(sv_params,&nbsp;hgatp));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;ptb&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;hgatp_to_PT_base(sv_params,&nbsp;hgatp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;translate(sv_params,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vmid,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ptb,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vAddr,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ac,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;User,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;All&nbsp;G-stage&nbsp;memory&nbsp;accesses&nbsp;are&nbsp;considered&nbsp;User-level<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mxr,&nbsp;do_sum,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sv_params.levels&nbsp;-&nbsp;1,&nbsp;//&nbsp;Initial&nbsp;level<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+//&nbsp;Convert&nbsp;exceptions&nbsp;resulting&nbsp;from&nbsp;G-stage&nbsp;page&nbsp;walks&nbsp;to&nbsp;architectural&nbsp;exceptions:<br>
+//&nbsp;&nbsp;&nbsp;-&nbsp;Guest-page-fault&nbsp;exceptions&nbsp;are&nbsp;raised&nbsp;instead&nbsp;of&nbsp;regular&nbsp;page-walk&nbsp;exceptions<br>
+//&nbsp;&nbsp;&nbsp;-&nbsp;Any&nbsp;exception&nbsp;is&nbsp;always&nbsp;reported&nbsp;for&nbsp;the&nbsp;original&nbsp;access&nbsp;type<br>
+//&nbsp;PRIVATE<br>
+function&nbsp;GStage_exception(e&nbsp;:&nbsp;ExceptionType,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a&nbsp;:&nbsp;AccessType(ext_access_type))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;ExceptionType&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match(e)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Addr_Align()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Addr_Align_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Addr_Align()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Addr_Align_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Addr_Align()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Addr_Align_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Access_Fault()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Access_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Access_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Access_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Access_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_Access_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Page_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_GPage_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Page_Fault()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_GPage_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Page_Fault()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">E_GPage_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_GPage_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_GPage_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_GPage_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_GPage_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_GPage_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">E_GPage_Fault_of_AccessType(a)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;=&gt;&nbsp;e&nbsp;//&nbsp;Other&nbsp;exceptions&nbsp;are&nbsp;not&nbsp;access&nbsp;type&nbsp;specific<br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+//&nbsp;Result&nbsp;of&nbsp;Address&nbsp;Translation&nbsp;(AT)<br>
+//&nbsp;PUBLIC<br>
+union&nbsp;TR_Result('paddr&nbsp;:&nbsp;Type,&nbsp;'exception&nbsp;:&nbsp;Type,&nbsp;'context&nbsp;:&nbsp;Type)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;TR_Address&nbsp;:&nbsp;('paddr,&nbsp;ext_ptw),<br>
+&nbsp;&nbsp;TR_Failure&nbsp;:&nbsp;('exception,&nbsp;'context,&nbsp;ext_ptw)<br>
+}<br>
+<br>
+//&nbsp;Addr-translation&nbsp;function&nbsp;for&nbsp;specific&nbsp;privilege&nbsp;&&nbsp;virtualization&nbsp;mode<br>
+//&nbsp;PUBLIC:&nbsp;invoked&nbsp;from&nbsp;HLV,&nbsp;HSV&nbsp;and&nbsp;HLVX<br>
+function&nbsp;translateAddr_pv(vAddr&nbsp;:&nbsp;xlenbits,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ac&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;AccessType(ext_access_type),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;priv&nbsp;&nbsp;:&nbsp;Privilege,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;virt&nbsp;&nbsp;:&nbsp;Virtualization)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;TR_Result(xlenbits,&nbsp;ExceptionType,&nbsp;ExceptionContext)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;//&nbsp;print(&quot;[DEBUG]&nbsp;Translate&nbsp;&quot;&nbsp;^&nbsp;BitStr(vAddr)&nbsp;^&nbsp;&quot;&nbsp;for&nbsp;&quot;&nbsp;^&nbsp;to_str(priv,&nbsp;virt)&nbsp;^&nbsp;&quot;-mode&quot;);<br>
+&nbsp;&nbsp;//&nbsp;Internally&nbsp;the&nbsp;vmem&nbsp;code&nbsp;works&nbsp;with&nbsp;64-bit&nbsp;values,&nbsp;whether&nbsp;xlen==32&nbsp;or&nbsp;xlen==64<br>
+&nbsp;&nbsp;//&nbsp;This&nbsp;'extend'&nbsp;is&nbsp;a&nbsp;no-op&nbsp;when&nbsp;xlen==64&nbsp;and&nbsp;extends&nbsp;when&nbsp;xlen==32<br>
+&nbsp;&nbsp;let&nbsp;vAddr_64b&nbsp;:&nbsp;bits(64)&nbsp;=&nbsp;zero_extend(vAddr);<br>
+&nbsp;&nbsp;//&nbsp;PTW&nbsp;extensions&nbsp;(non-standard):&nbsp;initialize&nbsp;the&nbsp;PTW&nbsp;extension&nbsp;state<br>
+&nbsp;&nbsp;let&nbsp;ext_ptw&nbsp;&nbsp;&nbsp;:&nbsp;ext_ptw&nbsp;=&nbsp;init_ext_ptw;<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;virt&nbsp;==&nbsp;V0&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">match&nbsp;translate_stage(vAddr_64b,&nbsp;ac,&nbsp;priv,&nbsp;S,&nbsp;ext_ptw)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Address(pa,&nbsp;ext_ptw)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">TR_Address(truncate(pa,&nbsp;sizeof(xlen)),&nbsp;ext_ptw)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Failure(f,&nbsp;ext_ptw)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">TR_Failure(translationException(ac,&nbsp;f),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;translationEContext(f,&nbsp;vAddr_64b,&nbsp;false),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">match&nbsp;translate_stage(vAddr_64b,&nbsp;ac,&nbsp;priv,&nbsp;VS,&nbsp;ext_ptw)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Address(gpa,&nbsp;ext_ptw)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">match&nbsp;translate_stage(gpa,&nbsp;ac,&nbsp;priv,&nbsp;G,&nbsp;ext_ptw){<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Address(spa,&nbsp;ext_ptw)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">TR_Address(truncate(spa,&nbsp;sizeof(xlen)),&nbsp;ext_ptw)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Failure(f,&nbsp;ext_ptw)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">TR_Failure(GStage_exception(translationException(ac,&nbsp;f),&nbsp;ac),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{translationEContext(f,&nbsp;vAddr_64b,&nbsp;true)&nbsp;with&nbsp;excinfo2&nbsp;=&nbsp;Some(truncate(gpa&nbsp;&gt;&gt;&nbsp;2,&nbsp;sizeof(xlen)))},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRi_Failure(f,&nbsp;ext_ptw)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">TR_Failure(translationException(ac,&nbsp;f),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;translationEContext(f,&nbsp;vAddr_64b,&nbsp;true),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_ptw)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+}</span><br>
+<br>
+//&nbsp;Top-level&nbsp;addr-translation&nbsp;function<br>
+//&nbsp;PUBLIC:&nbsp;invoked&nbsp;from&nbsp;instr-fetch&nbsp;and&nbsp;load/store/amo<br>
+function&nbsp;translateAddr(vAddr&nbsp;&nbsp;&nbsp;:&nbsp;xlenbits,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ac&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;AccessType(ext_access_type),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;width&nbsp;&nbsp;&nbsp;:&nbsp;word_width)&nbsp;//&nbsp;FIXME:&nbsp;use&nbsp;width&nbsp;to&nbsp;verify&nbsp;access&nbsp;is&nbsp;permitted&nbsp;upto&nbsp;(vAddr&nbsp;+&nbsp;&nbsp;width)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;TR_Result(xlenbits,&nbsp;ExceptionType,&nbsp;ExceptionContext)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;//&nbsp;Effective&nbsp;privilege&nbsp;takes&nbsp;into&nbsp;account&nbsp;mstatus.MPRV,&nbsp;mstatus.MPP<br>
+&nbsp;&nbsp;//&nbsp;See&nbsp;riscv_sys_regs.sail&nbsp;for&nbsp;effectivePrivilege()&nbsp;and&nbsp;cur_privilege<br>
+&nbsp;&nbsp;let&nbsp;effPriv&nbsp;&nbsp;&nbsp;:&nbsp;Privilege&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;effectivePrivilege(ac,&nbsp;mstatus,&nbsp;cur_privilege);<br>
+&nbsp;&nbsp;//&nbsp;Effective&nbsp;virtualization&nbsp;takes&nbsp;into&nbsp;account&nbsp;mstatus.MPRV,&nbsp;mstatus.MPV<br>
+&nbsp;&nbsp;let&nbsp;effVirt&nbsp;&nbsp;&nbsp;:&nbsp;Virtualization&nbsp;=&nbsp;effectiveVirtualization(ac,&nbsp;mstatus,&nbsp;mstatush,&nbsp;cur_virtualization);<br>
+<br>
+&nbsp;&nbsp;translateAddr_pv(vAddr,&nbsp;ac,&nbsp;effPriv,&nbsp;effVirt)<br>
+}</span><br>
+<br>
+//&nbsp;****************************************************************<br>
+//&nbsp;Initialize&nbsp;Virtual&nbsp;Memory&nbsp;state<br>
+<br>
+//&nbsp;PUBLIC:&nbsp;invoked&nbsp;from&nbsp;init_model()<br>
+function&nbsp;init_vmem()&nbsp;-&gt;&nbsp;unit&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">init_TLB()</span><br>
+<br>
+//&nbsp;****************************************************************<br>
+</code>
+</body>
+</html>

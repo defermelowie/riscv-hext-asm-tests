@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>riscv_sys_control</title></head>
+<body>
+<h1>riscv_sys_control.sail (139/308) 45%</h1>
+<code style="display: block">
+/*=======================================================================================*/<br>
+/*&nbsp;&nbsp;RISCV&nbsp;Sail&nbsp;Model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;Sail&nbsp;RISC-V&nbsp;architecture&nbsp;model,&nbsp;comprising&nbsp;all&nbsp;files&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;directories&nbsp;except&nbsp;for&nbsp;the&nbsp;snapshots&nbsp;of&nbsp;the&nbsp;Lem&nbsp;and&nbsp;Sail&nbsp;libraries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;in&nbsp;the&nbsp;prover_snapshots&nbsp;directory&nbsp;(which&nbsp;include&nbsp;copies&nbsp;of&nbsp;their&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;licences),&nbsp;is&nbsp;subject&nbsp;to&nbsp;the&nbsp;BSD&nbsp;two-clause&nbsp;licence&nbsp;below.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2017-2023&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Prashanth&nbsp;Mundkur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Rishiyur&nbsp;S.&nbsp;Nikhil&nbsp;and&nbsp;Bluespec,&nbsp;Inc.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jon&nbsp;French&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Brian&nbsp;Campbell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Robert&nbsp;Norton-Wright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alasdair&nbsp;Armstrong&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Thomas&nbsp;Bauereiss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Shaked&nbsp;Flur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Christopher&nbsp;Pulte&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Sewell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alexander&nbsp;Richardson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Hesham&nbsp;Almatary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jessica&nbsp;Clarke&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Microsoft,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Robert&nbsp;Norton-Wright&nbsp;and&nbsp;Nathaniel&nbsp;Wesley&nbsp;Filardo&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Rugg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Aril&nbsp;Computer&nbsp;Corp.,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Scott&nbsp;Johnson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Philipp&nbsp;Tomsich&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;VRULL&nbsp;GmbH,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;its&nbsp;employees&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;All&nbsp;rights&nbsp;reserved.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;the&nbsp;above&nbsp;within&nbsp;the&nbsp;Rigorous&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Engineering&nbsp;of&nbsp;Mainstream&nbsp;Systems&nbsp;(REMS)&nbsp;project,&nbsp;partly&nbsp;funded&nbsp;by&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;EPSRC&nbsp;grant&nbsp;EP/K008528/1,&nbsp;at&nbsp;the&nbsp;Universities&nbsp;of&nbsp;Cambridge&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Edinburgh.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;SRI&nbsp;International&nbsp;and&nbsp;the&nbsp;University&nbsp;of&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Cambridge&nbsp;Computer&nbsp;Laboratory&nbsp;(Department&nbsp;of&nbsp;Computer&nbsp;Science&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Technology)&nbsp;under&nbsp;DARPA/AFRL&nbsp;contract&nbsp;FA8650-18-C-7809&nbsp;(&quot;CIFV&quot;),&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;under&nbsp;DARPA&nbsp;contract&nbsp;HR0011-18-C-0016&nbsp;(&quot;ECATS&quot;)&nbsp;as&nbsp;part&nbsp;of&nbsp;the&nbsp;DARPA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SSITH&nbsp;research&nbsp;programme.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;project&nbsp;has&nbsp;received&nbsp;funding&nbsp;from&nbsp;the&nbsp;European&nbsp;Research&nbsp;Council&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;(ERC)&nbsp;under&nbsp;the&nbsp;European&nbsp;Union’s&nbsp;Horizon&nbsp;2020&nbsp;research&nbsp;and&nbsp;innovation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;programme&nbsp;(grant&nbsp;agreement&nbsp;789108,&nbsp;ELVER).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Redistribution&nbsp;and&nbsp;use&nbsp;in&nbsp;source&nbsp;and&nbsp;binary&nbsp;forms,&nbsp;with&nbsp;or&nbsp;without&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;modification,&nbsp;are&nbsp;permitted&nbsp;provided&nbsp;that&nbsp;the&nbsp;following&nbsp;conditions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;are&nbsp;met:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;1.&nbsp;Redistributions&nbsp;of&nbsp;source&nbsp;code&nbsp;must&nbsp;retain&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;2.&nbsp;Redistributions&nbsp;in&nbsp;binary&nbsp;form&nbsp;must&nbsp;reproduce&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;documentation&nbsp;and/or&nbsp;other&nbsp;materials&nbsp;provided&nbsp;with&nbsp;the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;distribution.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;THIS&nbsp;SOFTWARE&nbsp;IS&nbsp;PROVIDED&nbsp;BY&nbsp;THE&nbsp;AUTHOR&nbsp;AND&nbsp;CONTRIBUTORS&nbsp;``AS&nbsp;IS''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;AND&nbsp;ANY&nbsp;EXPRESS&nbsp;OR&nbsp;IMPLIED&nbsp;WARRANTIES,&nbsp;INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;TO,&nbsp;THE&nbsp;IMPLIED&nbsp;WARRANTIES&nbsp;OF&nbsp;MERCHANTABILITY&nbsp;AND&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;PARTICULAR&nbsp;PURPOSE&nbsp;ARE&nbsp;DISCLAIMED.&nbsp;&nbsp;IN&nbsp;NO&nbsp;EVENT&nbsp;SHALL&nbsp;THE&nbsp;AUTHOR&nbsp;OR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;CONTRIBUTORS&nbsp;BE&nbsp;LIABLE&nbsp;FOR&nbsp;ANY&nbsp;DIRECT,&nbsp;INDIRECT,&nbsp;INCIDENTAL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SPECIAL,&nbsp;EXEMPLARY,&nbsp;OR&nbsp;CONSEQUENTIAL&nbsp;DAMAGES&nbsp;(INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;LIMITED&nbsp;TO,&nbsp;PROCUREMENT&nbsp;OF&nbsp;SUBSTITUTE&nbsp;GOODS&nbsp;OR&nbsp;SERVICES;&nbsp;LOSS&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;USE,&nbsp;DATA,&nbsp;OR&nbsp;PROFITS;&nbsp;OR&nbsp;BUSINESS&nbsp;INTERRUPTION)&nbsp;HOWEVER&nbsp;CAUSED&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;ON&nbsp;ANY&nbsp;THEORY&nbsp;OF&nbsp;LIABILITY,&nbsp;WHETHER&nbsp;IN&nbsp;CONTRACT,&nbsp;STRICT&nbsp;LIABILITY,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OR&nbsp;TORT&nbsp;(INCLUDING&nbsp;NEGLIGENCE&nbsp;OR&nbsp;OTHERWISE)&nbsp;ARISING&nbsp;IN&nbsp;ANY&nbsp;WAY&nbsp;OUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OF&nbsp;THE&nbsp;USE&nbsp;OF&nbsp;THIS&nbsp;SOFTWARE,&nbsp;EVEN&nbsp;IF&nbsp;ADVISED&nbsp;OF&nbsp;THE&nbsp;POSSIBILITY&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SUCH&nbsp;DAMAGE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*=======================================================================================*/<br>
+<br>
+/*&nbsp;Machine-mode&nbsp;and&nbsp;supervisor-mode&nbsp;functionality.&nbsp;*/<br>
+<br>
+/*&nbsp;Reservation&nbsp;handling&nbsp;for&nbsp;LR/SC.<br>
+&nbsp;*<br>
+&nbsp;*&nbsp;The&nbsp;reservation&nbsp;state&nbsp;is&nbsp;maintained&nbsp;external&nbsp;to&nbsp;the&nbsp;model&nbsp;since&nbsp;the<br>
+&nbsp;*&nbsp;reservation&nbsp;behavior&nbsp;is&nbsp;platform-specific&nbsp;anyway&nbsp;and&nbsp;maintaining<br>
+&nbsp;*&nbsp;this&nbsp;state&nbsp;outside&nbsp;the&nbsp;model&nbsp;simplifies&nbsp;the&nbsp;concurrency&nbsp;analysis.<br>
+&nbsp;*<br>
+&nbsp;*&nbsp;These&nbsp;are&nbsp;externs&nbsp;are&nbsp;defined&nbsp;here&nbsp;in&nbsp;the&nbsp;system&nbsp;module&nbsp;since<br>
+&nbsp;*&nbsp;we&nbsp;currently&nbsp;perform&nbsp;reservation&nbsp;cancellation&nbsp;on&nbsp;privilege&nbsp;level<br>
+&nbsp;*&nbsp;transition.&nbsp;&nbsp;Ideally,&nbsp;the&nbsp;platform&nbsp;should&nbsp;get&nbsp;more&nbsp;visibility&nbsp;into<br>
+&nbsp;*&nbsp;where&nbsp;cancellation&nbsp;can&nbsp;be&nbsp;performed.<br>
+&nbsp;*/<br>
+<br>
+val&nbsp;speculate_conditional&nbsp;=&nbsp;monadic&nbsp;{ocaml:&nbsp;&quot;Platform.speculate_conditional&quot;,&nbsp;interpreter:&nbsp;&quot;excl_res&quot;,&nbsp;c:&nbsp;&quot;speculate_conditional&quot;,&nbsp;lem:&nbsp;&quot;speculate_conditional_success&quot;}&nbsp;:&nbsp;unit&nbsp;-&gt;&nbsp;bool<br>
+<br>
+val&nbsp;load_reservation&nbsp;=&nbsp;{ocaml:&nbsp;&quot;Platform.load_reservation&quot;,&nbsp;interpreter:&nbsp;&quot;Platform.load_reservation&quot;,&nbsp;c:&nbsp;&quot;load_reservation&quot;,&nbsp;lem:&nbsp;&quot;load_reservation&quot;}&nbsp;:&nbsp;xlenbits&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;match_reservation&nbsp;=&nbsp;{ocaml:&nbsp;&quot;Platform.match_reservation&quot;,&nbsp;interpreter:&nbsp;&quot;Platform.match_reservation&quot;,&nbsp;lem:&nbsp;&quot;match_reservation&quot;,&nbsp;c:&nbsp;&quot;match_reservation&quot;}&nbsp;:&nbsp;xlenbits&nbsp;-&gt;&nbsp;bool<br>
+val&nbsp;cancel_reservation&nbsp;=&nbsp;{ocaml:&nbsp;&quot;Platform.cancel_reservation&quot;,&nbsp;interpreter:&nbsp;&quot;Platform.cancel_reservation&quot;,&nbsp;c:&nbsp;&quot;cancel_reservation&quot;,&nbsp;lem:&nbsp;&quot;cancel_reservation&quot;}&nbsp;:&nbsp;unit&nbsp;-&gt;&nbsp;unit<br>
+<br>
+/*&nbsp;Exception&nbsp;delegation:&nbsp;given&nbsp;an&nbsp;exception&nbsp;and&nbsp;the&nbsp;privilege/virtualization&nbsp;mode&nbsp;at&nbsp;which<br>
+&nbsp;*&nbsp;it&nbsp;occured,&nbsp;returns&nbsp;the&nbsp;privilege/virtualization&nbsp;mode&nbsp;at&nbsp;which&nbsp;it&nbsp;should&nbsp;be&nbsp;handled.<br>
+&nbsp;*/<br>
+function&nbsp;exception_delegatee(e&nbsp;:&nbsp;ExceptionType,&nbsp;cur_p:&nbsp;Privilege,&nbsp;cur_v&nbsp;:&nbsp;Virtualization)&nbsp;-&gt;&nbsp;(Privilege,&nbsp;Virtualization)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;/*&nbsp;Determine&nbsp;delegation&nbsp;privilege&nbsp;and&nbsp;virtualization&nbsp;mode&nbsp;based&nbsp;on&nbsp;xedeleg&nbsp;CSRs<br>
+&nbsp;&nbsp;&nbsp;*<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;medeleg&nbsp;delegates&nbsp;to&nbsp;HS-mode<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;hedeleg&nbsp;delegates&nbsp;to&nbsp;VS-mode<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;sedeleg&nbsp;delegates&nbsp;to&nbsp;(V)U-mode<br>
+&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;idx&nbsp;=&nbsp;num_of_ExceptionType(e);<br>
+&nbsp;&nbsp;let&nbsp;del_to_hs&nbsp;=&nbsp;bit_to_bool(medeleg.bits()[idx]);<br>
+&nbsp;&nbsp;let&nbsp;del_to_vs&nbsp;=&nbsp;bit_to_bool(hedeleg.bits()[idx]);<br>
+&nbsp;&nbsp;let&nbsp;del_to_u&nbsp;&nbsp;=&nbsp;bit_to_bool(sedeleg.bits()[idx]);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">let&nbsp;(del_p,&nbsp;del_v):&nbsp;(Privilege,&nbsp;Virtualization)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;cur_v&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;V0&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">match&nbsp;(del_to_hs,&nbsp;del_to_u)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(false,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">(Machine,&nbsp;V0)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(true,&nbsp;false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">(Supervisor,&nbsp;V0)</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(true,&nbsp;true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(User,&nbsp;V0)</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;V1&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">match&nbsp;(del_to_hs,&nbsp;del_to_vs,&nbsp;del_to_u)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(false,&nbsp;_,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">(Machine,&nbsp;V0)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(true,&nbsp;false,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">(Supervisor,&nbsp;V0)</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(true,&nbsp;true,&nbsp;false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">(Supervisor,&nbsp;V1)</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(true,&nbsp;true,&nbsp;true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(User,&nbsp;V1)</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;/*&nbsp;Check&nbsp;if&nbsp;delegation&nbsp;privilege&nbsp;exists:<br>
+&nbsp;&nbsp;&nbsp;*<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;if&nbsp;S-mode&nbsp;is&nbsp;absent,&nbsp;medeleg&nbsp;delegates&nbsp;directly&nbsp;to&nbsp;U-mode&nbsp;if&nbsp;'N'&nbsp;is&nbsp;supported<br>
+&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(del_p,&nbsp;del_v):&nbsp;(Privilege,&nbsp;Virtualization)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;del_p&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Machine&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">(Machine,&nbsp;V0)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Supervisor&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">if&nbsp;haveSupMode()&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">(Supervisor,&nbsp;del_v)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;haveNExt()&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(User,&nbsp;cur_v)</span>&nbsp;/*&nbsp;Use&nbsp;original&nbsp;virt&nbsp;mode&nbsp;when&nbsp;delegating&nbsp;directly&nbsp;to&nbsp;U-mode,&nbsp;otherwise&nbsp;a&nbsp;trap&nbsp;attempt&nbsp;from&nbsp;VU-&gt;HS&nbsp;would&nbsp;end&nbsp;up&nbsp;in&nbsp;U&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(Machine,&nbsp;V0)</span></span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;haveUsrMode()&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(User,&nbsp;del_v)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;haveSupMode()&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(Supervisor,&nbsp;del_v)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(Machine,&nbsp;V0)</span></span></span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;/*&nbsp;Check&nbsp;transition&nbsp;to&nbsp;less-privileged&nbsp;mode:<br>
+&nbsp;&nbsp;&nbsp;*<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;trap&nbsp;delegation&nbsp;should&nbsp;never&nbsp;cause&nbsp;a&nbsp;transition&nbsp;to&nbsp;a&nbsp;lower&nbsp;privilege&nbsp;mode<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;trap&nbsp;delegation&nbsp;should&nbsp;never&nbsp;cause&nbsp;a&nbsp;transition&nbsp;to&nbsp;a&nbsp;more&nbsp;virtualized&nbsp;mode<br>
+&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(privLevel_to_bits(del_p)&nbsp;&gt;=_u&nbsp;privLevel_to_bits(cur_p))&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">virtMode_to_bits(del_v)&nbsp;&lt;=_u&nbsp;virtMode_to_bits(cur_v)</span>)</span><br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">(del_p,&nbsp;del_v)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(cur_p,&nbsp;cur_v)</span></span></span></span><br>
+}</span><br>
+<br>
+/*!<br>
+&nbsp;*&nbsp;Interrupts&nbsp;are&nbsp;prioritized&nbsp;in&nbsp;privilege&nbsp;order,&nbsp;and&nbsp;for&nbsp;each<br>
+&nbsp;*&nbsp;privilege,&nbsp;in&nbsp;the&nbsp;order:&nbsp;external,&nbsp;software,&nbsp;timers.<br>
+&nbsp;*/<br>
+function&nbsp;findPendingInterrupt(ip&nbsp;:&nbsp;xlenbits)&nbsp;-&gt;&nbsp;option(InterruptType)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;ip&nbsp;=&nbsp;Mk_Minterrupts(ip);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ip.MEI()&nbsp;==&nbsp;0b1&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">Some(I_M_External)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">if&nbsp;ip.MSI()&nbsp;==&nbsp;0b1&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">Some(I_M_Software)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 70%)">if&nbsp;ip.MTI()&nbsp;==&nbsp;0b1&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 65%)">Some(I_M_Timer)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 65%)">if&nbsp;ip.SEI()&nbsp;==&nbsp;0b1&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 60%)">Some(I_S_External)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 60%)">if&nbsp;ip.SSI()&nbsp;==&nbsp;0b1&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 55%)">Some(I_S_Software)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 55%)">if&nbsp;ip.STI()&nbsp;==&nbsp;0b1&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 50%)">Some(I_S_Timer)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 50%)">if&nbsp;<span style="background-color: hsl(0, 85%, 75%)">haveHExt()&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 45%)">ip.SGEI()&nbsp;==&nbsp;0b1</span></span>&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">Some(I_G_External)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 45%)">if&nbsp;<span style="background-color: hsl(0, 85%, 75%)">haveHExt()&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 40%)">ip.VSEI()&nbsp;==&nbsp;0b1</span></span>&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">Some(I_VS_External)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 40%)">if&nbsp;<span style="background-color: hsl(0, 85%, 75%)">haveHExt()&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 35%)">ip.VSSI()&nbsp;==&nbsp;0b1</span></span>&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 35%)">Some(I_VS_Software)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;<span style="background-color: hsl(0, 85%, 70%)">haveHExt()&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 65%)">ip.VSTI()&nbsp;==&nbsp;0b1</span></span>&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">Some(I_VS_Timer)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;<span style="background-color: hsl(0, 85%, 65%)">haveNExt()&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 60%)">ip.UEI()&nbsp;==&nbsp;0b1</span></span>&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">Some(I_U_External)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;<span style="background-color: hsl(0, 85%, 60%)">haveNExt()&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 55%)">ip.USI()&nbsp;==&nbsp;0b1</span></span>&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">Some(I_U_Software)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;<span style="background-color: hsl(0, 85%, 55%)">haveNExt()&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 50%)">ip.UTI()&nbsp;==&nbsp;0b1</span></span>&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">Some(I_U_Timer)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">None()</span></span></span></span></span></span></span></span></span></span></span></span></span></span><br>
+}</span><br>
+<br>
+/*!&nbsp;Translate&nbsp;VS-level&nbsp;interrupts&nbsp;to&nbsp;their&nbsp;S-level&nbsp;counterpart&nbsp;*/<br>
+function&nbsp;translateVSInterrupts(i&nbsp;:&nbsp;Minterrupts)&nbsp;-&gt;&nbsp;Minterrupts&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;t&nbsp;=&nbsp;i;<br>
+&nbsp;&nbsp;let&nbsp;t&nbsp;=&nbsp;[[t&nbsp;with&nbsp;SEI&nbsp;=&nbsp;i.VSEI()]&nbsp;with&nbsp;VSEI&nbsp;=&nbsp;0b0];<br>
+&nbsp;&nbsp;let&nbsp;t&nbsp;=&nbsp;[[t&nbsp;with&nbsp;SSI&nbsp;=&nbsp;i.VSSI()]&nbsp;with&nbsp;VSSI&nbsp;=&nbsp;0b0];<br>
+&nbsp;&nbsp;let&nbsp;t&nbsp;=&nbsp;[[t&nbsp;with&nbsp;STI&nbsp;=&nbsp;i.VSTI()]&nbsp;with&nbsp;VSTI&nbsp;=&nbsp;0b0];<br>
+&nbsp;&nbsp;//&nbsp;TODO:&nbsp;add&nbsp;hook&nbsp;for&nbsp;extensions&nbsp;to&nbsp;translate&nbsp;interrupts&nbsp;as&nbsp;well<br>
+&nbsp;&nbsp;t<br>
+}</span><br>
+<br>
+/*!<br>
+&nbsp;*&nbsp;Process&nbsp;the&nbsp;pending&nbsp;interrupts&nbsp;xip&nbsp;at&nbsp;a&nbsp;privilege&nbsp;according&nbsp;to<br>
+&nbsp;*&nbsp;the&nbsp;enabled&nbsp;flags&nbsp;xie&nbsp;and&nbsp;the&nbsp;delegation&nbsp;in&nbsp;xideleg.&nbsp;Return<br>
+&nbsp;*&nbsp;either&nbsp;the&nbsp;set&nbsp;of&nbsp;pending&nbsp;interrupts,&nbsp;or&nbsp;the&nbsp;set&nbsp;of&nbsp;interrupts<br>
+&nbsp;*&nbsp;delegated&nbsp;to&nbsp;the&nbsp;next&nbsp;lower&nbsp;privilege.<br>
+&nbsp;*/<br>
+union&nbsp;interrupt_set&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;Ints_Pending&nbsp;&nbsp;&nbsp;:&nbsp;xlenbits,<br>
+&nbsp;&nbsp;Ints_Delegated&nbsp;:&nbsp;xlenbits,<br>
+&nbsp;&nbsp;Ints_Empty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unit<br>
+}<br>
+function&nbsp;processPending(xip&nbsp;:&nbsp;Minterrupts,&nbsp;xie&nbsp;:&nbsp;Minterrupts,&nbsp;xideleg&nbsp;:&nbsp;xlenbits,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;priv_enabled&nbsp;:&nbsp;bool)&nbsp;-&gt;&nbsp;interrupt_set&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;/*&nbsp;interrupts&nbsp;that&nbsp;are&nbsp;enabled&nbsp;but&nbsp;not&nbsp;delegated&nbsp;are&nbsp;pending&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;&nbsp;effective_pend&nbsp;=&nbsp;xip.bits()&nbsp;&&nbsp;xie.bits()&nbsp;&&nbsp;(~&nbsp;(xideleg));<br>
+&nbsp;&nbsp;/*&nbsp;the&nbsp;others&nbsp;are&nbsp;delegated&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;&nbsp;effective_delg&nbsp;=&nbsp;xip.bits()&nbsp;&&nbsp;xideleg;<br>
+&nbsp;&nbsp;/*&nbsp;we&nbsp;have&nbsp;pending&nbsp;interrupts&nbsp;if&nbsp;this&nbsp;privilege&nbsp;is&nbsp;enabled&nbsp;*/<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">priv_enabled&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">effective_pend&nbsp;!=&nbsp;zero_extend(0b0)</span>)</span><br>
+&nbsp;&nbsp;then&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">Ints_Pending(effective_pend)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">if&nbsp;effective_delg&nbsp;!=&nbsp;zero_extend(0b0)<br>
+&nbsp;&nbsp;then&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">Ints_Delegated(effective_delg)</span><br>
+&nbsp;&nbsp;else&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">Ints_Empty()</span></span></span><br>
+}</span><br>
+<br>
+/*!<br>
+&nbsp;*&nbsp;Given&nbsp;the&nbsp;current&nbsp;privilege&nbsp;and&nbsp;virtualization,&nbsp;iterate&nbsp;over&nbsp;privileges<br>
+&nbsp;*&nbsp;to&nbsp;get&nbsp;a&nbsp;pending&nbsp;set&nbsp;for&nbsp;an&nbsp;enabled&nbsp;privilege.<br>
+&nbsp;*<br>
+&nbsp;*&nbsp;This&nbsp;is&nbsp;only&nbsp;called&nbsp;for&nbsp;M/U,&nbsp;M/S/U&nbsp;or&nbsp;M/HS/VS/U/VU&nbsp;systems.<br>
+&nbsp;*/<br>
+function&nbsp;getPendingSet(priv&nbsp;:&nbsp;Privilege,&nbsp;virt:&nbsp;Virtualization)&nbsp;-&gt;&nbsp;option((xlenbits,&nbsp;Privilege,&nbsp;Virtualization))&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(haveUsrMode(),&nbsp;&quot;no&nbsp;user&nbsp;mode:&nbsp;M/U,&nbsp;M/S/U&nbsp;or&nbsp;M/HS/VS/U/VU&nbsp;system&nbsp;required&quot;);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;&nbsp;(mip.bits()&nbsp;&&nbsp;mie.bits())&nbsp;==&nbsp;zeros()&nbsp;then&nbsp;/*&nbsp;fast&nbsp;path&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">None()</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">if&nbsp;haveNExt()&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;/*&nbsp;Interrupt&nbsp;delegation&nbsp;by&nbsp;the&nbsp;deprecated&nbsp;N-extension&nbsp;(User-level&nbsp;interrupts)&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Higher&nbsp;privileges&nbsp;than&nbsp;the&nbsp;current&nbsp;one&nbsp;are&nbsp;implicitly&nbsp;enabled,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;while&nbsp;lower&nbsp;privileges&nbsp;are&nbsp;blocked.&nbsp;&nbsp;An&nbsp;unsupported&nbsp;privilege&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;considered&nbsp;blocked.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;mIE&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">priv&nbsp;!=&nbsp;Machine&nbsp;|&nbsp;(<span style="background-color: hsl(0, 85%, 65%)">priv&nbsp;==&nbsp;Machine&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 60%)">mstatus.MIE()&nbsp;==&nbsp;0b1</span></span>)</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;sIE&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">haveSupMode()&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 65%)">priv&nbsp;==&nbsp;User&nbsp;|&nbsp;(<span style="background-color: hsl(0, 85%, 60%)">priv&nbsp;==&nbsp;Supervisor&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 55%)">mstatus.SIE()&nbsp;==&nbsp;0b1</span></span>)</span>)</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;uIE&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">haveNExt()&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 65%)">priv&nbsp;==&nbsp;User&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 60%)">mstatus.UIE()&nbsp;==&nbsp;0b1</span></span>)</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;processPending(mip,&nbsp;mie,&nbsp;mideleg.bits(),&nbsp;mIE)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Empty()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">None()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Pending(p)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;r&nbsp;=&nbsp;(p,&nbsp;Machine,&nbsp;V0)&nbsp;in&nbsp;Some(r)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Delegated(d)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;not(haveSupMode())&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">if&nbsp;uIE&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 50%)">let&nbsp;r&nbsp;=&nbsp;(d,&nbsp;User,&nbsp;V0)&nbsp;in&nbsp;Some(r)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">None()</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;the&nbsp;delegated&nbsp;bits&nbsp;are&nbsp;pending&nbsp;for&nbsp;S-mode&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">match&nbsp;processPending(Mk_Minterrupts(d),&nbsp;mie,&nbsp;sideleg.bits(),&nbsp;sIE)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Empty()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">None()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Pending(p)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">let&nbsp;r&nbsp;=&nbsp;(p,&nbsp;Supervisor,&nbsp;V0)&nbsp;in&nbsp;Some(r)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Delegated(d)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">if&nbsp;&nbsp;&nbsp;uIE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 45%)">let&nbsp;r&nbsp;=&nbsp;(d,&nbsp;User,&nbsp;V0)&nbsp;in&nbsp;Some(r)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 45%)">None()</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Higher&nbsp;privileges&nbsp;than&nbsp;the&nbsp;current&nbsp;one&nbsp;are&nbsp;implicitly&nbsp;enabled,&nbsp;while&nbsp;lower&nbsp;privileges&nbsp;are&nbsp;blocked.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;mIE&nbsp;&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">priv&nbsp;!=&nbsp;Machine&nbsp;|&nbsp;(<span style="background-color: hsl(120, 85%, 65%)">priv&nbsp;==&nbsp;Machine&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 60%)">mstatus.MIE()&nbsp;==&nbsp;0b1</span></span>)</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;sIE&nbsp;&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">haveSupMode()&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 65%)">virt&nbsp;==&nbsp;V1&nbsp;|&nbsp;<span style="background-color: hsl(120, 85%, 60%)">priv&nbsp;==&nbsp;User&nbsp;|&nbsp;(<span style="background-color: hsl(120, 85%, 55%)">priv&nbsp;==&nbsp;Supervisor&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 50%)">mstatus.SIE()&nbsp;==&nbsp;0b1</span></span>)</span></span>)</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;vsIE&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">haveHExt()&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 65%)">virt&nbsp;==&nbsp;V1&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 60%)">priv&nbsp;==&nbsp;User&nbsp;|&nbsp;(<span style="background-color: hsl(120, 85%, 55%)">priv&nbsp;==&nbsp;Supervisor&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 50%)">vsstatus.SIE()&nbsp;==&nbsp;0b1</span></span>)</span>)</span></span>;&nbsp;//&nbsp;Enabled&nbsp;H-ext&nbsp;implies&nbsp;presence&nbsp;of&nbsp;S-mode<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;processPending(mip,&nbsp;mie,&nbsp;mideleg.bits(),&nbsp;mIE)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Empty()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">None()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Pending(p)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">Some(p,&nbsp;Machine,&nbsp;V0)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Delegated(d)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">match&nbsp;processPending(Mk_Minterrupts(d),&nbsp;mie,&nbsp;hideleg.bits(),&nbsp;sIE)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Empty()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 60%)">None()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Pending(p)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 60%)">Some(p,&nbsp;Supervisor,&nbsp;V0)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Delegated(d)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 60%)">match&nbsp;processPending(Mk_Minterrupts(d),&nbsp;mie,&nbsp;zeros(),&nbsp;vsIE)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Empty()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 55%)">None()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Pending(p)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 55%)">Some(translateVSInterrupts(Mk_Minterrupts(p)).bits(),&nbsp;Supervisor,&nbsp;V1)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ints_Delegated(d)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;Delegate&nbsp;interrupts&nbsp;beyond&nbsp;VS-mode&quot;)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span></span></span><br>
+}</span><br>
+<br>
+/*&nbsp;Examine&nbsp;the&nbsp;current&nbsp;interrupt&nbsp;state&nbsp;and&nbsp;return&nbsp;an&nbsp;interrupt&nbsp;to&nbsp;be&nbsp;*<br>
+&nbsp;*&nbsp;handled&nbsp;(if&nbsp;any),&nbsp;and&nbsp;the&nbsp;privilege&nbsp;it&nbsp;should&nbsp;be&nbsp;handled&nbsp;at.<br>
+&nbsp;*/<br>
+function&nbsp;dispatchInterrupt(priv&nbsp;:&nbsp;Privilege,&nbsp;virt:&nbsp;Virtualization)&nbsp;-&gt;&nbsp;option((InterruptType,&nbsp;Privilege,&nbsp;Virtualization))&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;/*&nbsp;If&nbsp;we&nbsp;don't&nbsp;have&nbsp;different&nbsp;privilege&nbsp;levels,&nbsp;we&nbsp;don't&nbsp;need&nbsp;to&nbsp;check&nbsp;delegation.<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;Absence&nbsp;of&nbsp;U-mode&nbsp;implies&nbsp;absence&nbsp;of&nbsp;S-mode.<br>
+&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(haveUsrMode())&nbsp;|&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">not(haveSupMode())&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(haveNExt())</span></span>)</span>&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;assert(priv&nbsp;==&nbsp;Machine,&nbsp;&quot;invalid&nbsp;current&nbsp;privilege&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;enabled_pending&nbsp;=&nbsp;mip.bits()&nbsp;&&nbsp;mie.bits();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;findPendingInterrupt(enabled_pending)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(i)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;r&nbsp;=&nbsp;(i,&nbsp;Machine,&nbsp;V0)&nbsp;in&nbsp;Some(r)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">None()</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;getPendingSet(priv,&nbsp;virt)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">None()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(ip,&nbsp;del_p,&nbsp;del_v)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">match&nbsp;findPendingInterrupt(ip)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">None()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(i)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">let&nbsp;r&nbsp;=&nbsp;(i,&nbsp;del_p,&nbsp;del_v)&nbsp;in&nbsp;Some(r)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;types&nbsp;of&nbsp;privilege&nbsp;transitions&nbsp;*/<br>
+<br>
+union&nbsp;ctl_result&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;CTL_TRAP&nbsp;:&nbsp;(ExceptionType,&nbsp;ExceptionContext),<br>
+&nbsp;&nbsp;CTL_SRET&nbsp;:&nbsp;unit,<br>
+&nbsp;&nbsp;CTL_MRET&nbsp;:&nbsp;unit,<br>
+&nbsp;&nbsp;CTL_URET&nbsp;:&nbsp;unit<br>
+}<br>
+<br>
+/*&nbsp;Is&nbsp;it&nbsp;legal&nbsp;for&nbsp;mtinst&nbsp;or&nbsp;htinst&nbsp;to&nbsp;hold&nbsp;a&nbsp;tranformed&nbsp;instruction&nbsp;on&nbsp;a&nbsp;given&nbsp;fault&nbsp;*/<br>
+function&nbsp;exc_causes_transformed_inst_in_xtinst(e&nbsp;:&nbsp;ExceptionType)&nbsp;-&gt;&nbsp;bool&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;e&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Addr_Align()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Access_Fault()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Addr_Align()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Access_Fault()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Page_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Page_Fault()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_Load_GPage_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_GPage_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">false</span>,<br>
+&nbsp;&nbsp;}</span><br>
+<br>
+val&nbsp;plat_xtinst_has_transformed_inst&nbsp;=&nbsp;{ocaml:&nbsp;&quot;Platform.xtinst_has_transformed_inst&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c:&nbsp;&quot;plat_xtinst_has_transformed_inst&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_:&nbsp;&quot;plat_xtinst_has_transformed_inst&quot;}&nbsp;:&nbsp;unit&nbsp;-&gt;&nbsp;bool<br>
+<br>
+$ifdef&nbsp;RVFI_DII<br>
+val&nbsp;rvfi_trap&nbsp;:&nbsp;unit&nbsp;-&gt;&nbsp;unit<br>
+//&nbsp;TODO:&nbsp;record&nbsp;rvfi_trap_data<br>
+function&nbsp;rvfi_trap&nbsp;()&nbsp;=<br>
+&nbsp;&nbsp;rvfi_inst_data-&gt;rvfi_trap()&nbsp;=&nbsp;0x01<br>
+$else<br>
+val&nbsp;rvfi_trap&nbsp;:&nbsp;unit&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;rvfi_trap&nbsp;()&nbsp;=&nbsp;()<br>
+$endif<br>
+<br>
+/*&nbsp;handle&nbsp;exceptional&nbsp;ctl&nbsp;flow&nbsp;by&nbsp;updating&nbsp;nextPC&nbsp;and&nbsp;operating&nbsp;privilege&nbsp;*/<br>
+<br>
+function&nbsp;trap_handler(del_priv&nbsp;:&nbsp;Privilege,&nbsp;del_virt&nbsp;:&nbsp;Virtualization,&nbsp;pc&nbsp;:&nbsp;xlenbits,&nbsp;cause&nbsp;:&nbsp;TrapCause,&nbsp;context&nbsp;:&nbsp;ExceptionContext)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;xlenbits&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;rvfi_trap();<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;&nbsp;&nbsp;get_config_print_platform()<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">print_platform(&quot;handling&nbsp;&quot;&nbsp;^&nbsp;trapCause_to_str(cause)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;&quot;&nbsp;at&nbsp;priv&nbsp;&quot;&nbsp;^&nbsp;to_str(del_priv,&nbsp;del_virt)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;&quot;&nbsp;with&nbsp;tval&nbsp;&quot;&nbsp;^&nbsp;BitStr(some_or_zero(context.excinfo))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;&quot;&nbsp;and&nbsp;tinst&nbsp;&quot;&nbsp;^&nbsp;BitStr(some_or_zero(context.excinst)))</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+<br>
+&nbsp;&nbsp;cancel_reservation();<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;(del_priv)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Machine&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mcause-&gt;IsInterrupt()&nbsp;=&nbsp;bool_to_bits(trapCause_is_interrupt(cause));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mcause-&gt;Cause()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(trapCause_to_bits(cause));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mepc&nbsp;=&nbsp;pc;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;MPIE()&nbsp;=&nbsp;mstatus.MIE();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;MIE()&nbsp;&nbsp;=&nbsp;0b0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;MPP()&nbsp;&nbsp;=&nbsp;privLevel_to_bits(cur_privilege);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sizeof(xlen)&nbsp;==&nbsp;32<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;mstatush&nbsp;=&nbsp;set_mstatush_MPV(mstatush,&nbsp;virtMode_to_bits(cur_virtualization))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;mstatus&nbsp;=&nbsp;set_mstatus_MPV(mstatus,&nbsp;virtMode_to_bits(cur_virtualization));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Set&nbsp;mstatus(h).GVA&nbsp;when&nbsp;a&nbsp;guest&nbsp;virtual&nbsp;address&nbsp;is&nbsp;written&nbsp;to&nbsp;mtval&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;architecture(misa.MXL())&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(RV32)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">mstatush&nbsp;=&nbsp;set_mstatush_GVA(mstatush,&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;context.info_is_gva&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">0b1</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">0b0</span></span>)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some(_)&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">mstatus&nbsp;=&nbsp;set_mstatus_GVA(mstatus,&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;context.info_is_gva&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 65%)">0b1</span>&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 65%)">0b0</span></span>)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;None()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;Invalid&nbsp;architecture&nbsp;in&nbsp;misa&quot;)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mtval&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;some_or_zero(context.excinfo);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mtval2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;some_or_zero(context.excinfo2);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mtinst&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;some_or_zero(context.excinst);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_privilege&nbsp;&nbsp;&nbsp;=&nbsp;del_priv;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_virtualization&nbsp;=&nbsp;del_virt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;handle_trap_extension(del_priv,&nbsp;pc,&nbsp;context.ext);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;get_config_print_reg()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">print_reg(&quot;CSR&nbsp;mstatus&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(mstatus.bits()))</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(sizeof(xlen)&nbsp;==&nbsp;32)&nbsp;&&nbsp;get_config_print_reg()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;print_reg(&quot;CSR&nbsp;mstatush&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(mstatush.bits()));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prepare_trap_vector(del_priv,&nbsp;del_virt,&nbsp;mcause)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Supervisor&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">match&nbsp;(del_virt)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V0&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assert&nbsp;(haveSupMode(),&nbsp;&quot;no&nbsp;supervisor&nbsp;mode&nbsp;present&nbsp;for&nbsp;delegation&quot;);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scause-&gt;IsInterrupt()&nbsp;=&nbsp;bool_to_bits(trapCause_is_interrupt(cause));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scause-&gt;Cause()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(trapCause_to_bits(cause));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sepc&nbsp;=&nbsp;pc;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;SPIE()&nbsp;=&nbsp;mstatus.SIE();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;SIE()&nbsp;&nbsp;=&nbsp;0b0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;SPP()&nbsp;&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;cur_privilege&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;User&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">0b0</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Supervisor&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">0b1</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Machine&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;invalid&nbsp;privilege&nbsp;for&nbsp;s-mode&nbsp;trap&quot;)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hstatus-&gt;SPV()&nbsp;=&nbsp;virtMode_to_bits(cur_virtualization);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hstatus-&gt;GVA()&nbsp;=&nbsp;bool_to_bits(context.info_is_gva);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;cur_virtualization&nbsp;==&nbsp;V1&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 65%)">hstatus-&gt;SPVP()</span>&nbsp;=&nbsp;mstatus.SPP()</span>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stval&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;some_or_zero(context.excinfo);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;htval&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;some_or_zero(context.excinfo2);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;htinst&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;some_or_zero(context.excinst);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_privilege&nbsp;&nbsp;&nbsp;=&nbsp;del_priv;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_virtualization&nbsp;=&nbsp;del_virt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;handle_trap_extension(del_priv,&nbsp;pc,&nbsp;context.ext);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;get_config_print_reg()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 65%)">print_reg(&quot;CSR&nbsp;mstatus&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(mstatus.bits()))</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prepare_trap_vector(del_priv,&nbsp;del_virt,&nbsp;scause)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V1&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assert&nbsp;(<span style="background-color: hsl(0, 85%, 75%)">haveSupMode()&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 65%)">haveHExt()</span></span>,&nbsp;&quot;no&nbsp;virtual&nbsp;supervisor&nbsp;mode&nbsp;present&nbsp;for&nbsp;delegation&quot;);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vscause-&gt;IsInterrupt()&nbsp;=&nbsp;bool_to_bits(trapCause_is_interrupt(cause));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vscause-&gt;Cause()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(trapCause_to_bits(cause));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vsepc&nbsp;=&nbsp;pc;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vsstatus-&gt;SPIE()&nbsp;=&nbsp;mstatus.SIE();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vsstatus-&gt;SIE()&nbsp;&nbsp;=&nbsp;0b0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vsstatus-&gt;SPP()&nbsp;&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;cur_privilege&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;User&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">0b0</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Supervisor&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">0b1</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Machine&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;invalid&nbsp;privilege&nbsp;for&nbsp;vs-mode&nbsp;trap&quot;)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vstval&nbsp;=&nbsp;some_or_zero(context.excinfo);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_privilege&nbsp;&nbsp;&nbsp;=&nbsp;del_priv;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_virtualization&nbsp;=&nbsp;del_virt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;handle_trap_extension(del_priv,&nbsp;pc,&nbsp;context.ext);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;get_config_print_reg()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 65%)">print_reg(&quot;CSR&nbsp;vsstatus&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vsstatus.bits()))</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prepare_trap_vector(del_priv,&nbsp;del_virt,&nbsp;vscause)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;User&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assert(haveUsrMode(),&nbsp;&quot;no&nbsp;user&nbsp;mode&nbsp;present&nbsp;for&nbsp;delegation&quot;);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ucause-&gt;IsInterrupt()&nbsp;=&nbsp;bool_to_bits(trapCause_is_interrupt(cause));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ucause-&gt;Cause()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(trapCause_to_bits(cause));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uepc&nbsp;=&nbsp;pc;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;UPIE()&nbsp;=&nbsp;mstatus.UIE();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;UIE()&nbsp;&nbsp;=&nbsp;0b0;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;utval&nbsp;=&nbsp;some_or_zero(context.excinfo);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_privilege&nbsp;&nbsp;&nbsp;=&nbsp;del_priv;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_virtualization&nbsp;=&nbsp;del_virt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;handle_trap_extension(del_priv,&nbsp;pc,&nbsp;context.ext);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;&nbsp;&nbsp;get_config_print_reg()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">print_reg(&quot;CSR&nbsp;mstatus&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(mstatus.bits()))</span></span><span style="background-color: hsl(0, 85%, 75%)">&#171;Invisible branch not taken here&#187</span>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prepare_trap_vector(del_priv,&nbsp;del_virt,&nbsp;ucause)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span>;<br>
+}</span><br>
+<br>
+function&nbsp;exception_handler(cur_priv&nbsp;:&nbsp;Privilege,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_virt:&nbsp;Virtualization,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ctl&nbsp;:&nbsp;ctl_result,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pc:&nbsp;xlenbits)&nbsp;-&gt;&nbsp;xlenbits&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;(cur_priv,&nbsp;ctl)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;CTL_TRAP(e,&nbsp;c))&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(del_priv,&nbsp;del_virt)&nbsp;=&nbsp;exception_delegatee(e,&nbsp;cur_privilege,&nbsp;cur_virtualization);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;&nbsp;&nbsp;get_config_print_platform()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">print_platform(&quot;trapping&nbsp;from&nbsp;&quot;&nbsp;^&nbsp;to_str(cur_priv,&nbsp;cur_virtualization)&nbsp;^<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;to&nbsp;&quot;&nbsp;^&nbsp;to_str(del_priv,&nbsp;del_virt)&nbsp;^<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;to&nbsp;handle&nbsp;&quot;&nbsp;^&nbsp;to_str(e))</span></span><span style="background-color: hsl(0, 85%, 75%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;trap_handler(del_priv,&nbsp;del_virt,&nbsp;pc,&nbsp;E(e),&nbsp;c)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;CTL_MRET())&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;prev_priv&nbsp;&nbsp;&nbsp;=&nbsp;cur_privilege;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;prev_virt&nbsp;&nbsp;&nbsp;=&nbsp;cur_virtualization;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;MIE()&nbsp;&nbsp;=&nbsp;mstatus.MPIE();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;MPIE()&nbsp;=&nbsp;0b1;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_privilege&nbsp;&nbsp;&nbsp;=&nbsp;privLevel_of_bits(mstatus.MPP());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;MPP()&nbsp;&nbsp;=&nbsp;privLevel_to_bits(<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;haveUsrMode()&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">User</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">Machine</span></span>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;cur_privilege&nbsp;!=&nbsp;Machine<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">mstatus-&gt;MPRV()</span>&nbsp;=&nbsp;0b0</span>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_virtualization&nbsp;=&nbsp;virtMode_of_bits(get_mstatus_MPV(mstatus,&nbsp;mstatush));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sizeof(xlen)&nbsp;==&nbsp;32<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;mstatush&nbsp;=&nbsp;set_mstatush_MPV(mstatush,&nbsp;0b0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;mstatus&nbsp;=&nbsp;set_mstatus_MPV(mstatus,&nbsp;0b0);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;get_config_print_reg()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">print_reg(&quot;CSR&nbsp;mstatus&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(mstatus.bits()))</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(sizeof(xlen)&nbsp;==&nbsp;32)&nbsp;&&nbsp;get_config_print_reg()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;print_reg(&quot;CSR&nbsp;mstatush&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(mstatush.bits()));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;get_config_print_platform()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">print_platform(&quot;ret-ing&nbsp;from&nbsp;&quot;&nbsp;^&nbsp;to_str(prev_priv)&nbsp;^&nbsp;&quot;&nbsp;(&quot;&nbsp;^&nbsp;to_str(prev_virt)&nbsp;^&nbsp;&quot;)&nbsp;to&nbsp;&quot;&nbsp;^&nbsp;to_str(cur_privilege)&nbsp;^&nbsp;&quot;&nbsp;(&quot;&nbsp;^&nbsp;to_str(cur_virtualization)&nbsp;^&nbsp;&quot;)&quot;)</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cancel_reservation();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prepare_xret_target(Machine,&nbsp;prev_virt)&nbsp;&&nbsp;pc_alignment_mask()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;CTL_SRET())&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;prev_priv&nbsp;&nbsp;&nbsp;=&nbsp;cur_privilege;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;prev_virt&nbsp;&nbsp;&nbsp;=&nbsp;cur_virtualization;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;prev_virt&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V0&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;SIE()&nbsp;&nbsp;=&nbsp;mstatus.SPIE();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;SPIE()&nbsp;=&nbsp;0b1;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_privilege&nbsp;&nbsp;&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;mstatus.SPP()&nbsp;==&nbsp;0b1&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 65%)">Supervisor</span>&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 65%)">User</span></span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;SPP()&nbsp;&nbsp;=&nbsp;0b0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;&nbsp;&nbsp;cur_privilege&nbsp;!=&nbsp;Machine<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 65%)">mstatus-&gt;MPRV()</span>&nbsp;=&nbsp;0b0</span><span style="background-color: hsl(0, 85%, 75%)">&#171;Invisible branch not taken here&#187</span>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_virtualization&nbsp;=&nbsp;virtMode_of_bits(hstatus.SPV());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hstatus-&gt;SPV()&nbsp;=&nbsp;0b0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V1&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vsstatus-&gt;SIE()&nbsp;&nbsp;=&nbsp;vsstatus.SPIE();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vsstatus-&gt;SPIE()&nbsp;=&nbsp;0b1;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_privilege&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;vsstatus.SPP()&nbsp;==&nbsp;0b1&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">Supervisor</span>&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 65%)">User</span></span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vsstatus-&gt;SPP()&nbsp;&nbsp;=&nbsp;0b0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;&nbsp;&nbsp;cur_privilege&nbsp;!=&nbsp;Machine<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 65%)">mstatus-&gt;MPRV()</span>&nbsp;=&nbsp;0b0</span><span style="background-color: hsl(0, 85%, 75%)">&#171;Invisible branch not taken here&#187</span>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_virtualization&nbsp;=&nbsp;V1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;get_config_print_reg()&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;mstatus&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(mstatus.bits()));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;hstatus&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(hstatus.bits()));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;get_config_print_platform()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">print_platform(&quot;ret-ing&nbsp;from&nbsp;&quot;&nbsp;^&nbsp;to_str(prev_priv)&nbsp;^&quot;&nbsp;(&quot;&nbsp;^&nbsp;to_str(prev_virt)&nbsp;^&nbsp;&quot;)&nbsp;to&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;to_str(cur_privilege)&nbsp;^&nbsp;&quot;&nbsp;(&quot;&nbsp;^&nbsp;to_str(cur_virtualization)&nbsp;^&nbsp;&quot;)&quot;)</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cancel_reservation();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prepare_xret_target(Supervisor,&nbsp;prev_virt)&nbsp;&&nbsp;pc_alignment_mask()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(_,&nbsp;CTL_URET())&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;prev_priv&nbsp;&nbsp;&nbsp;=&nbsp;cur_privilege;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;prev_virt&nbsp;&nbsp;&nbsp;=&nbsp;cur_virtualization;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;UIE()&nbsp;&nbsp;=&nbsp;mstatus.UPIE();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mstatus-&gt;UPIE()&nbsp;=&nbsp;0b1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_privilege&nbsp;&nbsp;&nbsp;=&nbsp;User;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;&nbsp;&nbsp;get_config_print_reg()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">print_reg(&quot;CSR&nbsp;mstatus&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(mstatus.bits()))</span></span><span style="background-color: hsl(0, 85%, 75%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;&nbsp;&nbsp;get_config_print_platform()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">print_platform(&quot;ret-ing&nbsp;from&nbsp;&quot;&nbsp;^&nbsp;to_str(prev_priv)&nbsp;^&quot;&nbsp;(&quot;&nbsp;^&nbsp;to_str(prev_virt)&nbsp;^&nbsp;&quot;)&nbsp;to&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^&nbsp;to_str(cur_privilege)&nbsp;^&nbsp;&quot;&nbsp;(&quot;&nbsp;^&nbsp;to_str(cur_virtualization)&nbsp;^&nbsp;&quot;)&quot;)</span></span><span style="background-color: hsl(0, 85%, 75%)">&#171;Invisible branch not taken here&#187</span>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cancel_reservation();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prepare_xret_target(User,&nbsp;prev_virt)&nbsp;&&nbsp;pc_alignment_mask()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+function&nbsp;handle_exception(e:&nbsp;ExceptionType,&nbsp;c:&nbsp;ExceptionContext)&nbsp;-&gt;&nbsp;unit&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;//&nbsp;If&nbsp;excinst&nbsp;is&nbsp;None,&nbsp;check&nbsp;if&nbsp;transformed&nbsp;inst&nbsp;should&nbsp;be&nbsp;written<br>
+&nbsp;&nbsp;let&nbsp;c&nbsp;=&nbsp;{c&nbsp;with&nbsp;excinst&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;c.excinst&nbsp;!=&nbsp;None()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">c.excinst</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">if&nbsp;(<span style="background-color: hsl(0, 85%, 75%)">plat_xtinst_has_transformed_inst()&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 70%)">exc_causes_transformed_inst_in_xtinst(e)</span></span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 70%)">Some(zero_extend(instbits_transformed))</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 70%)">None()</span></span></span>}&nbsp;in<br>
+&nbsp;&nbsp;set_next_pc(exception_handler(cur_privilege,&nbsp;cur_virtualization,&nbsp;CTL_TRAP(e,&nbsp;c),&nbsp;PC))<br>
+}</span><br>
+<br>
+function&nbsp;handle_mem_exception(addr&nbsp;:&nbsp;xlenbits,&nbsp;e&nbsp;:&nbsp;ExceptionType)&nbsp;-&gt;&nbsp;unit&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;/*&nbsp;handle_mem_exception&nbsp;only&nbsp;supports&nbsp;the&nbsp;following&nbsp;exception&nbsp;causes&nbsp;*/<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;e&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_Breakpoint()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Addr_Align()&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Addr_Align()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Addr_Align()&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_Fetch_Access_Fault()&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_Load_Access_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_SAMO_Access_Fault()&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">false</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,&nbsp;&quot;exception&nbsp;not&nbsp;supported&nbsp;by&nbsp;current&nbsp;handler&quot;);<br>
+&nbsp;&nbsp;handle_exception(e,&nbsp;mem_exception_context(addr,&nbsp;cur_virtualization&nbsp;==&nbsp;V1))<br>
+}</span><br>
+<br>
+function&nbsp;handle_interrupt(i&nbsp;:&nbsp;InterruptType,&nbsp;del_priv&nbsp;:&nbsp;Privilege,&nbsp;del_virt:&nbsp;Virtualization)&nbsp;-&gt;&nbsp;unit&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">set_next_pc(trap_handler(del_priv,&nbsp;del_virt,&nbsp;PC,&nbsp;I(i),&nbsp;empty_exception_context()))</span><br>
+<br>
+/*!<br>
+&nbsp;*&nbsp;Return&nbsp;whether&nbsp;or&nbsp;not&nbsp;FIOM&nbsp;is&nbsp;currently&nbsp;active,&nbsp;based&nbsp;on&nbsp;the&nbsp;current<br>
+&nbsp;*&nbsp;privilege&nbsp;and&nbsp;the&nbsp;menvcfg/senvcfg&nbsp;settings.&nbsp;This&nbsp;means&nbsp;that&nbsp;I/O&nbsp;fences<br>
+&nbsp;*&nbsp;imply&nbsp;memory&nbsp;fence.<br>
+&nbsp;*/<br>
+function&nbsp;is_fiom_active()&nbsp;-&gt;&nbsp;bool&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;(cur_privilege,&nbsp;cur_virtualization)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Machine,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">false</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Supervisor,&nbsp;V0)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">menvcfg.FIOM()&nbsp;==&nbsp;0b1</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Supervisor,&nbsp;V1)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">(menvcfg.FIOM()&nbsp;|&nbsp;henvcfg.FIOM())&nbsp;==&nbsp;0b1</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(User,&nbsp;V0)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">(menvcfg.FIOM()&nbsp;|&nbsp;senvcfg.FIOM())&nbsp;==&nbsp;0b1</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(User,&nbsp;V1)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">(menvcfg.FIOM()&nbsp;|&nbsp;henvcfg.FIOM()&nbsp;|&nbsp;senvcfg.FIOM())&nbsp;==&nbsp;0b1</span>,<br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+/*&nbsp;state&nbsp;state&nbsp;initialization&nbsp;*/<br>
+<br>
+function&nbsp;init_sys()&nbsp;-&gt;&nbsp;unit&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;cur_privilege&nbsp;=&nbsp;Machine;<br>
+<br>
+&nbsp;&nbsp;mhartid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+<br>
+&nbsp;&nbsp;misa-&gt;MXL()&nbsp;=&nbsp;arch_to_bits(if&nbsp;sizeof(xlen)&nbsp;==&nbsp;32&nbsp;then&nbsp;RV32&nbsp;else&nbsp;RV64);<br>
+&nbsp;&nbsp;misa-&gt;A()&nbsp;&nbsp;&nbsp;=&nbsp;0b1;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;atomics&nbsp;*/<br>
+&nbsp;&nbsp;misa-&gt;C()&nbsp;&nbsp;&nbsp;=&nbsp;bool_to_bits(sys_enable_rvc());&nbsp;/*&nbsp;RVC&nbsp;*/<br>
+&nbsp;&nbsp;misa-&gt;I()&nbsp;&nbsp;&nbsp;=&nbsp;0b1;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;base&nbsp;integer&nbsp;ISA&nbsp;*/<br>
+&nbsp;&nbsp;misa-&gt;M()&nbsp;&nbsp;&nbsp;=&nbsp;0b1;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;integer&nbsp;multiply/divide&nbsp;*/<br>
+&nbsp;&nbsp;misa-&gt;U()&nbsp;&nbsp;&nbsp;=&nbsp;0b1;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;user-mode&nbsp;*/<br>
+&nbsp;&nbsp;misa-&gt;S()&nbsp;&nbsp;&nbsp;=&nbsp;0b1;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;supervisor-mode&nbsp;*/<br>
+&nbsp;&nbsp;misa-&gt;H()&nbsp;&nbsp;&nbsp;=&nbsp;bool_to_bits(sys_enable_hext());/*&nbsp;hypervisor&nbsp;extension&nbsp;*/<br>
+&nbsp;&nbsp;misa-&gt;V()&nbsp;&nbsp;&nbsp;=&nbsp;bool_to_bits(sys_enable_vext());&nbsp;/*&nbsp;vector&nbsp;extension&nbsp;*/<br>
+&nbsp;&nbsp;/*&nbsp;We&nbsp;currently&nbsp;support&nbsp;both&nbsp;F&nbsp;and&nbsp;D&nbsp;*/<br>
+&nbsp;&nbsp;misa-&gt;F()&nbsp;&nbsp;&nbsp;=&nbsp;bool_to_bits(sys_enable_fdext());&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;single-precision&nbsp;*/<br>
+&nbsp;&nbsp;misa-&gt;D()&nbsp;&nbsp;&nbsp;=&nbsp;if&nbsp;&nbsp;&nbsp;sizeof(flen)&nbsp;&gt;=&nbsp;64<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;bool_to_bits(sys_enable_fdext())&nbsp;&nbsp;/*&nbsp;double-precision&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;0b0;<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">sys_enable_fdext()&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 75%)">sys_enable_zfinx()</span></span><br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;F&nbsp;and&nbsp;Zfinx&nbsp;cannot&nbsp;both&nbsp;be&nbsp;enabled!&quot;)</span></span>;<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">sys_enable_next()&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">sys_enable_hext()</span></span><br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;The&nbsp;hypervisor&nbsp;extension&nbsp;currently&nbsp;does&nbsp;not&nbsp;consider&nbsp;the&nbsp;possibility&nbsp;of&nbsp;user-mode&nbsp;interrupts&quot;)</span></span>;<br>
+<br>
+&nbsp;&nbsp;mstatus&nbsp;=&nbsp;set_mstatus_SXL(mstatus,&nbsp;misa.MXL());<br>
+&nbsp;&nbsp;mstatus&nbsp;=&nbsp;set_mstatus_UXL(mstatus,&nbsp;misa.MXL());<br>
+&nbsp;&nbsp;mstatus-&gt;SD()&nbsp;&nbsp;&nbsp;=&nbsp;0b0;<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;set&nbsp;to&nbsp;little-endian&nbsp;mode&nbsp;*/<br>
+&nbsp;&nbsp;if&nbsp;sizeof(xlen)&nbsp;==&nbsp;64&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mstatus&nbsp;=&nbsp;Mk_Mstatus([mstatus.bits()&nbsp;with&nbsp;37&nbsp;..&nbsp;36&nbsp;=&nbsp;0b00])<br>
+&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;mstatush-&gt;bits()&nbsp;=&nbsp;zero_extend(0b0);<br>
+<br>
+&nbsp;&nbsp;mip-&gt;bits()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;mie-&gt;bits()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;mideleg-&gt;bits()&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;medeleg-&gt;bits()&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;mtvec-&gt;bits()&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;mcause-&gt;bits()&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;mepc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;mtval&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;mscratch&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+<br>
+&nbsp;&nbsp;mcycle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;mtime&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+<br>
+&nbsp;&nbsp;mcounteren-&gt;bits()&nbsp;=&nbsp;zero_extend(0b0);<br>
+<br>
+&nbsp;&nbsp;minstret&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;minstret_increment&nbsp;=&nbsp;true;<br>
+<br>
+&nbsp;&nbsp;menvcfg-&gt;bits()&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;senvcfg-&gt;bits()&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;/*&nbsp;initialize&nbsp;vector&nbsp;csrs&nbsp;*/<br>
+&nbsp;&nbsp;elen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0b1;&nbsp;/*&nbsp;ELEN=64&nbsp;as&nbsp;the&nbsp;common&nbsp;case&nbsp;*/<br>
+&nbsp;&nbsp;vlen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0b0100;&nbsp;/*&nbsp;VLEN=512&nbsp;as&nbsp;a&nbsp;default&nbsp;value&nbsp;*/<br>
+&nbsp;&nbsp;vlenb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;to_bits(sizeof(xlen),&nbsp;2&nbsp;^&nbsp;(get_vlen_pow()&nbsp;-&nbsp;3));&nbsp;/*&nbsp;vlenb&nbsp;holds&nbsp;the&nbsp;constant&nbsp;value&nbsp;VLEN/8&nbsp;*/<br>
+&nbsp;&nbsp;/*&nbsp;VLEN&nbsp;value&nbsp;needs&nbsp;to&nbsp;be&nbsp;manually&nbsp;changed&nbsp;currently.<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;See&nbsp;riscv_vlen.sail&nbsp;for&nbsp;details.<br>
+&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;vstart&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;vxsat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0b0;<br>
+&nbsp;&nbsp;vxrm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0b00;<br>
+&nbsp;&nbsp;vcsr-&gt;vxrm()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vxrm;<br>
+&nbsp;&nbsp;vcsr-&gt;vxsat()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vxsat;<br>
+&nbsp;&nbsp;vl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;vtype-&gt;vill()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0b1;<br>
+&nbsp;&nbsp;vtype-&gt;reserved()&nbsp;&nbsp;=&nbsp;zero_extend(0b0);<br>
+&nbsp;&nbsp;vtype-&gt;vma()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0b0;<br>
+&nbsp;&nbsp;vtype-&gt;vta()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0b0;<br>
+&nbsp;&nbsp;vtype-&gt;vsew()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0b000;<br>
+&nbsp;&nbsp;vtype-&gt;vlmul()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0b000;<br>
+<br>
+&nbsp;&nbsp;init_pmp();<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if(sys_enable_hext())<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">init_hext()</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+<br>
+&nbsp;&nbsp;//&nbsp;log&nbsp;compatibility&nbsp;with&nbsp;spike<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;&nbsp;&nbsp;get_config_print_reg()<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">print_reg(&quot;CSR&nbsp;mstatus&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(mstatus.bits())&nbsp;^&nbsp;&quot;&nbsp;(input:&nbsp;&quot;&nbsp;^&nbsp;BitStr(zero_extend(0b0)&nbsp;:&nbsp;xlenbits)&nbsp;^&nbsp;&quot;)&quot;)</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span><br>
+}</span><br>
+<br>
+/*&nbsp;memory&nbsp;access&nbsp;exceptions,&nbsp;defined&nbsp;here&nbsp;for&nbsp;use&nbsp;by&nbsp;the&nbsp;platform&nbsp;model.&nbsp;*/<br>
+<br>
+union&nbsp;MemoryOpResult&nbsp;('a&nbsp;:&nbsp;Type)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;MemValue&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;'a,<br>
+&nbsp;&nbsp;MemException&nbsp;:&nbsp;ExceptionType<br>
+}<br>
+<br>
+val&nbsp;MemoryOpResult_add_meta&nbsp;:&nbsp;forall&nbsp;('t&nbsp;:&nbsp;Type).&nbsp;(MemoryOpResult('t),&nbsp;mem_meta)&nbsp;-&gt;&nbsp;MemoryOpResult(('t,&nbsp;mem_meta))<br>
+function&nbsp;MemoryOpResult_add_meta(r,&nbsp;m)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;r&nbsp;{<br>
+&nbsp;&nbsp;MemValue(v)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">MemValue(v,&nbsp;m)</span>,<br>
+&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">MemException(e)</span><br>
+}</span><br>
+<br>
+val&nbsp;MemoryOpResult_drop_meta&nbsp;:&nbsp;forall&nbsp;('t&nbsp;:&nbsp;Type).&nbsp;MemoryOpResult(('t,&nbsp;mem_meta))&nbsp;-&gt;&nbsp;MemoryOpResult('t)<br>
+function&nbsp;MemoryOpResult_drop_meta(r)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">match&nbsp;r&nbsp;{<br>
+&nbsp;&nbsp;MemValue(v,&nbsp;m)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">MemValue(v)</span>,<br>
+&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">MemException(e)</span><br>
+}</span><br>
+</code>
+</body>
+</html>

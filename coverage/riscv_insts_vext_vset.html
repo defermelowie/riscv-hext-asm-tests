@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>riscv_insts_vext_vset</title></head>
+<body>
+<h1>riscv_insts_vext_vset.sail (0/44) 0%</h1>
+<code style="display: block">
+/*=================================================================================*/<br>
+/*&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2021-2023&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Authors&nbsp;from&nbsp;RIOS&nbsp;Lab,&nbsp;Tsinghua&nbsp;University:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Xinlai&nbsp;Wan&nbsp;&lt;xinlai.w@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Xi&nbsp;Wang&nbsp;&lt;xi.w@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yifei&nbsp;Zhu&nbsp;&lt;yifei.z@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Shenwei&nbsp;Hu&nbsp;&lt;shenwei.h@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Kalvin&nbsp;Vu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Other&nbsp;contributors:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jessica&nbsp;Clarke&nbsp;&lt;jrtc27@jrtc27.com&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Victor&nbsp;Moya&nbsp;&lt;victor.moya@semidynamics.com&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;All&nbsp;rights&nbsp;reserved.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Redistribution&nbsp;and&nbsp;use&nbsp;in&nbsp;source&nbsp;and&nbsp;binary&nbsp;forms,&nbsp;with&nbsp;or&nbsp;without&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;modification,&nbsp;are&nbsp;permitted&nbsp;provided&nbsp;that&nbsp;the&nbsp;following&nbsp;conditions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;are&nbsp;met:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;1.&nbsp;Redistributions&nbsp;of&nbsp;source&nbsp;code&nbsp;must&nbsp;retain&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;2.&nbsp;Redistributions&nbsp;in&nbsp;binary&nbsp;form&nbsp;must&nbsp;reproduce&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;documentation&nbsp;and/or&nbsp;other&nbsp;materials&nbsp;provided&nbsp;with&nbsp;the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;distribution.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;THIS&nbsp;SOFTWARE&nbsp;IS&nbsp;PROVIDED&nbsp;BY&nbsp;THE&nbsp;AUTHOR&nbsp;AND&nbsp;CONTRIBUTORS&nbsp;``AS&nbsp;IS''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;AND&nbsp;ANY&nbsp;EXPRESS&nbsp;OR&nbsp;IMPLIED&nbsp;WARRANTIES,&nbsp;INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;TO,&nbsp;THE&nbsp;IMPLIED&nbsp;WARRANTIES&nbsp;OF&nbsp;MERCHANTABILITY&nbsp;AND&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;PARTICULAR&nbsp;PURPOSE&nbsp;ARE&nbsp;DISCLAIMED.&nbsp;&nbsp;IN&nbsp;NO&nbsp;EVENT&nbsp;SHALL&nbsp;THE&nbsp;AUTHOR&nbsp;OR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;CONTRIBUTORS&nbsp;BE&nbsp;LIABLE&nbsp;FOR&nbsp;ANY&nbsp;DIRECT,&nbsp;INDIRECT,&nbsp;INCIDENTAL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SPECIAL,&nbsp;EXEMPLARY,&nbsp;OR&nbsp;CONSEQUENTIAL&nbsp;DAMAGES&nbsp;(INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;LIMITED&nbsp;TO,&nbsp;PROCUREMENT&nbsp;OF&nbsp;SUBSTITUTE&nbsp;GOODS&nbsp;OR&nbsp;SERVICES;&nbsp;LOSS&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;USE,&nbsp;DATA,&nbsp;OR&nbsp;PROFITS;&nbsp;OR&nbsp;BUSINESS&nbsp;INTERRUPTION)&nbsp;HOWEVER&nbsp;CAUSED&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;ON&nbsp;ANY&nbsp;THEORY&nbsp;OF&nbsp;LIABILITY,&nbsp;WHETHER&nbsp;IN&nbsp;CONTRACT,&nbsp;STRICT&nbsp;LIABILITY,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OR&nbsp;TORT&nbsp;(INCLUDING&nbsp;NEGLIGENCE&nbsp;OR&nbsp;OTHERWISE)&nbsp;ARISING&nbsp;IN&nbsp;ANY&nbsp;WAY&nbsp;OUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OF&nbsp;THE&nbsp;USE&nbsp;OF&nbsp;THIS&nbsp;SOFTWARE,&nbsp;EVEN&nbsp;IF&nbsp;ADVISED&nbsp;OF&nbsp;THE&nbsp;POSSIBILITY&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SUCH&nbsp;DAMAGE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*=================================================================================*/<br>
+<br>
+/*&nbsp;*******************************************************************************&nbsp;*/<br>
+/*&nbsp;This&nbsp;file&nbsp;implements&nbsp;part&nbsp;of&nbsp;the&nbsp;vector&nbsp;extension.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;Chapter&nbsp;6:&nbsp;Configuration-Setting&nbsp;Instructions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;*******************************************************************************&nbsp;*/<br>
+<br>
+mapping&nbsp;sew_flag&nbsp;:&nbsp;string&nbsp;&lt;-&gt;&nbsp;bits(3)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;e8&quot;</span>&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;e16&quot;</span>&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b001,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;e32&quot;</span>&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b010,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;e64&quot;</span>&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b011<br>
+}<br>
+<br>
+mapping&nbsp;maybe_lmul_flag&nbsp;:&nbsp;string&nbsp;&lt;-&gt;&nbsp;bits(3)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;&quot;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b000,&nbsp;/*&nbsp;m1&nbsp;by&nbsp;default&nbsp;*/<br>
+&nbsp;&nbsp;sep()&nbsp;^&nbsp;&quot;mf8&quot;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101,<br>
+&nbsp;&nbsp;sep()&nbsp;^&nbsp;&quot;mf4&quot;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b110,<br>
+&nbsp;&nbsp;sep()&nbsp;^&nbsp;&quot;mf2&quot;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b111,<br>
+&nbsp;&nbsp;sep()&nbsp;^&nbsp;&quot;m1&quot;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b000,<br>
+&nbsp;&nbsp;sep()&nbsp;^&nbsp;&quot;m2&quot;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b001,<br>
+&nbsp;&nbsp;sep()&nbsp;^&nbsp;&quot;m4&quot;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b010,<br>
+&nbsp;&nbsp;sep()&nbsp;^&nbsp;&quot;m8&quot;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b011<br>
+}<br>
+<br>
+mapping&nbsp;maybe_ta_flag&nbsp;:&nbsp;string&nbsp;&lt;-&gt;&nbsp;bits(1)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;&quot;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b0,&nbsp;/*&nbsp;tu&nbsp;by&nbsp;default&nbsp;*/<br>
+&nbsp;&nbsp;sep()&nbsp;^&nbsp;&quot;ta&quot;&nbsp;&lt;-&gt;&nbsp;0b1,<br>
+&nbsp;&nbsp;sep()&nbsp;^&nbsp;&quot;tu&quot;&nbsp;&lt;-&gt;&nbsp;0b0<br>
+}<br>
+<br>
+mapping&nbsp;maybe_ma_flag&nbsp;:&nbsp;string&nbsp;&lt;-&gt;&nbsp;bits(1)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;&quot;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b0,&nbsp;/*&nbsp;mu&nbsp;by&nbsp;default&nbsp;*/<br>
+&nbsp;&nbsp;sep()&nbsp;^&nbsp;&quot;ma&quot;&nbsp;&lt;-&gt;&nbsp;0b1,<br>
+&nbsp;&nbsp;sep()&nbsp;^&nbsp;&quot;mu&quot;&nbsp;&lt;-&gt;&nbsp;0b0<br>
+}<br>
+<br>
+/*&nbsp;******************************&nbsp;vsetvli&nbsp;&&nbsp;vsetvl&nbsp;*******************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VSET_TYPE&nbsp;:&nbsp;(vsetop,&nbsp;bits(1),&nbsp;bits(1),&nbsp;bits(3),&nbsp;bits(3),&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_vsetop&nbsp;:&nbsp;vsetop&nbsp;&lt;-&gt;&nbsp;bits(4)&nbsp;={<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VSETVLI</span>&nbsp;&lt;-&gt;&nbsp;0b0000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VSETVL</span>&nbsp;&nbsp;&lt;-&gt;&nbsp;0b1000<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VSET_TYPE(op,&nbsp;ma,&nbsp;ta,&nbsp;sew,&nbsp;lmul,&nbsp;rs1,&nbsp;rd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">encdec_vsetop(op)&nbsp;@&nbsp;ma&nbsp;@&nbsp;ta&nbsp;@&nbsp;sew&nbsp;@&nbsp;lmul&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b111&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;VSET_TYPE(op,&nbsp;ma,&nbsp;ta,&nbsp;sew,&nbsp;lmul,&nbsp;rs1,&nbsp;rd)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;VLEN_pow&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_vlen_pow();<br>
+&nbsp;&nbsp;let&nbsp;ELEN_pow&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_elen_pow();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow_ori&nbsp;&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;SEW_pow_ori&nbsp;&nbsp;&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;let&nbsp;ratio_pow_ori&nbsp;=&nbsp;SEW_pow_ori&nbsp;-&nbsp;LMUL_pow_ori;<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;set&nbsp;vtype&nbsp;*/<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;op&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;VSETVLI&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vtype-&gt;bits()&nbsp;=&nbsp;0b0&nbsp;@&nbsp;zeros(sizeof(xlen)&nbsp;-&nbsp;9)&nbsp;@&nbsp;ma&nbsp;@&nbsp;ta&nbsp;@&nbsp;sew&nbsp;@&nbsp;lmul<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;VSETVL&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rs2&nbsp;:&nbsp;regidx&nbsp;=&nbsp;sew[1&nbsp;..&nbsp;0]&nbsp;@&nbsp;lmul;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vtype-&gt;bits()&nbsp;=&nbsp;X(rs2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span>;<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;check&nbsp;legal&nbsp;SEW&nbsp;and&nbsp;LMUL&nbsp;and&nbsp;calculate&nbsp;VLMAX&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow_new&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;SEW_pow_new&nbsp;&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;SEW_pow_new&nbsp;&gt;&nbsp;LMUL_pow_new&nbsp;+&nbsp;ELEN_pow&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Note:&nbsp;Implementations&nbsp;can&nbsp;set&nbsp;vill&nbsp;or&nbsp;trap&nbsp;if&nbsp;the&nbsp;vtype&nbsp;setting&nbsp;is&nbsp;not&nbsp;supported.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;for&nbsp;both&nbsp;solutions<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vtype-&gt;bits()&nbsp;=&nbsp;0b1&nbsp;@&nbsp;zeros(sizeof(xlen)&nbsp;-&nbsp;1);&nbsp;/*&nbsp;set&nbsp;vtype.vill&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vl&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vtype&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vtype.bits()));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vl&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vl));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;RETIRE_SUCCESS<br>
+&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;let&nbsp;VLMAX&nbsp;=&nbsp;int_power(2,&nbsp;VLEN_pow&nbsp;+&nbsp;LMUL_pow_new&nbsp;-&nbsp;SEW_pow_new);<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;set&nbsp;vl&nbsp;according&nbsp;to&nbsp;VLMAX&nbsp;and&nbsp;AVL&nbsp;*/<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;(rs1&nbsp;!=&nbsp;0b00000)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;/*&nbsp;normal&nbsp;stripmining&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rs1_val&nbsp;=&nbsp;X(rs1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;AVL&nbsp;=&nbsp;unsigned(rs1_val);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vl&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;AVL&nbsp;&lt;=&nbsp;VLMAX&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">to_bits(sizeof(xlen),&nbsp;AVL)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;AVL&nbsp;&lt;&nbsp;2&nbsp;*&nbsp;VLMAX&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">to_bits(sizeof(xlen),&nbsp;(AVL&nbsp;+&nbsp;1)&nbsp;/&nbsp;2)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">to_bits(sizeof(xlen),&nbsp;VLMAX)</span></span></span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Note:&nbsp;ceil(AVL&nbsp;/&nbsp;2)&nbsp;≤&nbsp;vl&nbsp;≤&nbsp;VLMAX&nbsp;when&nbsp;VLMAX&nbsp;&lt;&nbsp;AVL&nbsp;&lt;&nbsp;(2&nbsp;*&nbsp;VLMAX)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;for&nbsp;either&nbsp;using&nbsp;ceil(AVL&nbsp;/&nbsp;2)&nbsp;or&nbsp;VLMAX<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;X(rd)&nbsp;=&nbsp;vl;<br>
+&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;(rd&nbsp;!=&nbsp;0b00000)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{&nbsp;/*&nbsp;set&nbsp;vl&nbsp;to&nbsp;VLMAX&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;AVL&nbsp;=&nbsp;unsigned(ones(sizeof(xlen)));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vl&nbsp;=&nbsp;to_bits(sizeof(xlen),&nbsp;VLMAX);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;X(rd)&nbsp;=&nbsp;vl;<br>
+&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{&nbsp;/*&nbsp;keep&nbsp;existing&nbsp;vl&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;AVL&nbsp;=&nbsp;unsigned(vl);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;ratio_pow_new&nbsp;=&nbsp;SEW_pow_new&nbsp;-&nbsp;LMUL_pow_new;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;(ratio_pow_new&nbsp;!=&nbsp;ratio_pow_ori)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Note:&nbsp;Implementations&nbsp;can&nbsp;set&nbsp;vill&nbsp;or&nbsp;trap&nbsp;if&nbsp;the&nbsp;vtype&nbsp;setting&nbsp;is&nbsp;not&nbsp;supported.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;for&nbsp;both&nbsp;solutions<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vtype-&gt;bits()&nbsp;=&nbsp;0b1&nbsp;@&nbsp;zeros(sizeof(xlen)&nbsp;-&nbsp;1);&nbsp;/*&nbsp;set&nbsp;vtype.vill&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vl&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 65%)">&#171;Invisible branch not taken here&#187</span><br>
+&nbsp;&nbsp;}</span></span></span>;<br>
+&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vtype&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vtype.bits()));<br>
+&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vl&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vl));<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;reset&nbsp;vstart&nbsp;to&nbsp;0&nbsp;*/<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vstart&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vstart));<br>
+<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}</span><br>
+<br>
+mapping&nbsp;vsettype_mnemonic&nbsp;:&nbsp;vsetop&nbsp;&lt;-&gt;&nbsp;string&nbsp;={<br>
+&nbsp;&nbsp;VSETVLI&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vsetvli&quot;</span>,<br>
+&nbsp;&nbsp;VSETVL&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vsetvli&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VSET_TYPE(op,&nbsp;ma,&nbsp;ta,&nbsp;sew,&nbsp;lmul,&nbsp;rs1,&nbsp;rd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;vsettype_mnemonic(op)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;sew_flag(sew)&nbsp;^&nbsp;maybe_lmul_flag(lmul)&nbsp;^&nbsp;maybe_ta_flag(ta)&nbsp;^&nbsp;maybe_ma_flag(ma)<br>
+<br>
+/*&nbsp;*********************************&nbsp;vsetivli&nbsp;************************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VSETI_TYPE&nbsp;:&nbsp;(&nbsp;bits(1),&nbsp;bits(1),&nbsp;bits(3),&nbsp;bits(3),&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VSETI_TYPE(ma,&nbsp;ta,&nbsp;sew,&nbsp;lmul,&nbsp;uimm,&nbsp;rd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b1100&nbsp;@&nbsp;ma&nbsp;@&nbsp;ta&nbsp;@&nbsp;sew&nbsp;@&nbsp;lmul&nbsp;@&nbsp;uimm&nbsp;@&nbsp;0b111&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;VSETI_TYPE(ma,&nbsp;ta,&nbsp;sew,&nbsp;lmul,&nbsp;uimm,&nbsp;rd)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;VLEN_pow&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_vlen_pow();<br>
+&nbsp;&nbsp;let&nbsp;ELEN_pow&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_elen_pow();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow_ori&nbsp;&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;SEW_pow_ori&nbsp;&nbsp;&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;let&nbsp;ratio_pow_ori&nbsp;=&nbsp;SEW_pow_ori&nbsp;-&nbsp;LMUL_pow_ori;<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;set&nbsp;vtype&nbsp;*/<br>
+&nbsp;&nbsp;vtype-&gt;bits()&nbsp;=&nbsp;0b0&nbsp;@&nbsp;zeros(sizeof(xlen)&nbsp;-&nbsp;9)&nbsp;@&nbsp;ma&nbsp;@&nbsp;ta&nbsp;@&nbsp;sew&nbsp;@&nbsp;lmul;<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;check&nbsp;legal&nbsp;SEW&nbsp;and&nbsp;LMUL&nbsp;and&nbsp;calculate&nbsp;VLMAX&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow_new&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;SEW_pow_new&nbsp;&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;SEW_pow_new&nbsp;&gt;&nbsp;LMUL_pow_new&nbsp;+&nbsp;ELEN_pow&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Note:&nbsp;Implementations&nbsp;can&nbsp;set&nbsp;vill&nbsp;or&nbsp;trap&nbsp;if&nbsp;the&nbsp;vtype&nbsp;setting&nbsp;is&nbsp;not&nbsp;supported.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;for&nbsp;both&nbsp;solutions<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vtype-&gt;bits()&nbsp;=&nbsp;0b1&nbsp;@&nbsp;zeros(sizeof(xlen)&nbsp;-&nbsp;1);&nbsp;/*&nbsp;set&nbsp;vtype.vill&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vl&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vtype&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vtype.bits()));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vl&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vl));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;RETIRE_SUCCESS<br>
+&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;let&nbsp;VLMAX&nbsp;=&nbsp;int_power(2,&nbsp;VLEN_pow&nbsp;+&nbsp;LMUL_pow_new&nbsp;-&nbsp;SEW_pow_new);<br>
+&nbsp;&nbsp;let&nbsp;AVL&nbsp;&nbsp;&nbsp;=&nbsp;unsigned(uimm);&nbsp;/*&nbsp;AVL&nbsp;is&nbsp;encoded&nbsp;as&nbsp;5-bit&nbsp;zero-extended&nbsp;imm&nbsp;in&nbsp;the&nbsp;rs1&nbsp;field&nbsp;*/<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;set&nbsp;vl&nbsp;according&nbsp;to&nbsp;VLMAX&nbsp;and&nbsp;AVL&nbsp;*/<br>
+&nbsp;&nbsp;vl&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;AVL&nbsp;&lt;=&nbsp;VLMAX&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">to_bits(sizeof(xlen),&nbsp;AVL)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;AVL&nbsp;&lt;&nbsp;2&nbsp;*&nbsp;VLMAX&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">to_bits(sizeof(xlen),&nbsp;(AVL&nbsp;+&nbsp;1)&nbsp;/&nbsp;2)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">to_bits(sizeof(xlen),&nbsp;VLMAX)</span></span></span>;<br>
+&nbsp;&nbsp;/*&nbsp;Note:&nbsp;ceil(AVL&nbsp;/&nbsp;2)&nbsp;≤&nbsp;vl&nbsp;≤&nbsp;VLMAX&nbsp;when&nbsp;VLMAX&nbsp;&lt;&nbsp;AVL&nbsp;&lt;&nbsp;(2&nbsp;*&nbsp;VLMAX)<br>
+&nbsp;&nbsp;&nbsp;*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;for&nbsp;either&nbsp;using&nbsp;ceil(AVL&nbsp;/&nbsp;2)&nbsp;or&nbsp;VLMAX<br>
+&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;X(rd)&nbsp;=&nbsp;vl;<br>
+&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vtype&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vtype.bits()));<br>
+&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vl&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vl));<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;reset&nbsp;vstart&nbsp;to&nbsp;0&nbsp;*/<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vstart&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vstart));<br>
+<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}</span><br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VSETI_TYPE(ma,&nbsp;ta,&nbsp;sew,&nbsp;lmul,&nbsp;uimm,&nbsp;rd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vsetivli&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;hex_bits_5(uimm)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;sew_flag(sew)&nbsp;^&nbsp;maybe_lmul_flag(lmul)&nbsp;^&nbsp;maybe_ta_flag(ta)&nbsp;^&nbsp;maybe_ma_flag(ma)<br>
+</code>
+</body>
+</html>

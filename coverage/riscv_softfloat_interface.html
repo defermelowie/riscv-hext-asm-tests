@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>riscv_softfloat_interface</title></head>
+<body>
+<h1>riscv_softfloat_interface.sail (0/66) 0%</h1>
+<code style="display: block">
+/*=======================================================================================*/<br>
+/*&nbsp;&nbsp;RISCV&nbsp;Sail&nbsp;Model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;Sail&nbsp;RISC-V&nbsp;architecture&nbsp;model,&nbsp;comprising&nbsp;all&nbsp;files&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;directories&nbsp;except&nbsp;for&nbsp;the&nbsp;snapshots&nbsp;of&nbsp;the&nbsp;Lem&nbsp;and&nbsp;Sail&nbsp;libraries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;in&nbsp;the&nbsp;prover_snapshots&nbsp;directory&nbsp;(which&nbsp;include&nbsp;copies&nbsp;of&nbsp;their&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;licences),&nbsp;is&nbsp;subject&nbsp;to&nbsp;the&nbsp;BSD&nbsp;two-clause&nbsp;licence&nbsp;below.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2017-2023&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Prashanth&nbsp;Mundkur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Rishiyur&nbsp;S.&nbsp;Nikhil&nbsp;and&nbsp;Bluespec,&nbsp;Inc.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jon&nbsp;French&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Brian&nbsp;Campbell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Robert&nbsp;Norton-Wright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alasdair&nbsp;Armstrong&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Thomas&nbsp;Bauereiss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Shaked&nbsp;Flur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Christopher&nbsp;Pulte&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Sewell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alexander&nbsp;Richardson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Hesham&nbsp;Almatary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jessica&nbsp;Clarke&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Microsoft,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Robert&nbsp;Norton-Wright&nbsp;and&nbsp;Nathaniel&nbsp;Wesley&nbsp;Filardo&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Rugg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Aril&nbsp;Computer&nbsp;Corp.,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Scott&nbsp;Johnson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Philipp&nbsp;Tomsich&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;VRULL&nbsp;GmbH,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;its&nbsp;employees&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;All&nbsp;rights&nbsp;reserved.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;the&nbsp;above&nbsp;within&nbsp;the&nbsp;Rigorous&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Engineering&nbsp;of&nbsp;Mainstream&nbsp;Systems&nbsp;(REMS)&nbsp;project,&nbsp;partly&nbsp;funded&nbsp;by&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;EPSRC&nbsp;grant&nbsp;EP/K008528/1,&nbsp;at&nbsp;the&nbsp;Universities&nbsp;of&nbsp;Cambridge&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Edinburgh.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;SRI&nbsp;International&nbsp;and&nbsp;the&nbsp;University&nbsp;of&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Cambridge&nbsp;Computer&nbsp;Laboratory&nbsp;(Department&nbsp;of&nbsp;Computer&nbsp;Science&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Technology)&nbsp;under&nbsp;DARPA/AFRL&nbsp;contract&nbsp;FA8650-18-C-7809&nbsp;(&quot;CIFV&quot;),&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;under&nbsp;DARPA&nbsp;contract&nbsp;HR0011-18-C-0016&nbsp;(&quot;ECATS&quot;)&nbsp;as&nbsp;part&nbsp;of&nbsp;the&nbsp;DARPA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SSITH&nbsp;research&nbsp;programme.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;project&nbsp;has&nbsp;received&nbsp;funding&nbsp;from&nbsp;the&nbsp;European&nbsp;Research&nbsp;Council&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;(ERC)&nbsp;under&nbsp;the&nbsp;European&nbsp;Union’s&nbsp;Horizon&nbsp;2020&nbsp;research&nbsp;and&nbsp;innovation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;programme&nbsp;(grant&nbsp;agreement&nbsp;789108,&nbsp;ELVER).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Redistribution&nbsp;and&nbsp;use&nbsp;in&nbsp;source&nbsp;and&nbsp;binary&nbsp;forms,&nbsp;with&nbsp;or&nbsp;without&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;modification,&nbsp;are&nbsp;permitted&nbsp;provided&nbsp;that&nbsp;the&nbsp;following&nbsp;conditions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;are&nbsp;met:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;1.&nbsp;Redistributions&nbsp;of&nbsp;source&nbsp;code&nbsp;must&nbsp;retain&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;2.&nbsp;Redistributions&nbsp;in&nbsp;binary&nbsp;form&nbsp;must&nbsp;reproduce&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;documentation&nbsp;and/or&nbsp;other&nbsp;materials&nbsp;provided&nbsp;with&nbsp;the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;distribution.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;THIS&nbsp;SOFTWARE&nbsp;IS&nbsp;PROVIDED&nbsp;BY&nbsp;THE&nbsp;AUTHOR&nbsp;AND&nbsp;CONTRIBUTORS&nbsp;``AS&nbsp;IS''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;AND&nbsp;ANY&nbsp;EXPRESS&nbsp;OR&nbsp;IMPLIED&nbsp;WARRANTIES,&nbsp;INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;TO,&nbsp;THE&nbsp;IMPLIED&nbsp;WARRANTIES&nbsp;OF&nbsp;MERCHANTABILITY&nbsp;AND&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;PARTICULAR&nbsp;PURPOSE&nbsp;ARE&nbsp;DISCLAIMED.&nbsp;&nbsp;IN&nbsp;NO&nbsp;EVENT&nbsp;SHALL&nbsp;THE&nbsp;AUTHOR&nbsp;OR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;CONTRIBUTORS&nbsp;BE&nbsp;LIABLE&nbsp;FOR&nbsp;ANY&nbsp;DIRECT,&nbsp;INDIRECT,&nbsp;INCIDENTAL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SPECIAL,&nbsp;EXEMPLARY,&nbsp;OR&nbsp;CONSEQUENTIAL&nbsp;DAMAGES&nbsp;(INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;LIMITED&nbsp;TO,&nbsp;PROCUREMENT&nbsp;OF&nbsp;SUBSTITUTE&nbsp;GOODS&nbsp;OR&nbsp;SERVICES;&nbsp;LOSS&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;USE,&nbsp;DATA,&nbsp;OR&nbsp;PROFITS;&nbsp;OR&nbsp;BUSINESS&nbsp;INTERRUPTION)&nbsp;HOWEVER&nbsp;CAUSED&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;ON&nbsp;ANY&nbsp;THEORY&nbsp;OF&nbsp;LIABILITY,&nbsp;WHETHER&nbsp;IN&nbsp;CONTRACT,&nbsp;STRICT&nbsp;LIABILITY,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OR&nbsp;TORT&nbsp;(INCLUDING&nbsp;NEGLIGENCE&nbsp;OR&nbsp;OTHERWISE)&nbsp;ARISING&nbsp;IN&nbsp;ANY&nbsp;WAY&nbsp;OUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OF&nbsp;THE&nbsp;USE&nbsp;OF&nbsp;THIS&nbsp;SOFTWARE,&nbsp;EVEN&nbsp;IF&nbsp;ADVISED&nbsp;OF&nbsp;THE&nbsp;POSSIBILITY&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SUCH&nbsp;DAMAGE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*=======================================================================================*/<br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;This&nbsp;file&nbsp;lists&nbsp;all&nbsp;the&nbsp;external&nbsp;Berkeley&nbsp;softfloat&nbsp;functions&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;invoked&nbsp;from&nbsp;the&nbsp;SAIL&nbsp;spec&nbsp;for&nbsp;RISC-V&nbsp;F&nbsp;and&nbsp;D&nbsp;extensions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;(in:&nbsp;&nbsp;&nbsp;&nbsp;riscv_insts_fdext.sail)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;Each&nbsp;of&nbsp;these&nbsp;functions&nbsp;corresponds&nbsp;to&nbsp;one&nbsp;in&nbsp;'SoftFloat.hs'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;https://github.com/GaloisInc/softfloat-hs.git&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;written&nbsp;by&nbsp;Ben&nbsp;Selfridge,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;which&nbsp;is&nbsp;a&nbsp;set&nbsp;of&nbsp;pure-functional&nbsp;Haskell&nbsp;wrappers&nbsp;on&nbsp;the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;Berkely&nbsp;softfloat&nbsp;C&nbsp;library&nbsp;written&nbsp;by&nbsp;John&nbsp;Hauser.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+/*&nbsp;For&nbsp;now,&nbsp;the&nbsp;bodies&nbsp;of&nbsp;all&nbsp;these&nbsp;functions&nbsp;are&nbsp;placeholders&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;while&nbsp;we&nbsp;develop&nbsp;&nbsp;&nbsp;&nbsp;riscv_insts_fdext.sail&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;They&nbsp;should&nbsp;be&nbsp;replaced&nbsp;with&nbsp;external&nbsp;calls&nbsp;to&nbsp;Berkeley&nbsp;softfloat*/<br>
+/*&nbsp;functions&nbsp;in&nbsp;a&nbsp;similar&nbsp;manner&nbsp;to&nbsp;the&nbsp;Haskell&nbsp;softfloat&nbsp;wrappers.&nbsp;*/<br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;All&nbsp;arguments&nbsp;and&nbsp;results&nbsp;have&nbsp;one&nbsp;of&nbsp;these&nbsp;types&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+type&nbsp;bits_rm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;bits(3)&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Rounding&nbsp;mode&nbsp;*/<br>
+type&nbsp;bits_fflags&nbsp;=&nbsp;bits(5)&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Accrued&nbsp;exceptions:&nbsp;NV,DZ,OF,UF,NX&nbsp;*/<br>
+type&nbsp;bits_H&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;bits(16)&nbsp;&nbsp;&nbsp;/*&nbsp;Half-precision&nbsp;float&nbsp;value&nbsp;*/<br>
+type&nbsp;bits_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;bits(32)&nbsp;&nbsp;&nbsp;/*&nbsp;Single-precision&nbsp;float&nbsp;value&nbsp;*/<br>
+type&nbsp;bits_D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;bits(64)&nbsp;&nbsp;&nbsp;/*&nbsp;Double-precision&nbsp;float&nbsp;value&nbsp;*/<br>
+<br>
+type&nbsp;bits_W&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;bits(32)&nbsp;&nbsp;&nbsp;/*&nbsp;Signed&nbsp;integer&nbsp;*/<br>
+type&nbsp;bits_WU&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;bits(32)&nbsp;&nbsp;&nbsp;/*&nbsp;Unsigned&nbsp;integer&nbsp;*/<br>
+<br>
+type&nbsp;bits_L&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;bits(64)&nbsp;&nbsp;&nbsp;/*&nbsp;Signed&nbsp;integer&nbsp;*/<br>
+type&nbsp;bits_LU&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;bits(64)&nbsp;&nbsp;&nbsp;/*&nbsp;Unsigned&nbsp;integer&nbsp;*/<br>
+<br>
+/*&nbsp;*****************************************************************&nbsp;*/<br>
+/*&nbsp;Internal&nbsp;registers&nbsp;to&nbsp;pass&nbsp;results&nbsp;across&nbsp;the&nbsp;softfloat&nbsp;interface<br>
+&nbsp;*&nbsp;to&nbsp;avoid&nbsp;return&nbsp;types&nbsp;involving&nbsp;structures.<br>
+&nbsp;*/<br>
+register&nbsp;float_result&nbsp;:&nbsp;bits(64)<br>
+register&nbsp;float_fflags&nbsp;:&nbsp;bits(64)<br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;ADD/SUB/MUL/DIV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16Add&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16add&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_add&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_add&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16Add&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_f16Add&nbsp;(rm,&nbsp;v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16Add(rm,&nbsp;v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[15&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16Sub&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16sub&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_sub&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_sub&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16Sub&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_f16Sub&nbsp;(rm,&nbsp;v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16Sub(rm,&nbsp;v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[15&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16Mul&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16mul&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_mul&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_mul&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16Mul&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_f16Mul&nbsp;(rm,&nbsp;v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16Mul(rm,&nbsp;v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[15&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16Div&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16div&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_div&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_div&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16Div&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_f16Div&nbsp;(rm,&nbsp;v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16Div(rm,&nbsp;v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[15&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32Add&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32add&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_add&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_add&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32Add&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_f32Add&nbsp;(rm,&nbsp;v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32Add(rm,&nbsp;v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32Sub&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32sub&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_sub&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_sub&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32Sub&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_f32Sub&nbsp;(rm,&nbsp;v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32Sub(rm,&nbsp;v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32Mul&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32mul&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_mul&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_mul&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32Mul&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_f32Mul&nbsp;(rm,&nbsp;v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32Mul(rm,&nbsp;v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32Div&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32div&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_div&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_div&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32Div&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_f32Div&nbsp;(rm,&nbsp;v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32Div(rm,&nbsp;v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64Add&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64add&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_add&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_add&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64Add&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_f64Add&nbsp;(rm,&nbsp;v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64Add(rm,&nbsp;v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64Sub&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64sub&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_sub&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_sub&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64Sub&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_f64Sub&nbsp;(rm,&nbsp;v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64Sub(rm,&nbsp;v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64Mul&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64mul&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_mul&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_mul&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64Mul&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_f64Mul&nbsp;(rm,&nbsp;v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64Mul(rm,&nbsp;v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64Div&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64div&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_div&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_div&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64Div&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_f64Div&nbsp;(rm,&nbsp;v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64Div(rm,&nbsp;v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;MULTIPLY-ADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16MulAdd&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16muladd&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_muladd&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_muladd&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H,&nbsp;bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16MulAdd&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H,&nbsp;bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_f16MulAdd&nbsp;(rm,&nbsp;v1,&nbsp;v2,&nbsp;v3)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16MulAdd(rm,&nbsp;v1,&nbsp;v2,&nbsp;v3);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[15&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32MulAdd&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32muladd&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_muladd&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_muladd&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S,&nbsp;bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32MulAdd&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S,&nbsp;bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_f32MulAdd&nbsp;(rm,&nbsp;v1,&nbsp;v2,&nbsp;v3)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32MulAdd(rm,&nbsp;v1,&nbsp;v2,&nbsp;v3);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64MulAdd&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64muladd&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_muladd&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_muladd&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D,&nbsp;bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64MulAdd&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D,&nbsp;bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_f64MulAdd&nbsp;(rm,&nbsp;v1,&nbsp;v2,&nbsp;v3)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64MulAdd(rm,&nbsp;v1,&nbsp;v2,&nbsp;v3);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;SQUARE&nbsp;ROOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16Sqrt&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16sqrt&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_sqrt&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_sqrt&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16Sqrt&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_f16Sqrt&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16Sqrt(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[15&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32Sqrt&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32sqrt&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_sqrt&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_sqrt&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32Sqrt&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_f32Sqrt&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32Sqrt(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64Sqrt&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64sqrt&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_sqrt&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_sqrt&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64Sqrt&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_f64Sqrt&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64Sqrt(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;CONVERSIONS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16ToI32&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16toi32&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_to_i32&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_to_i32&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16ToI32&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_W)<br>
+function&nbsp;riscv_f16ToI32&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16ToI32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16ToUi32&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16toui32&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_to_ui32&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_to_ui32&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16ToUi32&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_WU)<br>
+function&nbsp;riscv_f16ToUi32&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16ToUi32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_i32ToF16&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_i32tof16&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.i32_to_f16&quot;,&nbsp;lem:&nbsp;&quot;softfloat_i32_to_f16&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_W)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_i32ToF16&nbsp;:&nbsp;(bits_rm,&nbsp;bits_W)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_i32ToF16&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_i32ToF16(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[15&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_ui32ToF16&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_ui32tof16&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.ui32_to_f16&quot;,&nbsp;lem:&nbsp;&quot;softfloat_ui32_to_f16&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_WU)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_ui32ToF16&nbsp;:&nbsp;(bits_rm,&nbsp;bits_WU)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_ui32ToF16&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_ui32ToF16(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[15&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16ToI64&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16toi64&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_to_i64&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_to_i64&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16ToI64&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_L)<br>
+function&nbsp;riscv_f16ToI64&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16ToI64(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16ToUi64&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16toui64&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_to_ui64&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_to_ui64&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16ToUi64&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_LU)<br>
+function&nbsp;riscv_f16ToUi64&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16ToUi64(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_i64ToF16&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_i64tof16&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.i64_to_f16&quot;,&nbsp;lem:&nbsp;&quot;softfloat_i64_to_f16&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_L)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_i64ToF16&nbsp;:&nbsp;(bits_rm,&nbsp;bits_L)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_i64ToF16&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_i64ToF16(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[15&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_ui64ToF16&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_ui64tof16&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.ui64_to_f16&quot;,&nbsp;lem:&nbsp;&quot;softfloat_ui64_to_f16&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_L)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_ui64ToF16&nbsp;:&nbsp;(bits_rm,&nbsp;bits_LU)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_ui64ToF16&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_ui64ToF16(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[15&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32ToI32&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32toi32&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_to_i32&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_to_i32&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32ToI32&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_W)<br>
+function&nbsp;riscv_f32ToI32&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32ToI32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32ToUi32&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32toui32&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_to_ui32&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_to_ui32&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32ToUi32&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_WU)<br>
+function&nbsp;riscv_f32ToUi32&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32ToUi32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_i32ToF32&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_i32tof32&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.i32_to_f32&quot;,&nbsp;lem:&nbsp;&quot;softfloat_i32_to_f32&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_W)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_i32ToF32&nbsp;:&nbsp;(bits_rm,&nbsp;bits_W)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_i32ToF32&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_i32ToF32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_ui32ToF32&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_ui32tof32&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.ui32_to_f32&quot;,&nbsp;lem:&nbsp;&quot;softfloat_ui32_to_f32&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_WU)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_ui32ToF32&nbsp;:&nbsp;(bits_rm,&nbsp;bits_WU)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_ui32ToF32&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_ui32ToF32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32ToI64&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32toi64&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_to_i64&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_to_i64&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32ToI64&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_L)<br>
+function&nbsp;riscv_f32ToI64&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32ToI64(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32ToUi64&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32toui64&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_to_ui64&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_to_ui64&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32ToUi64&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_LU)<br>
+function&nbsp;riscv_f32ToUi64&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32ToUi64(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_i64ToF32&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_i64tof32&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.i64_to_f32&quot;,&nbsp;lem:&nbsp;&quot;softfloat_i64_to_f32&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_L)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_i64ToF32&nbsp;:&nbsp;(bits_rm,&nbsp;bits_L)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_i64ToF32&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_i64ToF32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_ui64ToF32&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_ui64tof32&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.ui64_to_f32&quot;,&nbsp;lem:&nbsp;&quot;softfloat_ui64_to_f32&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_L)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_ui64ToF32&nbsp;:&nbsp;(bits_rm,&nbsp;bits_LU)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_ui64ToF32&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_ui64ToF32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64ToI32&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64toi32&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_to_i32&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_to_i32&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64ToI32&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_W)<br>
+function&nbsp;riscv_f64ToI32&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64ToI32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64ToUi32&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64toui32&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_to_ui32&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_to_ui32&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64ToUi32&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_WU)<br>
+function&nbsp;riscv_f64ToUi32&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64ToUi32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_i32ToF64&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_i32tof64&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.i32_to_f64&quot;,&nbsp;lem:&nbsp;&quot;softfloat_i32_to_f64&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_W)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_i32ToF64&nbsp;:&nbsp;(bits_rm,&nbsp;bits_W)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_i32ToF64&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_i32ToF64(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_ui32ToF64&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_ui32tof64&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.ui32_to_f64&quot;,&nbsp;lem:&nbsp;&quot;softfloat_ui32_to_f64&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_WU)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_ui32ToF64&nbsp;:&nbsp;(bits_rm,&nbsp;bits_WU)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_ui32ToF64&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_ui32ToF64(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64ToI64&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64toi64&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_to_i64&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_to_i64&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64ToI64&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_L)<br>
+function&nbsp;riscv_f64ToI64&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64ToI64(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64ToUi64&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64toui64&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_to_ui64&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_to_ui64&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64ToUi64&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_LU)<br>
+function&nbsp;riscv_f64ToUi64&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64ToUi64(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_i64ToF64&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_i64tof64&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.i64_to_f64&quot;,&nbsp;lem:&nbsp;&quot;softfloat_i64_to_f64&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_L)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_i64ToF64&nbsp;:&nbsp;(bits_rm,&nbsp;bits_L)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_i64ToF64&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_i64ToF64(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_ui64ToF64&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_ui64tof64&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.ui64_to_f64&quot;,&nbsp;lem:&nbsp;&quot;softfloat_ui64_to_f64&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_LU)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_ui64ToF64&nbsp;:&nbsp;(bits_rm,&nbsp;bits_LU)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_ui64ToF64&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_ui64ToF64(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16ToF32&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16tof32&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_to_f32&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_to_f32&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16ToF32&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_f16ToF32&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16ToF32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16ToF64&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16tof64&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_to_f64&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_to_f64&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16ToF64&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_f16ToF64&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16ToF64(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32ToF64&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32tof64&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_to_f64&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_to_f64&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32ToF64&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_f32ToF64&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32ToF64(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32ToF16&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32tof16&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_to_f16&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_to_f16&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32ToF16&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_f32ToF16&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32ToF16(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[15&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64ToF16&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64tof16&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_to_f16&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_to_f16&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64ToF16&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_f64ToF16&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64ToF16(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[15&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64ToF32&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64tof32&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_to_f32&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_to_f32&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64ToF32&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_f64ToF32&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64ToF32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;COMPARISONS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16Lt&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16lt&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_lt&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_lt&quot;}&nbsp;:&nbsp;(bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16Lt&nbsp;:&nbsp;(bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f16Lt&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16Lt(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16Lt_quiet&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16lt_quiet&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_lt_quiet&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_lt_quiet&quot;}&nbsp;:&nbsp;(bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16Lt_quiet&nbsp;:&nbsp;(bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f16Lt_quiet&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16Lt_quiet(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16Le&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16le&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_le&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_le&quot;}&nbsp;:&nbsp;(bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16Le&nbsp;:&nbsp;(bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f16Le&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16Le(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16Le_quiet&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16le_quiet&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_le_quiet&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_le_quiet&quot;}&nbsp;:&nbsp;(bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16Le_quiet&nbsp;:&nbsp;(bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f16Le_quiet&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16Le_quiet(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16Eq&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16eq&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_eq&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_eq&quot;}&nbsp;:&nbsp;(bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16Eq&nbsp;:&nbsp;(bits_H,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f16Eq&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16Eq(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32Lt&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32lt&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_lt&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_lt&quot;}&nbsp;:&nbsp;(bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32Lt&nbsp;:&nbsp;(bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f32Lt&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32Lt(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32Lt_quiet&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32lt_quiet&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_lt_quiet&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_lt_quiet&quot;}&nbsp;:&nbsp;(bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32Lt_quiet&nbsp;:&nbsp;(bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f32Lt_quiet&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32Lt_quiet(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32Le&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32le&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_le&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_le&quot;}&nbsp;:&nbsp;(bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32Le&nbsp;:&nbsp;(bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f32Le&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32Le(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32Le_quiet&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32le_quiet&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_le_quiet&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_le_quiet&quot;}&nbsp;:&nbsp;(bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32Le_quiet&nbsp;:&nbsp;(bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f32Le_quiet&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32Le_quiet(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32Eq&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32eq&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_eq&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_eq&quot;}&nbsp;:&nbsp;(bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32Eq&nbsp;:&nbsp;(bits_S,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f32Eq&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32Eq(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64Lt&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64lt&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_lt&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_lt&quot;}&nbsp;:&nbsp;(bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64Lt&nbsp;:&nbsp;(bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f64Lt&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64Lt(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64Lt_quiet&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64lt_quiet&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_lt_quiet&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_lt_quiet&quot;}&nbsp;:&nbsp;(bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64Lt_quiet&nbsp;:&nbsp;(bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f64Lt_quiet&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64Lt_quiet(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64Le&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64le&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_le&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_le&quot;}&nbsp;:&nbsp;(bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64Le&nbsp;:&nbsp;(bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f64Le&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64Le(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64Le_quiet&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64le_quiet&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_le_quiet&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_le_quiet&quot;}&nbsp;:&nbsp;(bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64Le_quiet&nbsp;:&nbsp;(bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f64Le_quiet&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64Le_quiet(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64Eq&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64eq&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_eq&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_eq&quot;}&nbsp;:&nbsp;(bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64Eq&nbsp;:&nbsp;(bits_D,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bool)<br>
+function&nbsp;riscv_f64Eq&nbsp;(v1,&nbsp;v2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64Eq(v1,&nbsp;v2);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;bit_to_bool(float_result[0]))<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f16roundToInt&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f16roundToInt&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f16_round_to_int&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f16_round_to_int&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H,&nbsp;bool)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f16roundToInt&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H,&nbsp;bool)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_f16roundToInt&nbsp;(rm,&nbsp;v,&nbsp;exact)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f16roundToInt(rm,&nbsp;v,&nbsp;exact);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[15&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f32roundToInt&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f32roundToInt&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f32_round_to_int&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f32_round_to_int&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S,&nbsp;bool)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f32roundToInt&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S,&nbsp;bool)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_f32roundToInt&nbsp;(rm,&nbsp;v,&nbsp;exact)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f32roundToInt(rm,&nbsp;v,&nbsp;exact);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result[31&nbsp;..&nbsp;0])<br>
+}</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extern_f64roundToInt&nbsp;=&nbsp;{c:&nbsp;&quot;softfloat_f64roundToInt&quot;,&nbsp;ocaml:&nbsp;&quot;Softfloat.f64_round_to_int&quot;,&nbsp;lem:&nbsp;&quot;softfloat_f64_round_to_int&quot;}&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D,&nbsp;bool)&nbsp;-&gt;&nbsp;unit<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;riscv_f64roundToInt&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D,&nbsp;bool)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_f64roundToInt&nbsp;(rm,&nbsp;v,&nbsp;exact)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;extern_f64roundToInt(rm,&nbsp;v,&nbsp;exact);<br>
+&nbsp;&nbsp;(float_fflags[4&nbsp;..&nbsp;0],&nbsp;float_result)<br>
+}</span><br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+</code>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>riscv_insts_hext</title></head>
+<body>
+<h1>riscv_insts_hext.sail (68/105) 65%</h1>
+<code style="display: block">
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+/*&nbsp;This&nbsp;file&nbsp;specifies&nbsp;the&nbsp;instructions&nbsp;in&nbsp;the&nbsp;'H'&nbsp;extension.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;HLV&nbsp;:&nbsp;(word_width,&nbsp;bool,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;HLV(width,&nbsp;is_unsigned,&nbsp;rs1,&nbsp;rd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b0110&nbsp;@&nbsp;size_bits(width)&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b0000&nbsp;@&nbsp;bool_bits(is_unsigned)&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b100&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b1110011</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(HLV(width,&nbsp;is_unsigned,&nbsp;rs1,&nbsp;rd))&nbsp;=<br>
+&nbsp;&nbsp;/*&nbsp;Unsigned&nbsp;loads&nbsp;are&nbsp;only&nbsp;valid&nbsp;for&nbsp;widths&nbsp;strictly&nbsp;less&nbsp;than&nbsp;xlen,&nbsp;signed&nbsp;loads&nbsp;also&nbsp;present&nbsp;for&nbsp;widths&nbsp;equal&nbsp;to&nbsp;xlen&nbsp;*/<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(<span style="background-color: hsl(0, 85%, 75%)">is_unsigned&nbsp;&&nbsp;<span style="background-color: hsl(120, 85%, 75%)">word_width_bytes(width)&nbsp;&gt;=&nbsp;sizeof(xlen_bytes)</span></span>)&nbsp;|&nbsp;(<span style="background-color: hsl(120, 85%, 75%)">word_width_bytes(width)&nbsp;&gt;&nbsp;sizeof(xlen_bytes)</span>)</span><br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">if&nbsp;(cur_virtualization&nbsp;==&nbsp;V1)<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{&nbsp;handle_virtual_instr();&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 70%)">if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(cur_privilege&nbsp;==&nbsp;User)&nbsp;&&nbsp;(<span style="background-color: hsl(120, 85%, 65%)">hstatus.HU()&nbsp;==&nbsp;0b0</span>)</span><br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;/*&nbsp;Extensions&nbsp;can&nbsp;perform&nbsp;additional&nbsp;checks&nbsp;on&nbsp;address&nbsp;validity.&nbsp;*/<br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 65%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;zeros(),&nbsp;Read(Data),&nbsp;width)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Address&nbsp;could&nbsp;be&nbsp;misaligned&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 60%)">if&nbsp;check_misaligned(vaddr,&nbsp;width)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_Load_Addr_Align());&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Address&nbsp;translation&nbsp;and&nbsp;protection&nbsp;should&nbsp;be&nbsp;performed&nbsp;as&nbsp;if&nbsp;V=1&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 55%)">match&nbsp;translateAddr_pv(vaddr,&nbsp;Read(Data),&nbsp;privLevel_of_bits(zero_extend(hstatus.SPVP())),&nbsp;V1)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 50%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 50%)">match&nbsp;(width)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BYTE&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 45%)">process_load(rd,&nbsp;vaddr,&nbsp;mem_read(Read(Data),&nbsp;paddr,&nbsp;1,&nbsp;false,&nbsp;false,&nbsp;false),&nbsp;is_unsigned)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HALF&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 45%)">process_load(rd,&nbsp;vaddr,&nbsp;mem_read(Read(Data),&nbsp;paddr,&nbsp;2,&nbsp;false,&nbsp;false,&nbsp;false),&nbsp;is_unsigned)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WORD&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 45%)">process_load(rd,&nbsp;vaddr,&nbsp;mem_read(Read(Data),&nbsp;paddr,&nbsp;4,&nbsp;false,&nbsp;false,&nbsp;false),&nbsp;is_unsigned)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOUBLE&nbsp;if&nbsp;sizeof(xlen)&nbsp;&gt;=&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 45%)">process_load(rd,&nbsp;vaddr,&nbsp;mem_read(Read(Data),&nbsp;paddr,&nbsp;8,&nbsp;false,&nbsp;false,&nbsp;false),&nbsp;is_unsigned)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">report_invalid_width(__FILE__,&nbsp;__LINE__,&nbsp;width,&nbsp;&quot;hlv&quot;)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;}</span></span></span></span><br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;HLV(width,&nbsp;is_unsigned,&nbsp;rs1,&nbsp;rd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">&quot;hlv.&quot;&nbsp;^&nbsp;size_mnemonic(width)&nbsp;^&nbsp;maybe_u(is_unsigned)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;</span><br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;HLVX&nbsp;:&nbsp;(word_width,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;HLVX(width,&nbsp;rs1,&nbsp;rd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b0110&nbsp;@&nbsp;size_bits(width)&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b00011&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b100&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b1110011</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(HLVX(width,&nbsp;rs1,&nbsp;rd))&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">if&nbsp;(cur_virtualization&nbsp;==&nbsp;V1)<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{&nbsp;handle_virtual_instr();&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">(cur_privilege&nbsp;==&nbsp;User)&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 75%)">hstatus.HU()&nbsp;==&nbsp;0b0</span>)</span><br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;/*&nbsp;Extensions&nbsp;can&nbsp;perform&nbsp;additional&nbsp;checks&nbsp;on&nbsp;address&nbsp;validity.&nbsp;*/<br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 70%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;zeros(),&nbsp;Read(Data),&nbsp;width)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Address&nbsp;could&nbsp;be&nbsp;misaligned&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">if&nbsp;check_misaligned(vaddr,&nbsp;width)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_Load_Addr_Align());&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Address&nbsp;translation&nbsp;and&nbsp;protection&nbsp;should&nbsp;be&nbsp;performed&nbsp;as&nbsp;for&nbsp;an&nbsp;instruction&nbsp;fetch&nbsp;while&nbsp;V=1&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 60%)">match&nbsp;translateAddr_pv(vaddr,&nbsp;Execute(),&nbsp;privLevel_of_bits(zero_extend(hstatus.SPVP())),&nbsp;V1)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Update&nbsp;exception's&nbsp;access&nbsp;type&nbsp;because&nbsp;HLVX&nbsp;should&nbsp;raise&nbsp;load&nbsp;exceptions&nbsp;but&nbsp;translateAddr&nbsp;may&nbsp;return&nbsp;fetch&nbsp;exceptions&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 55%)">{&nbsp;handle_exception(exceptionType_update_AccessType(e,&nbsp;Read(Data)),&nbsp;c);&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 55%)">match&nbsp;(width)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;AccessType&nbsp;is&nbsp;Read&nbsp;since&nbsp;HLVX&nbsp;should&nbsp;not&nbsp;override&nbsp;pmp&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HALF&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 50%)">process_load(rd,&nbsp;vaddr,&nbsp;mem_read(Read(Data),&nbsp;paddr,&nbsp;2,&nbsp;false,&nbsp;false,&nbsp;false),&nbsp;true)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WORD&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 50%)">process_load(rd,&nbsp;vaddr,&nbsp;mem_read(Read(Data),&nbsp;paddr,&nbsp;4,&nbsp;false,&nbsp;false,&nbsp;false),&nbsp;true)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">report_invalid_width(__FILE__,&nbsp;__LINE__,&nbsp;width,&nbsp;&quot;hlvx&quot;)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;}</span></span></span><br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;HLVX(width,&nbsp;rs1,&nbsp;rd)<br>
+&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">&quot;hlvx.&quot;&nbsp;^&nbsp;size_mnemonic(width)&nbsp;^&nbsp;&quot;u&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;</span><br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;HSV&nbsp;:&nbsp;(word_width,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;HSV(width,&nbsp;rs1,&nbsp;rs2)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b0110&nbsp;@&nbsp;size_bits(width)&nbsp;@&nbsp;0b1&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b100&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;0b1110011</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(HSV(width,&nbsp;rs1,&nbsp;rs2))&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">if&nbsp;word_width_bytes(width)&nbsp;&gt;&nbsp;sizeof(xlen_bytes)<br>
+&nbsp;&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}<br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;(cur_virtualization&nbsp;==&nbsp;V1)<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;handle_virtual_instr();&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 75%)">if&nbsp;<span style="background-color: hsl(0, 85%, 75%)">(cur_privilege&nbsp;==&nbsp;User)&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 70%)">hstatus.HU()&nbsp;==&nbsp;0b0</span>)</span><br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;/*&nbsp;Extensions&nbsp;can&nbsp;perform&nbsp;additional&nbsp;checks&nbsp;on&nbsp;address&nbsp;validity.&nbsp;*/<br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 70%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;zeros(),&nbsp;Write(Data),&nbsp;width)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Address&nbsp;could&nbsp;be&nbsp;misaligned&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 65%)">if&nbsp;check_misaligned(vaddr,&nbsp;width)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_SAMO_Addr_Align());&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Address&nbsp;translation&nbsp;and&nbsp;protection&nbsp;should&nbsp;be&nbsp;performed&nbsp;as&nbsp;if&nbsp;V=1&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(120, 85%, 60%)">match&nbsp;translateAddr_pv(vaddr,&nbsp;Write(Data),&nbsp;privLevel_of_bits(zero_extend(hstatus.SPVP())),&nbsp;V1)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 55%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;eares&nbsp;:&nbsp;MemoryOpResult(unit)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;width&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BYTE&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">mem_write_ea(paddr,&nbsp;1,&nbsp;false,&nbsp;false,&nbsp;false)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HALF&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">mem_write_ea(paddr,&nbsp;2,&nbsp;false,&nbsp;false,&nbsp;false)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WORD&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">mem_write_ea(paddr,&nbsp;4,&nbsp;false,&nbsp;false,&nbsp;false)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOUBLE&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 50%)">mem_write_ea(paddr,&nbsp;8,&nbsp;false,&nbsp;false,&nbsp;false)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;(eares)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rs2_val&nbsp;=&nbsp;X(rs2);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;res&nbsp;:&nbsp;MemoryOpResult(bool)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;(width)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BYTE&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">mem_write_value(paddr,&nbsp;1,&nbsp;rs2_val[7..0],&nbsp;&nbsp;false,&nbsp;false,&nbsp;false)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HALF&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">mem_write_value(paddr,&nbsp;2,&nbsp;rs2_val[15..0],&nbsp;false,&nbsp;false,&nbsp;false)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WORD&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">mem_write_value(paddr,&nbsp;4,&nbsp;rs2_val[31..0],&nbsp;false,&nbsp;false,&nbsp;false)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOUBLE&nbsp;if&nbsp;sizeof(xlen)&nbsp;&gt;=&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 45%)">mem_write_value(paddr,&nbsp;8,&nbsp;rs2_val,&nbsp;false,&nbsp;false,&nbsp;false)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">report_invalid_width(__FILE__,&nbsp;__LINE__,&nbsp;width,&nbsp;&quot;hsv&quot;)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;(res)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">RETIRE_SUCCESS</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;hsv&nbsp;got&nbsp;false&nbsp;from&nbsp;mem_write_value&quot;)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 45%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;}</span></span></span></span><br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;HSV(width,&nbsp;rs1,&nbsp;rs2)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">&quot;hsv.&quot;&nbsp;&nbsp;^&nbsp;size_mnemonic(width)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rs2)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;</span><br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;HFENCE_VVMA&nbsp;:&nbsp;(regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;HFENCE_VVMA(rs1,&nbsp;rs2)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b0010001&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b000&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;0b1110011</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;HFENCE_VVMA(rs1,&nbsp;rs2)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;addr&nbsp;:&nbsp;option(xlenbits)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;rs1&nbsp;==&nbsp;0b00000&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">None()</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 75%)">Some(X(rs1))</span></span>;<br>
+&nbsp;&nbsp;let&nbsp;asid&nbsp;:&nbsp;option(xlenbits)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;rs2&nbsp;==&nbsp;0b00000&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">None()</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 75%)">Some(X(rs2))</span></span>;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;(cur_privilege,&nbsp;cur_virtualization)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(User,&nbsp;V1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{&nbsp;handle_virtual_instr();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(User,&nbsp;V0)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Supervisor,&nbsp;V1)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;handle_virtual_instr();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Supervisor,&nbsp;V0)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;flush_TLB(asid,&nbsp;VS,&nbsp;addr);&nbsp;RETIRE_SUCCESS&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Machine,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{&nbsp;flush_TLB(asid,&nbsp;VS,&nbsp;addr);&nbsp;RETIRE_SUCCESS&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;HFENCE_VVMA(rs1,&nbsp;rs2)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">&quot;hfence.vvma&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs2)</span><br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;HFENCE_GVMA&nbsp;:&nbsp;(regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;HFENCE_GVMA(rs1,&nbsp;rs2)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b0110001&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b000&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;0b1110011</span><br>
+<br>
+function&nbsp;clause&nbsp;execute&nbsp;HFENCE_GVMA(rs1,&nbsp;rs2)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;addr&nbsp;:&nbsp;option(xlenbits)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;rs1&nbsp;==&nbsp;0b00000&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">None()</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 75%)">Some(X(rs1))</span></span>;<br>
+&nbsp;&nbsp;let&nbsp;vmid&nbsp;:&nbsp;option(xlenbits)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;rs2&nbsp;==&nbsp;0b00000&nbsp;then&nbsp;<span style="background-color: hsl(120, 85%, 75%)">None()</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 75%)">Some(X(rs2))</span></span>;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">match&nbsp;(cur_privilege,&nbsp;cur_virtualization)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(User,&nbsp;V1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;handle_virtual_instr();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(User,&nbsp;V0)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Supervisor,&nbsp;V1)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">{&nbsp;handle_virtual_instr();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Supervisor,&nbsp;V0)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;mstatus.TVM()&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0b1&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0b0&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;flush_TLB(vmid,&nbsp;G,&nbsp;addr);&nbsp;RETIRE_SUCCESS&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(Machine,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">{&nbsp;flush_TLB(vmid,&nbsp;G,&nbsp;addr);&nbsp;RETIRE_SUCCESS&nbsp;}</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;HFENCE_GVMA(rs1,&nbsp;rs2)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">&quot;hfence.gvma&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs2)</span><br>
+<br>
+/*&nbsp;******************************************************************&nbsp;*/<br>
+/*&nbsp;Transformed&nbsp;instruction&nbsp;mappings&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+//&nbsp;Note:&nbsp;Should&nbsp;enc_transformed&nbsp;be&nbsp;implemented&nbsp;here&nbsp;since&nbsp;it&nbsp;originates&nbsp;from&nbsp;H-ext&nbsp;or&nbsp;next&nbsp;to&nbsp;the&nbsp;relevant&nbsp;instruction&nbsp;definitions?<br>
+<br>
+<span style="background-color: hsl(120, 85%, 80%)">function&nbsp;clause&nbsp;enc_transformed(LOAD(_,&nbsp;_,&nbsp;rd,&nbsp;uns,&nbsp;size,&nbsp;_,&nbsp;_),&nbsp;addr_offset)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 75%)">0b0000000&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;addr_offset&nbsp;@&nbsp;bool_bits(uns)&nbsp;@&nbsp;size_bits(size)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b0000011</span></span><br>
+<br>
+function&nbsp;clause&nbsp;enc_transformed(C_LW(_,&nbsp;_,&nbsp;rd),&nbsp;addr_offset)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;expanded_inst&nbsp;=&nbsp;LOAD(zeros(),&nbsp;zeros(),&nbsp;0b01&nbsp;@&nbsp;rd,&nbsp;false,&nbsp;WORD,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;let&nbsp;transformed_inst&nbsp;=&nbsp;enc_transformed(expanded_inst,&nbsp;addr_offset);<br>
+&nbsp;&nbsp;[transformed_inst&nbsp;with&nbsp;1&nbsp;=&nbsp;bitzero]&nbsp;/*&nbsp;Set&nbsp;transformed_inst[1]&nbsp;to&nbsp;0b0&nbsp;*/<br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;enc_transformed(C_LD(_,&nbsp;_,&nbsp;rd),&nbsp;addr_offset)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;expanded_inst&nbsp;=&nbsp;LOAD(zeros(),&nbsp;zeros(),&nbsp;0b01&nbsp;@&nbsp;rd,&nbsp;false,&nbsp;DOUBLE,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;let&nbsp;transformed_inst&nbsp;=&nbsp;enc_transformed(expanded_inst,&nbsp;addr_offset);<br>
+&nbsp;&nbsp;[transformed_inst&nbsp;with&nbsp;1&nbsp;=&nbsp;bitzero]&nbsp;/*&nbsp;Set&nbsp;transformed_inst[1]&nbsp;to&nbsp;0b0&nbsp;*/<br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;enc_transformed(LOAD_FP(_,&nbsp;_,&nbsp;rd,&nbsp;size),&nbsp;addr_offset)&nbsp;=<br>
+&nbsp;&nbsp;0b0000000&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;addr_offset&nbsp;@&nbsp;0b0&nbsp;@&nbsp;size_bits(size)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b0000111<br>
+<br>
+function&nbsp;clause&nbsp;enc_transformed(STORE(_,&nbsp;rs2,&nbsp;_,&nbsp;size,&nbsp;_,&nbsp;_),&nbsp;addr_offset)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b0000000&nbsp;@&nbsp;rs2&nbsp;@&nbsp;addr_offset&nbsp;@&nbsp;0b0&nbsp;@&nbsp;size_bits(size)&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;0b0100011</span><br>
+<br>
+function&nbsp;clause&nbsp;enc_transformed(C_SW(_,&nbsp;_,&nbsp;rs2),&nbsp;addr_offset)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;expanded_inst&nbsp;=&nbsp;STORE(zeros(),&nbsp;0b01&nbsp;@&nbsp;rs2,&nbsp;zeros(),&nbsp;WORD,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;let&nbsp;transformed_inst&nbsp;=&nbsp;enc_transformed(expanded_inst,&nbsp;addr_offset);<br>
+&nbsp;&nbsp;[transformed_inst&nbsp;with&nbsp;1&nbsp;=&nbsp;bitzero]&nbsp;/*&nbsp;Set&nbsp;transformed_inst[1]&nbsp;to&nbsp;0b0&nbsp;*/<br>
+}</span><br>
+function&nbsp;clause&nbsp;enc_transformed(C_SD(_,&nbsp;_,&nbsp;rs2),&nbsp;addr_offset)&nbsp;=&nbsp;<span style="background-color: hsl(120, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;expanded_inst&nbsp;=&nbsp;STORE(zeros(),&nbsp;0b01&nbsp;@&nbsp;rs2,&nbsp;zeros(),&nbsp;DOUBLE,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;let&nbsp;transformed_inst&nbsp;=&nbsp;enc_transformed(expanded_inst,&nbsp;addr_offset);<br>
+&nbsp;&nbsp;[transformed_inst&nbsp;with&nbsp;1&nbsp;=&nbsp;bitzero]&nbsp;/*&nbsp;Set&nbsp;transformed_inst[1]&nbsp;to&nbsp;0b0&nbsp;*/<br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;enc_transformed(STORE_FP(_,&nbsp;rs2,&nbsp;_,&nbsp;size),&nbsp;addr_offset)&nbsp;=<br>
+&nbsp;&nbsp;0b0000000&nbsp;@&nbsp;rs2&nbsp;@&nbsp;addr_offset&nbsp;@&nbsp;0b0&nbsp;@&nbsp;size_bits(size)&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;0b0100111<br>
+<br>
+function&nbsp;clause&nbsp;enc_transformed(LOADRES(aq,&nbsp;rl,&nbsp;_,&nbsp;size,&nbsp;rd),&nbsp;addr_offset)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b00010&nbsp;@&nbsp;bool_bits(aq)&nbsp;@&nbsp;bool_bits(rl)&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;addr_offset&nbsp;@&nbsp;0b0&nbsp;@&nbsp;size_bits(size)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b0101111</span><br>
+<br>
+function&nbsp;clause&nbsp;enc_transformed(STORECON(aq,&nbsp;rl,&nbsp;rs2,&nbsp;_,&nbsp;size,&nbsp;rd),&nbsp;addr_offset)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b00011&nbsp;@&nbsp;bool_bits(aq)&nbsp;@&nbsp;bool_bits(rl)&nbsp;@&nbsp;rs2&nbsp;@&nbsp;addr_offset&nbsp;@&nbsp;0b0&nbsp;@&nbsp;size_bits(size)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b0101111</span><br>
+<br>
+function&nbsp;clause&nbsp;enc_transformed(AMO(op,&nbsp;aq,&nbsp;rl,&nbsp;rs2,&nbsp;_,&nbsp;size,&nbsp;rd),&nbsp;addr_offset)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">encdec_amoop(op)&nbsp;@&nbsp;bool_bits(aq)&nbsp;@&nbsp;bool_bits(rl)&nbsp;@&nbsp;rs2&nbsp;@&nbsp;addr_offset&nbsp;@&nbsp;0b0&nbsp;@&nbsp;size_bits(size)&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b0101111</span><br>
+<br>
+function&nbsp;clause&nbsp;enc_transformed(HLV(width,&nbsp;is_unsigned,&nbsp;_,&nbsp;rd),&nbsp;addr_offset)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b0110&nbsp;@&nbsp;size_bits(width)&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b0000&nbsp;@&nbsp;bool_bits(is_unsigned)&nbsp;@&nbsp;addr_offset&nbsp;@&nbsp;0b100&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b1110011</span><br>
+<br>
+function&nbsp;clause&nbsp;enc_transformed(HSV(width,&nbsp;_,&nbsp;rs2),&nbsp;addr_offset)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b0110&nbsp;@&nbsp;size_bits(width)&nbsp;@&nbsp;0b1&nbsp;@&nbsp;rs2&nbsp;@&nbsp;addr_offset&nbsp;@&nbsp;0b100&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;0b1110011</span><br>
+<br>
+function&nbsp;clause&nbsp;enc_transformed(HLVX(width,&nbsp;_,&nbsp;rd),&nbsp;addr_offset)&nbsp;=<br>
+&nbsp;&nbsp;<span style="background-color: hsl(120, 85%, 80%)">0b0110&nbsp;@&nbsp;size_bits(width)&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b00011&nbsp;@&nbsp;addr_offset&nbsp;@&nbsp;0b100&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b1110011</span><br>
+</code>
+</body>
+</html>

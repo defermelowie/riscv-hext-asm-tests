@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>riscv_fdext_regs</title></head>
+<body>
+<h1>riscv_fdext_regs.sail (0/168) 0%</h1>
+<code style="display: block">
+/*=======================================================================================*/<br>
+/*&nbsp;&nbsp;RISCV&nbsp;Sail&nbsp;Model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;Sail&nbsp;RISC-V&nbsp;architecture&nbsp;model,&nbsp;comprising&nbsp;all&nbsp;files&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;directories&nbsp;except&nbsp;for&nbsp;the&nbsp;snapshots&nbsp;of&nbsp;the&nbsp;Lem&nbsp;and&nbsp;Sail&nbsp;libraries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;in&nbsp;the&nbsp;prover_snapshots&nbsp;directory&nbsp;(which&nbsp;include&nbsp;copies&nbsp;of&nbsp;their&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;licences),&nbsp;is&nbsp;subject&nbsp;to&nbsp;the&nbsp;BSD&nbsp;two-clause&nbsp;licence&nbsp;below.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2017-2023&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Prashanth&nbsp;Mundkur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Rishiyur&nbsp;S.&nbsp;Nikhil&nbsp;and&nbsp;Bluespec,&nbsp;Inc.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jon&nbsp;French&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Brian&nbsp;Campbell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Robert&nbsp;Norton-Wright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alasdair&nbsp;Armstrong&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Thomas&nbsp;Bauereiss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Shaked&nbsp;Flur&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Christopher&nbsp;Pulte&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Sewell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Alexander&nbsp;Richardson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Hesham&nbsp;Almatary&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Jessica&nbsp;Clarke&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Microsoft,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Robert&nbsp;Norton-Wright&nbsp;and&nbsp;Nathaniel&nbsp;Wesley&nbsp;Filardo&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Peter&nbsp;Rugg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Aril&nbsp;Computer&nbsp;Corp.,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;Scott&nbsp;Johnson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Philipp&nbsp;Tomsich&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;VRULL&nbsp;GmbH,&nbsp;for&nbsp;contributions&nbsp;by&nbsp;its&nbsp;employees&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;All&nbsp;rights&nbsp;reserved.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;the&nbsp;above&nbsp;within&nbsp;the&nbsp;Rigorous&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Engineering&nbsp;of&nbsp;Mainstream&nbsp;Systems&nbsp;(REMS)&nbsp;project,&nbsp;partly&nbsp;funded&nbsp;by&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;EPSRC&nbsp;grant&nbsp;EP/K008528/1,&nbsp;at&nbsp;the&nbsp;Universities&nbsp;of&nbsp;Cambridge&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Edinburgh.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;software&nbsp;was&nbsp;developed&nbsp;by&nbsp;SRI&nbsp;International&nbsp;and&nbsp;the&nbsp;University&nbsp;of&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Cambridge&nbsp;Computer&nbsp;Laboratory&nbsp;(Department&nbsp;of&nbsp;Computer&nbsp;Science&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Technology)&nbsp;under&nbsp;DARPA/AFRL&nbsp;contract&nbsp;FA8650-18-C-7809&nbsp;(&quot;CIFV&quot;),&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;under&nbsp;DARPA&nbsp;contract&nbsp;HR0011-18-C-0016&nbsp;(&quot;ECATS&quot;)&nbsp;as&nbsp;part&nbsp;of&nbsp;the&nbsp;DARPA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SSITH&nbsp;research&nbsp;programme.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;This&nbsp;project&nbsp;has&nbsp;received&nbsp;funding&nbsp;from&nbsp;the&nbsp;European&nbsp;Research&nbsp;Council&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;(ERC)&nbsp;under&nbsp;the&nbsp;European&nbsp;Union’s&nbsp;Horizon&nbsp;2020&nbsp;research&nbsp;and&nbsp;innovation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;programme&nbsp;(grant&nbsp;agreement&nbsp;789108,&nbsp;ELVER).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Redistribution&nbsp;and&nbsp;use&nbsp;in&nbsp;source&nbsp;and&nbsp;binary&nbsp;forms,&nbsp;with&nbsp;or&nbsp;without&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;modification,&nbsp;are&nbsp;permitted&nbsp;provided&nbsp;that&nbsp;the&nbsp;following&nbsp;conditions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;are&nbsp;met:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;1.&nbsp;Redistributions&nbsp;of&nbsp;source&nbsp;code&nbsp;must&nbsp;retain&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;2.&nbsp;Redistributions&nbsp;in&nbsp;binary&nbsp;form&nbsp;must&nbsp;reproduce&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;documentation&nbsp;and/or&nbsp;other&nbsp;materials&nbsp;provided&nbsp;with&nbsp;the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;distribution.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;THIS&nbsp;SOFTWARE&nbsp;IS&nbsp;PROVIDED&nbsp;BY&nbsp;THE&nbsp;AUTHOR&nbsp;AND&nbsp;CONTRIBUTORS&nbsp;``AS&nbsp;IS''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;AND&nbsp;ANY&nbsp;EXPRESS&nbsp;OR&nbsp;IMPLIED&nbsp;WARRANTIES,&nbsp;INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;TO,&nbsp;THE&nbsp;IMPLIED&nbsp;WARRANTIES&nbsp;OF&nbsp;MERCHANTABILITY&nbsp;AND&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;PARTICULAR&nbsp;PURPOSE&nbsp;ARE&nbsp;DISCLAIMED.&nbsp;&nbsp;IN&nbsp;NO&nbsp;EVENT&nbsp;SHALL&nbsp;THE&nbsp;AUTHOR&nbsp;OR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;CONTRIBUTORS&nbsp;BE&nbsp;LIABLE&nbsp;FOR&nbsp;ANY&nbsp;DIRECT,&nbsp;INDIRECT,&nbsp;INCIDENTAL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SPECIAL,&nbsp;EXEMPLARY,&nbsp;OR&nbsp;CONSEQUENTIAL&nbsp;DAMAGES&nbsp;(INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;LIMITED&nbsp;TO,&nbsp;PROCUREMENT&nbsp;OF&nbsp;SUBSTITUTE&nbsp;GOODS&nbsp;OR&nbsp;SERVICES;&nbsp;LOSS&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;USE,&nbsp;DATA,&nbsp;OR&nbsp;PROFITS;&nbsp;OR&nbsp;BUSINESS&nbsp;INTERRUPTION)&nbsp;HOWEVER&nbsp;CAUSED&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;ON&nbsp;ANY&nbsp;THEORY&nbsp;OF&nbsp;LIABILITY,&nbsp;WHETHER&nbsp;IN&nbsp;CONTRACT,&nbsp;STRICT&nbsp;LIABILITY,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OR&nbsp;TORT&nbsp;(INCLUDING&nbsp;NEGLIGENCE&nbsp;OR&nbsp;OTHERWISE)&nbsp;ARISING&nbsp;IN&nbsp;ANY&nbsp;WAY&nbsp;OUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OF&nbsp;THE&nbsp;USE&nbsp;OF&nbsp;THIS&nbsp;SOFTWARE,&nbsp;EVEN&nbsp;IF&nbsp;ADVISED&nbsp;OF&nbsp;THE&nbsp;POSSIBILITY&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SUCH&nbsp;DAMAGE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*=======================================================================================*/<br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;Floating&nbsp;point&nbsp;register&nbsp;file&nbsp;and&nbsp;accessors&nbsp;for&nbsp;F,&nbsp;D&nbsp;extensions&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;Floating&nbsp;point&nbsp;CSR&nbsp;and&nbsp;accessors&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+<br>
+/*&nbsp;Original&nbsp;version&nbsp;written&nbsp;by&nbsp;Rishiyur&nbsp;S.&nbsp;Nikhil,&nbsp;Sept-Oct&nbsp;2019&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;NaN&nbsp;boxing/unboxing.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;When&nbsp;16-bit&nbsp;floats&nbsp;(half-precision)&nbsp;are&nbsp;stored&nbsp;in&nbsp;32/64-bit&nbsp;regs&nbsp;&nbsp;*/<br>
+/*&nbsp;they&nbsp;must&nbsp;be&nbsp;'NaN&nbsp;boxed'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;When&nbsp;16-bit&nbsp;floats&nbsp;(half-precision)&nbsp;are&nbsp;read&nbsp;from&nbsp;32/64-bit&nbsp;regs&nbsp;&nbsp;*/<br>
+/*&nbsp;they&nbsp;must&nbsp;be&nbsp;'NaN&nbsp;unboxed'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;When&nbsp;32-bit&nbsp;floats&nbsp;(single-precision)&nbsp;are&nbsp;stored&nbsp;in&nbsp;64-bit&nbsp;regs&nbsp;&nbsp;*/<br>
+/*&nbsp;they&nbsp;must&nbsp;be&nbsp;'NaN&nbsp;boxed'&nbsp;(upper&nbsp;32b&nbsp;all&nbsp;ones).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;When&nbsp;32-bit&nbsp;floats&nbsp;(single-precision)&nbsp;are&nbsp;read&nbsp;from&nbsp;64-bit&nbsp;regs&nbsp;&nbsp;*/<br>
+/*&nbsp;they&nbsp;must&nbsp;be&nbsp;'NaN&nbsp;unboxed'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+function&nbsp;canonical_NaN_H()&nbsp;-&gt;&nbsp;bits(16)&nbsp;=&nbsp;0x_7e00<br>
+function&nbsp;canonical_NaN_S()&nbsp;-&gt;&nbsp;bits(32)&nbsp;=&nbsp;0x_7fc0_0000<br>
+function&nbsp;canonical_NaN_D()&nbsp;-&gt;&nbsp;bits(64)&nbsp;=&nbsp;0x_7ff8_0000_0000_0000<br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nan_box_H&nbsp;:&nbsp;bits(16)&nbsp;-&gt;&nbsp;flenbits<br>
+function&nbsp;nan_box_H&nbsp;&nbsp;&nbsp;val_16b&nbsp;=<br>
+&nbsp;&nbsp;if&nbsp;(sizeof(flen)&nbsp;==&nbsp;32)<br>
+&nbsp;&nbsp;then&nbsp;0x_FFFF&nbsp;@&nbsp;val_16b<br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0x_FFFF_FFFF_FFFF&nbsp;@&nbsp;val_16b</span><br>
+<br>
+val&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nan_unbox_H&nbsp;:&nbsp;flenbits&nbsp;-&gt;&nbsp;bits(16)<br>
+function&nbsp;nan_unbox_H&nbsp;&nbsp;&nbsp;regval&nbsp;=<br>
+&nbsp;&nbsp;if&nbsp;(sizeof(flen)&nbsp;==&nbsp;32)<br>
+&nbsp;&nbsp;then&nbsp;if&nbsp;regval&nbsp;[32..16]&nbsp;==&nbsp;0x_FFFF<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;regval&nbsp;[15..0]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;canonical_NaN_H()<br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 80%)">if&nbsp;regval&nbsp;[63..16]&nbsp;==&nbsp;0x_FFFF_FFFF_FFFF<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 75%)">regval&nbsp;[15..0]</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;canonical_NaN_H()</span><br>
+<br>
+val&nbsp;nan_box_S&nbsp;:&nbsp;bits(32)&nbsp;-&gt;&nbsp;flenbits<br>
+function&nbsp;nan_box_S&nbsp;val_32b&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sys_enable_fdext());<br>
+&nbsp;&nbsp;if&nbsp;(sizeof(flen)&nbsp;==&nbsp;32)<br>
+&nbsp;&nbsp;then&nbsp;val_32b<br>
+&nbsp;&nbsp;else&nbsp;0x_FFFF_FFFF&nbsp;@&nbsp;val_32b<br>
+}</span><br>
+<br>
+val&nbsp;nan_unbox_S&nbsp;:&nbsp;flenbits&nbsp;-&gt;&nbsp;bits(32)<br>
+function&nbsp;nan_unbox_S&nbsp;regval&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sys_enable_fdext());<br>
+&nbsp;&nbsp;if&nbsp;(sizeof(flen)&nbsp;==&nbsp;32)<br>
+&nbsp;&nbsp;then&nbsp;regval<br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;regval&nbsp;[63..32]&nbsp;==&nbsp;0x_FFFF_FFFF<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">regval&nbsp;[31..0]</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;canonical_NaN_S()</span><br>
+}</span><br>
+<br>
+overload&nbsp;nan_box&nbsp;=&nbsp;{&nbsp;nan_box_H,&nbsp;nan_box_S&nbsp;}<br>
+overload&nbsp;nan_unbox&nbsp;=&nbsp;{&nbsp;nan_unbox_H,&nbsp;nan_unbox_S&nbsp;}<br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;Floating&nbsp;point&nbsp;register&nbsp;file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+register&nbsp;f0&nbsp;&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f1&nbsp;&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f2&nbsp;&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f3&nbsp;&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f4&nbsp;&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f5&nbsp;&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f6&nbsp;&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f7&nbsp;&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f8&nbsp;&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f9&nbsp;&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f10&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f11&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f12&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f13&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f14&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f15&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f16&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f17&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f18&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f19&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f20&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f21&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f22&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f23&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f24&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f25&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f26&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f27&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f28&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f29&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f30&nbsp;:&nbsp;fregtype<br>
+register&nbsp;f31&nbsp;:&nbsp;fregtype<br>
+<br>
+function&nbsp;dirty_fd_context()&nbsp;-&gt;&nbsp;unit&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sys_enable_fdext());<br>
+&nbsp;&nbsp;mstatus-&gt;FS()&nbsp;=&nbsp;extStatus_to_bits(Dirty);<br>
+&nbsp;&nbsp;mstatus-&gt;SD()&nbsp;=&nbsp;0b1<br>
+}</span><br>
+<br>
+function&nbsp;dirty_fd_context_if_present()&nbsp;-&gt;&nbsp;unit&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sys_enable_fdext()&nbsp;!=&nbsp;sys_enable_zfinx());<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;sys_enable_fdext()&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">dirty_fd_context()</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span><br>
+}</span><br>
+<br>
+val&nbsp;rF&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;=&nbsp;'n&nbsp;&lt;&nbsp;32.&nbsp;regno('n)&nbsp;-&gt;&nbsp;flenbits<br>
+function&nbsp;rF&nbsp;r&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sys_enable_fdext());<br>
+&nbsp;&nbsp;let&nbsp;v&nbsp;:&nbsp;fregtype&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;r&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f0</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f1</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f2</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f3</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f4</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f5</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f6</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f7</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f8</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f9</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f10</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f11</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f12</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;13&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f13</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;14&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f14</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;15&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f15</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f16</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;17&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f17</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;18&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f18</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;19&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f19</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;20&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f20</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;21&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f21</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f22</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f23</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f24</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;25&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f25</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;26&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f26</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;27&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f27</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;28&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f28</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;29&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f29</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;30&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f30</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f31</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{assert(false,&nbsp;&quot;invalid&nbsp;floating&nbsp;point&nbsp;register&nbsp;number&quot;);&nbsp;zero_freg}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;fregval_from_freg(v)<br>
+}</span><br>
+<br>
+val&nbsp;wF&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;0&nbsp;&lt;=&nbsp;'n&nbsp;&lt;&nbsp;32.&nbsp;(regno('n),&nbsp;flenbits)&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;wF&nbsp;(r,&nbsp;in_v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sys_enable_fdext());<br>
+&nbsp;&nbsp;let&nbsp;v&nbsp;=&nbsp;fregval_into_freg(in_v);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;r&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f0&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f1&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f2&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f3&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f4&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f5&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f6&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f7&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f8&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;9&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f9&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;10&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f10&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;11&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f11&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;12&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f12&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;13&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f13&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;14&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f14&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;15&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f15&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f16&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;17&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f17&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;18&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f18&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;19&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f19&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;20&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f20&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;21&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f21&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;22&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f22&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;23&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f23&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;24&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f24&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;25&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f25&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;26&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f26&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;27&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f27&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;28&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f28&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;29&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f29&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;30&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f30&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;31&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f31&nbsp;=&nbsp;v</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">assert(false,&nbsp;&quot;invalid&nbsp;floating&nbsp;point&nbsp;register&nbsp;number&quot;)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+<br>
+&nbsp;&nbsp;dirty_fd_context();<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;get_config_print_reg()<br>
+&nbsp;&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;TODO:&nbsp;will&nbsp;only&nbsp;print&nbsp;bits;&nbsp;should&nbsp;we&nbsp;print&nbsp;in&nbsp;floating&nbsp;point&nbsp;format?&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">print_reg(&quot;f&quot;&nbsp;^&nbsp;string_of_int(r)&nbsp;^&nbsp;&quot;&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;FRegStr(v))</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+}</span><br>
+<br>
+function&nbsp;rF_bits(i:&nbsp;bits(5))&nbsp;-&gt;&nbsp;flenbits&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">rF(unsigned(i))</span><br>
+<br>
+function&nbsp;wF_bits(i:&nbsp;bits(5),&nbsp;data:&nbsp;flenbits)&nbsp;-&gt;&nbsp;unit&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;wF(unsigned(i))&nbsp;=&nbsp;data<br>
+}</span><br>
+<br>
+overload&nbsp;F&nbsp;=&nbsp;{rF_bits,&nbsp;wF_bits,&nbsp;rF,&nbsp;wF}<br>
+<br>
+val&nbsp;rF_H&nbsp;:&nbsp;bits(5)&nbsp;-&gt;&nbsp;bits(16)<br>
+function&nbsp;rF_H(i)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(flen)&nbsp;&gt;=&nbsp;16);<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 75%)">sys_enable_fdext()&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(sys_enable_zfinx())</span></span>);<br>
+&nbsp;&nbsp;nan_unbox(F(i))<br>
+}</span><br>
+<br>
+val&nbsp;wF_H&nbsp;:&nbsp;(bits(5),&nbsp;bits(16))&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;wF_H(i,&nbsp;data)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(flen)&nbsp;&gt;=&nbsp;16);<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 75%)">sys_enable_fdext()&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(sys_enable_zfinx())</span></span>);<br>
+&nbsp;&nbsp;F(i)&nbsp;=&nbsp;nan_box(data)<br>
+}</span><br>
+<br>
+val&nbsp;rF_S&nbsp;:&nbsp;bits(5)&nbsp;-&gt;&nbsp;bits(32)<br>
+function&nbsp;rF_S(i)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(flen)&nbsp;&gt;=&nbsp;32);<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 75%)">sys_enable_fdext()&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(sys_enable_zfinx())</span></span>);<br>
+&nbsp;&nbsp;nan_unbox(F(i))<br>
+}</span><br>
+<br>
+val&nbsp;wF_S&nbsp;:&nbsp;(bits(5),&nbsp;bits(32))&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;wF_S(i,&nbsp;data)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(flen)&nbsp;&gt;=&nbsp;32);<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 75%)">sys_enable_fdext()&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(sys_enable_zfinx())</span></span>);<br>
+&nbsp;&nbsp;F(i)&nbsp;=&nbsp;nan_box(data)<br>
+}</span><br>
+<br>
+val&nbsp;rF_D&nbsp;:&nbsp;bits(5)&nbsp;-&gt;&nbsp;bits(64)<br>
+function&nbsp;rF_D(i)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(flen)&nbsp;&gt;=&nbsp;64);<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 75%)">sys_enable_fdext()&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(sys_enable_zfinx())</span></span>);<br>
+&nbsp;&nbsp;F(i)<br>
+}</span><br>
+<br>
+val&nbsp;wF_D&nbsp;:&nbsp;(bits(5),&nbsp;bits(64))&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;wF_D(i,&nbsp;data)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(flen)&nbsp;&gt;=&nbsp;64);<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 75%)">sys_enable_fdext()&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(sys_enable_zfinx())</span></span>);<br>
+&nbsp;&nbsp;F(i)&nbsp;=&nbsp;data<br>
+}</span><br>
+<br>
+overload&nbsp;F_H&nbsp;=&nbsp;{&nbsp;rF_H,&nbsp;wF_H&nbsp;}<br>
+overload&nbsp;F_S&nbsp;=&nbsp;{&nbsp;rF_S,&nbsp;wF_S&nbsp;}<br>
+overload&nbsp;F_D&nbsp;=&nbsp;{&nbsp;rF_D,&nbsp;wF_D&nbsp;}<br>
+<br>
+val&nbsp;rF_or_X_H&nbsp;:&nbsp;bits(5)&nbsp;-&gt;&nbsp;bits(16)<br>
+function&nbsp;rF_or_X_H(i)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(flen)&nbsp;&gt;=&nbsp;16);<br>
+&nbsp;&nbsp;assert(sys_enable_fdext()&nbsp;!=&nbsp;sys_enable_zfinx());<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;sys_enable_fdext()<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">F_H(i)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">X(i)[15..0]</span></span><br>
+}</span><br>
+<br>
+val&nbsp;rF_or_X_S&nbsp;:&nbsp;bits(5)&nbsp;-&gt;&nbsp;bits(32)<br>
+function&nbsp;rF_or_X_S(i)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(flen)&nbsp;&gt;=&nbsp;32);<br>
+&nbsp;&nbsp;assert(sys_enable_fdext()&nbsp;!=&nbsp;sys_enable_zfinx());<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;sys_enable_fdext()<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">F_S(i)</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">X(i)[31..0]</span></span><br>
+}</span><br>
+<br>
+val&nbsp;rF_or_X_D&nbsp;:&nbsp;bits(5)&nbsp;-&gt;&nbsp;bits(64)<br>
+function&nbsp;rF_or_X_D(i)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(flen)&nbsp;&gt;=&nbsp;64);<br>
+&nbsp;&nbsp;assert(sys_enable_fdext()&nbsp;!=&nbsp;sys_enable_zfinx());<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;sys_enable_fdext()<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">F_D(i)</span><br>
+&nbsp;&nbsp;else&nbsp;if&nbsp;sizeof(xlen)&nbsp;&gt;=&nbsp;64<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">X(i)[63..0]</span><br>
+&nbsp;&nbsp;else&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;assert(i[0]&nbsp;==&nbsp;bitzero);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;i&nbsp;==&nbsp;zeros()&nbsp;then&nbsp;zeros()&nbsp;else&nbsp;X(i&nbsp;+&nbsp;1)&nbsp;@&nbsp;X(i)<br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;wF_or_X_H&nbsp;:&nbsp;(bits(5),&nbsp;bits(16))&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;wF_or_X_H(i,&nbsp;data)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(flen)&nbsp;&gt;=&nbsp;16);<br>
+&nbsp;&nbsp;assert(sys_enable_fdext()&nbsp;!=&nbsp;sys_enable_zfinx());<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;sys_enable_fdext()<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">F_H(i)</span>&nbsp;=&nbsp;data<br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">X(i)</span>&nbsp;=&nbsp;sign_extend(data)</span><br>
+}</span><br>
+<br>
+val&nbsp;wF_or_X_S&nbsp;:&nbsp;(bits(5),&nbsp;bits(32))&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;wF_or_X_S(i,&nbsp;data)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(flen)&nbsp;&gt;=&nbsp;32);<br>
+&nbsp;&nbsp;assert(sys_enable_fdext()&nbsp;!=&nbsp;sys_enable_zfinx());<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;sys_enable_fdext()<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">F_S(i)</span>&nbsp;=&nbsp;data<br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">X(i)</span>&nbsp;=&nbsp;sign_extend(data)</span><br>
+}</span><br>
+<br>
+val&nbsp;wF_or_X_D&nbsp;:&nbsp;(bits(5),&nbsp;bits(64))&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;wF_or_X_D(i,&nbsp;data)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert&nbsp;(sizeof(flen)&nbsp;&gt;=&nbsp;64);<br>
+&nbsp;&nbsp;assert(sys_enable_fdext()&nbsp;!=&nbsp;sys_enable_zfinx());<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;sys_enable_fdext()<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">F_D(i)</span>&nbsp;=&nbsp;data<br>
+&nbsp;&nbsp;else&nbsp;if&nbsp;sizeof(xlen)&nbsp;&gt;=&nbsp;64<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">X(i)</span>&nbsp;=&nbsp;sign_extend(data)<br>
+&nbsp;&nbsp;else&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;assert&nbsp;(i[0]&nbsp;==&nbsp;bitzero);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;i&nbsp;!=&nbsp;zeros()&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X(i)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;data[31..0];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X(i&nbsp;+&nbsp;1)&nbsp;=&nbsp;data[63..32];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+overload&nbsp;F_or_X_H&nbsp;=&nbsp;{&nbsp;rF_or_X_H,&nbsp;wF_or_X_H&nbsp;}<br>
+overload&nbsp;F_or_X_S&nbsp;=&nbsp;{&nbsp;rF_or_X_S,&nbsp;wF_or_X_S&nbsp;}<br>
+overload&nbsp;F_or_X_D&nbsp;=&nbsp;{&nbsp;rF_or_X_D,&nbsp;wF_or_X_D&nbsp;}<br>
+<br>
+/*&nbsp;register&nbsp;names&nbsp;*/<br>
+<br>
+val&nbsp;freg_name_abi&nbsp;:&nbsp;regidx&nbsp;&lt;-&gt;&nbsp;string<br>
+<br>
+mapping&nbsp;freg_name_abi&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00000&nbsp;&lt;-&gt;&nbsp;&quot;ft0&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00001&nbsp;&lt;-&gt;&nbsp;&quot;ft1&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00010&nbsp;&lt;-&gt;&nbsp;&quot;ft2&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00011&nbsp;&lt;-&gt;&nbsp;&quot;ft3&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00100&nbsp;&lt;-&gt;&nbsp;&quot;ft4&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00101&nbsp;&lt;-&gt;&nbsp;&quot;ft5&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00110&nbsp;&lt;-&gt;&nbsp;&quot;ft6&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00111&nbsp;&lt;-&gt;&nbsp;&quot;ft7&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01000&nbsp;&lt;-&gt;&nbsp;&quot;fs0&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01001&nbsp;&lt;-&gt;&nbsp;&quot;fs1&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01010&nbsp;&lt;-&gt;&nbsp;&quot;fa0&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01011&nbsp;&lt;-&gt;&nbsp;&quot;fa1&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01100&nbsp;&lt;-&gt;&nbsp;&quot;fa2&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01101&nbsp;&lt;-&gt;&nbsp;&quot;fa3&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01110&nbsp;&lt;-&gt;&nbsp;&quot;fa4&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01111&nbsp;&lt;-&gt;&nbsp;&quot;fa5&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10000&nbsp;&lt;-&gt;&nbsp;&quot;fa6&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10001&nbsp;&lt;-&gt;&nbsp;&quot;fa7&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10010&nbsp;&lt;-&gt;&nbsp;&quot;fs2&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10011&nbsp;&lt;-&gt;&nbsp;&quot;fs3&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10100&nbsp;&lt;-&gt;&nbsp;&quot;fs4&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10101&nbsp;&lt;-&gt;&nbsp;&quot;fs5&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10110&nbsp;&lt;-&gt;&nbsp;&quot;fs6&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10111&nbsp;&lt;-&gt;&nbsp;&quot;fs7&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11000&nbsp;&lt;-&gt;&nbsp;&quot;fs8&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11001&nbsp;&lt;-&gt;&nbsp;&quot;fs9&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11010&nbsp;&lt;-&gt;&nbsp;&quot;fs10&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11011&nbsp;&lt;-&gt;&nbsp;&quot;fs11&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11100&nbsp;&lt;-&gt;&nbsp;&quot;ft8&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11101&nbsp;&lt;-&gt;&nbsp;&quot;ft9&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11110&nbsp;&lt;-&gt;&nbsp;&quot;ft10&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11111&nbsp;&lt;-&gt;&nbsp;&quot;ft11&quot;<br>
+}<br>
+<br>
+overload&nbsp;to_str&nbsp;=&nbsp;{freg_name_abi}<br>
+<br>
+/*&nbsp;mappings&nbsp;for&nbsp;assembly&nbsp;*/<br>
+<br>
+val&nbsp;freg_name&nbsp;:&nbsp;bits(5)&nbsp;&lt;-&gt;&nbsp;string<br>
+mapping&nbsp;freg_name&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00000&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;ft0&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00001&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;ft1&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00010&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;ft2&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00011&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;ft3&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00100&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;ft4&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00101&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;ft5&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00110&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;ft6&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b00111&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;ft7&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01000&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fs0&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01001&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fs1&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01010&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fa0&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01011&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fa1&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01100&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fa2&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01101&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fa3&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01110&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fa4&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b01111&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fa5&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10000&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fa6&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10001&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fa7&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10010&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fs2&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10011&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fs3&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10100&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fs4&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10101&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fs5&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10110&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fs6&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b10111&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fs7&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11000&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fs8&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11001&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fs9&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11010&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fs10&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11011&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;fs11&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11100&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;ft8&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11101&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;ft9&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11110&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;ft10&quot;</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b11111&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;ft11&quot;</span><br>
+}<br>
+<br>
+val&nbsp;freg_or_reg_name&nbsp;:&nbsp;bits(5)&nbsp;&lt;-&gt;&nbsp;string<br>
+mapping&nbsp;freg_or_reg_name&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;reg&nbsp;if&nbsp;sys_enable_fdext()&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">freg_name(reg)</span>&nbsp;if&nbsp;sys_enable_fdext(),<br>
+&nbsp;&nbsp;reg&nbsp;if&nbsp;sys_enable_zfinx()&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">reg_name(reg)</span>&nbsp;&nbsp;if&nbsp;sys_enable_zfinx()<br>
+}<br>
+<br>
+val&nbsp;init_fdext_regs&nbsp;:&nbsp;unit&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;init_fdext_regs&nbsp;()&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;f0&nbsp;&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f1&nbsp;&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f2&nbsp;&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f3&nbsp;&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f4&nbsp;&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f5&nbsp;&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f6&nbsp;&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f7&nbsp;&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f8&nbsp;&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f9&nbsp;&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f10&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f11&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f12&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f13&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f14&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f15&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f16&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f17&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f18&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f19&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f20&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f21&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f22&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f23&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f24&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f25&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f26&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f27&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f28&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f29&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f30&nbsp;=&nbsp;zero_freg;<br>
+&nbsp;&nbsp;f31&nbsp;=&nbsp;zero_freg<br>
+}<br>
+<br>
+/*&nbsp;****************************************************************&nbsp;*/<br>
+/*&nbsp;Floating&nbsp;Point&nbsp;CSR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fflags&nbsp;&nbsp;&nbsp;&nbsp;address&nbsp;0x001&nbsp;&nbsp;&nbsp;&nbsp;same&nbsp;as&nbsp;fcrs&nbsp;[4..0]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;frm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address&nbsp;0x002&nbsp;&nbsp;&nbsp;&nbsp;same&nbsp;as&nbsp;fcrs&nbsp;[7..5]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcsr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address&nbsp;0x003&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+<br>
+<br>
+bitfield&nbsp;Fcsr&nbsp;:&nbsp;bits(32)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FRM&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;7&nbsp;..&nbsp;5,<br>
+&nbsp;&nbsp;FFLAGS&nbsp;:&nbsp;4&nbsp;..&nbsp;0,<br>
+}<br>
+<br>
+register&nbsp;fcsr&nbsp;:&nbsp;Fcsr<br>
+<br>
+val&nbsp;ext_write_fcsr&nbsp;:&nbsp;(bits(3),&nbsp;bits(5))&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;ext_write_fcsr&nbsp;(frm,&nbsp;fflags)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;fcsr-&gt;FRM()&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;frm;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Note:&nbsp;frm&nbsp;can&nbsp;be&nbsp;an&nbsp;illegal&nbsp;value,&nbsp;101,&nbsp;110,&nbsp;111&nbsp;*/<br>
+&nbsp;&nbsp;fcsr-&gt;FFLAGS()&nbsp;=&nbsp;fflags;<br>
+&nbsp;&nbsp;dirty_fd_context_if_present();<br>
+}</span><br>
+<br>
+/*&nbsp;OR&nbsp;flags&nbsp;into&nbsp;the&nbsp;fflags&nbsp;register.&nbsp;*/<br>
+val&nbsp;accrue_fflags&nbsp;:&nbsp;(bits(5))&nbsp;-&gt;&nbsp;unit<br>
+function&nbsp;accrue_fflags(flags)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;f&nbsp;=&nbsp;fcsr.FFLAGS()&nbsp;|&nbsp;flags;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;fcsr.FFLAGS()&nbsp;!=&nbsp;f<br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fcsr-&gt;FFLAGS()&nbsp;=&nbsp;f;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dirty_fd_context_if_present();<br>
+&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span><br>
+}</span><br>
+</code>
+</body>
+</html>

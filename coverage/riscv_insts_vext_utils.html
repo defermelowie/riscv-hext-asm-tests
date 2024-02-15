@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>riscv_insts_vext_utils</title></head>
+<body>
+<h1>riscv_insts_vext_utils.sail (0/635) 0%</h1>
+<code style="display: block">
+/*=================================================================================*/<br>
+/*&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2021-2023&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Authors&nbsp;from&nbsp;RIOS&nbsp;Lab,&nbsp;Tsinghua&nbsp;University:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Xinlai&nbsp;Wan&nbsp;&lt;xinlai.w@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Xi&nbsp;Wang&nbsp;&lt;xi.w@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yifei&nbsp;Zhu&nbsp;&lt;yifei.z@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Shenwei&nbsp;Hu&nbsp;&lt;shenwei.h@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Kalvin&nbsp;Vu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Lei&nbsp;Chen&nbsp;&lt;lei.chen@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Other&nbsp;contributors:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jessica&nbsp;Clarke&nbsp;&lt;jrtc27@jrtc27.com&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Victor&nbsp;Moya&nbsp;&lt;victor.moya@semidynamics.com&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;All&nbsp;rights&nbsp;reserved.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Redistribution&nbsp;and&nbsp;use&nbsp;in&nbsp;source&nbsp;and&nbsp;binary&nbsp;forms,&nbsp;with&nbsp;or&nbsp;without&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;modification,&nbsp;are&nbsp;permitted&nbsp;provided&nbsp;that&nbsp;the&nbsp;following&nbsp;conditions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;are&nbsp;met:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;1.&nbsp;Redistributions&nbsp;of&nbsp;source&nbsp;code&nbsp;must&nbsp;retain&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;2.&nbsp;Redistributions&nbsp;in&nbsp;binary&nbsp;form&nbsp;must&nbsp;reproduce&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;documentation&nbsp;and/or&nbsp;other&nbsp;materials&nbsp;provided&nbsp;with&nbsp;the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;distribution.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;THIS&nbsp;SOFTWARE&nbsp;IS&nbsp;PROVIDED&nbsp;BY&nbsp;THE&nbsp;AUTHOR&nbsp;AND&nbsp;CONTRIBUTORS&nbsp;``AS&nbsp;IS''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;AND&nbsp;ANY&nbsp;EXPRESS&nbsp;OR&nbsp;IMPLIED&nbsp;WARRANTIES,&nbsp;INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;TO,&nbsp;THE&nbsp;IMPLIED&nbsp;WARRANTIES&nbsp;OF&nbsp;MERCHANTABILITY&nbsp;AND&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;PARTICULAR&nbsp;PURPOSE&nbsp;ARE&nbsp;DISCLAIMED.&nbsp;&nbsp;IN&nbsp;NO&nbsp;EVENT&nbsp;SHALL&nbsp;THE&nbsp;AUTHOR&nbsp;OR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;CONTRIBUTORS&nbsp;BE&nbsp;LIABLE&nbsp;FOR&nbsp;ANY&nbsp;DIRECT,&nbsp;INDIRECT,&nbsp;INCIDENTAL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SPECIAL,&nbsp;EXEMPLARY,&nbsp;OR&nbsp;CONSEQUENTIAL&nbsp;DAMAGES&nbsp;(INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;LIMITED&nbsp;TO,&nbsp;PROCUREMENT&nbsp;OF&nbsp;SUBSTITUTE&nbsp;GOODS&nbsp;OR&nbsp;SERVICES;&nbsp;LOSS&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;USE,&nbsp;DATA,&nbsp;OR&nbsp;PROFITS;&nbsp;OR&nbsp;BUSINESS&nbsp;INTERRUPTION)&nbsp;HOWEVER&nbsp;CAUSED&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;ON&nbsp;ANY&nbsp;THEORY&nbsp;OF&nbsp;LIABILITY,&nbsp;WHETHER&nbsp;IN&nbsp;CONTRACT,&nbsp;STRICT&nbsp;LIABILITY,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OR&nbsp;TORT&nbsp;(INCLUDING&nbsp;NEGLIGENCE&nbsp;OR&nbsp;OTHERWISE)&nbsp;ARISING&nbsp;IN&nbsp;ANY&nbsp;WAY&nbsp;OUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OF&nbsp;THE&nbsp;USE&nbsp;OF&nbsp;THIS&nbsp;SOFTWARE,&nbsp;EVEN&nbsp;IF&nbsp;ADVISED&nbsp;OF&nbsp;THE&nbsp;POSSIBILITY&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SUCH&nbsp;DAMAGE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*=================================================================================*/<br>
+<br>
+/*&nbsp;*******************************************************************************&nbsp;*/<br>
+/*&nbsp;This&nbsp;file&nbsp;implements&nbsp;functions&nbsp;used&nbsp;by&nbsp;vector&nbsp;instructions.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;*******************************************************************************&nbsp;*/<br>
+<br>
+/*&nbsp;Vector&nbsp;mask&nbsp;mapping&nbsp;*/<br>
+mapping&nbsp;maybe_vmask&nbsp;:&nbsp;string&nbsp;&lt;-&gt;&nbsp;bits(1)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;&quot;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b1,&nbsp;/*&nbsp;unmasked&nbsp;by&nbsp;default&nbsp;*/<br>
+&nbsp;&nbsp;sep()&nbsp;^&nbsp;&quot;v0.t&quot;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b0<br>
+}<br>
+<br>
+/*&nbsp;Check&nbsp;for&nbsp;valid&nbsp;EEW&nbsp;and&nbsp;EMUL&nbsp;values&nbsp;in:<br>
+&nbsp;*&nbsp;&nbsp;1.&nbsp;vector&nbsp;widening/narrowing&nbsp;instructions<br>
+&nbsp;*&nbsp;&nbsp;2.&nbsp;vector&nbsp;load/store&nbsp;instructions<br>
+&nbsp;*/<br>
+val&nbsp;valid_eew_emul&nbsp;:&nbsp;(int,&nbsp;int)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;valid_eew_emul(EEW,&nbsp;EMUL_pow)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;ELEN&nbsp;=&nbsp;int_power(2,&nbsp;get_elen_pow());<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">EEW&nbsp;&gt;=&nbsp;8&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">EEW&nbsp;&lt;=&nbsp;ELEN&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 65%)">EMUL_pow&nbsp;&gt;=&nbsp;-3&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 60%)">EMUL_pow&nbsp;&lt;=&nbsp;3</span></span></span></span><br>
+}</span><br>
+<br>
+/*&nbsp;Check&nbsp;for&nbsp;valid&nbsp;vtype&nbsp;setting<br>
+&nbsp;*&nbsp;&nbsp;1.&nbsp;If&nbsp;the&nbsp;vill&nbsp;bit&nbsp;is&nbsp;set,&nbsp;then&nbsp;any&nbsp;attempt&nbsp;to&nbsp;execute&nbsp;a&nbsp;vector&nbsp;instruction&nbsp;that&nbsp;depends&nbsp;upon&nbsp;vtype&nbsp;will&nbsp;raise&nbsp;an&nbsp;illegal&nbsp;instruction&nbsp;exception.<br>
+&nbsp;*&nbsp;&nbsp;2.&nbsp;vset{i}vl{i}&nbsp;and&nbsp;whole-register&nbsp;loads,&nbsp;stores,&nbsp;and&nbsp;moves&nbsp;do&nbsp;not&nbsp;depend&nbsp;upon&nbsp;vtype.<br>
+&nbsp;*/<br>
+val&nbsp;valid_vtype&nbsp;:&nbsp;unit&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;valid_vtype()&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;vtype.vill()&nbsp;==&nbsp;0b0<br>
+}</span><br>
+<br>
+/*&nbsp;Check&nbsp;for&nbsp;vstart&nbsp;value&nbsp;*/<br>
+val&nbsp;assert_vstart&nbsp;:&nbsp;int&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;assert_vstart(i)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;unsigned(vstart)&nbsp;==&nbsp;i<br>
+}</span><br>
+<br>
+/*&nbsp;Check&nbsp;for&nbsp;valid&nbsp;floating-point&nbsp;operation&nbsp;types<br>
+&nbsp;*&nbsp;&nbsp;1.&nbsp;Valid&nbsp;element&nbsp;width&nbsp;of&nbsp;floating-point&nbsp;numbers<br>
+&nbsp;*&nbsp;&nbsp;2.&nbsp;Valid&nbsp;floating-point&nbsp;rounding&nbsp;mode<br>
+&nbsp;*/<br>
+val&nbsp;valid_fp_op&nbsp;:&nbsp;({|8,&nbsp;16,&nbsp;32,&nbsp;64|},&nbsp;bits(3))&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;valid_fp_op(SEW,&nbsp;rm_3b)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;/*&nbsp;128-bit&nbsp;floating-point&nbsp;values&nbsp;will&nbsp;be&nbsp;supported&nbsp;in&nbsp;future&nbsp;extensions&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;valid_sew&nbsp;=&nbsp;(<span style="background-color: hsl(0, 85%, 75%)">SEW&nbsp;&gt;=&nbsp;16&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">SEW&nbsp;&lt;=&nbsp;128</span></span>);<br>
+&nbsp;&nbsp;let&nbsp;valid_rm&nbsp;=&nbsp;not(<span style="background-color: hsl(0, 85%, 75%)">rm_3b&nbsp;==&nbsp;0b101&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">rm_3b&nbsp;==&nbsp;0b110&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 65%)">rm_3b&nbsp;==&nbsp;0b111</span></span></span>);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">valid_sew&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">valid_rm</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;Check&nbsp;for&nbsp;valid&nbsp;destination&nbsp;register&nbsp;when&nbsp;vector&nbsp;masking&nbsp;is&nbsp;enabled:<br>
+&nbsp;*&nbsp;&nbsp;The&nbsp;destination&nbsp;vector&nbsp;register&nbsp;group&nbsp;for&nbsp;a&nbsp;masked&nbsp;vector&nbsp;instruction<br>
+&nbsp;*&nbsp;&nbsp;cannot&nbsp;overlap&nbsp;the&nbsp;source&nbsp;mask&nbsp;register&nbsp;(v0),<br>
+&nbsp;*&nbsp;&nbsp;unless&nbsp;the&nbsp;destination&nbsp;vector&nbsp;register&nbsp;is&nbsp;being&nbsp;written&nbsp;with&nbsp;a&nbsp;mask&nbsp;value&nbsp;(e.g.,&nbsp;compares)<br>
+&nbsp;*&nbsp;&nbsp;or&nbsp;the&nbsp;scalar&nbsp;result&nbsp;of&nbsp;a&nbsp;reduction.<br>
+&nbsp;*/<br>
+val&nbsp;valid_rd_mask&nbsp;:&nbsp;(regidx,&nbsp;bits(1))&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;valid_rd_mask(rd,&nbsp;vm)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">vm&nbsp;!=&nbsp;0b0&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">rd&nbsp;!=&nbsp;0b00000</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;Check&nbsp;for&nbsp;valid&nbsp;register&nbsp;overlap&nbsp;in&nbsp;vector&nbsp;widening/narrowing&nbsp;instructions:<br>
+&nbsp;*&nbsp;&nbsp;In&nbsp;a&nbsp;widening&nbsp;instruction,&nbsp;the&nbsp;overlap&nbsp;is&nbsp;valid&nbsp;only&nbsp;in&nbsp;the&nbsp;highest-numbered&nbsp;part<br>
+&nbsp;*&nbsp;&nbsp;of&nbsp;the&nbsp;destination&nbsp;register&nbsp;group,&nbsp;and&nbsp;the&nbsp;source&nbsp;EMUL&nbsp;is&nbsp;at&nbsp;least&nbsp;1.<br>
+&nbsp;*&nbsp;&nbsp;In&nbsp;a&nbsp;narrowing&nbsp;instruction,&nbsp;the&nbsp;overlap&nbsp;is&nbsp;valid&nbsp;only&nbsp;in&nbsp;the&nbsp;lowest-numbered&nbsp;part<br>
+&nbsp;*&nbsp;&nbsp;of&nbsp;the&nbsp;source&nbsp;register&nbsp;group.<br>
+&nbsp;*/<br>
+val&nbsp;valid_reg_overlap&nbsp;:&nbsp;(regidx,&nbsp;regidx,&nbsp;int,&nbsp;int)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;valid_reg_overlap(rs,&nbsp;rd,&nbsp;EMUL_pow_rs,&nbsp;EMUL_pow_rd)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rs_group&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;EMUL_pow_rs&nbsp;&gt;&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">int_power(2,&nbsp;EMUL_pow_rs)</span>&nbsp;else&nbsp;1</span>;<br>
+&nbsp;&nbsp;let&nbsp;rd_group&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;EMUL_pow_rd&nbsp;&gt;&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">int_power(2,&nbsp;EMUL_pow_rd)</span>&nbsp;else&nbsp;1</span>;<br>
+&nbsp;&nbsp;let&nbsp;rs_int&nbsp;=&nbsp;unsigned(rs);<br>
+&nbsp;&nbsp;let&nbsp;rd_int&nbsp;=&nbsp;unsigned(rd);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;EMUL_pow_rs&nbsp;&lt;&nbsp;EMUL_pow_rd&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(rs_int&nbsp;+&nbsp;rs_group&nbsp;&lt;=&nbsp;rd_int)&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(rs_int&nbsp;&gt;=&nbsp;rd_int&nbsp;+&nbsp;rd_group)&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span style="background-color: hsl(0, 85%, 55%)">(rs_int&nbsp;+&nbsp;rs_group&nbsp;==&nbsp;rd_int&nbsp;+&nbsp;rd_group)&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 50%)">EMUL_pow_rs&nbsp;&gt;=&nbsp;0</span>)</span>)</span></span><br>
+&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;EMUL_pow_rs&nbsp;&gt;&nbsp;EMUL_pow_rd&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(rd_int&nbsp;&lt;=&nbsp;rs_int)&nbsp;|&nbsp;(<span style="background-color: hsl(0, 85%, 55%)">rd_int&nbsp;&gt;=&nbsp;rs_int&nbsp;+&nbsp;rs_group</span>)</span><br>
+&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">true</span></span></span>;<br>
+}</span><br>
+<br>
+/*&nbsp;Check&nbsp;for&nbsp;valid&nbsp;register&nbsp;grouping&nbsp;in&nbsp;vector&nbsp;segment&nbsp;load/store&nbsp;instructions:<br>
+&nbsp;*&nbsp;&nbsp;The&nbsp;EMUL&nbsp;of&nbsp;load&nbsp;vd&nbsp;or&nbsp;store&nbsp;vs3&nbsp;times&nbsp;the&nbsp;number&nbsp;of&nbsp;fields&nbsp;per&nbsp;segment<br>
+&nbsp;*&nbsp;&nbsp;must&nbsp;not&nbsp;be&nbsp;larger&nbsp;than&nbsp;8.&nbsp;(EMUL&nbsp;*&nbsp;NFIELDS&nbsp;&lt;=&nbsp;8)<br>
+&nbsp;*/<br>
+val&nbsp;valid_segment&nbsp;:&nbsp;(int,&nbsp;int)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;valid_segment(nf,&nbsp;EMUL_pow)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;EMUL_pow&nbsp;&lt;&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">nf&nbsp;/&nbsp;int_power(2,&nbsp;0&nbsp;-&nbsp;EMUL_pow)&nbsp;&lt;=&nbsp;8</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">nf&nbsp;*&nbsp;int_power(2,&nbsp;EMUL_pow)&nbsp;&lt;=&nbsp;8</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;*******************************************************************************&nbsp;*/<br>
+/*&nbsp;The&nbsp;following&nbsp;functions&nbsp;summarize&nbsp;patterns&nbsp;of&nbsp;illegal&nbsp;instruction&nbsp;check.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;*******************************************************************************&nbsp;*/<br>
+<br>
+/*&nbsp;a.&nbsp;Normal&nbsp;check&nbsp;including&nbsp;vtype.vill&nbsp;field&nbsp;and&nbsp;vd/v0&nbsp;overlap&nbsp;if&nbsp;vm&nbsp;=&nbsp;0&nbsp;*/<br>
+val&nbsp;illegal_normal&nbsp;:&nbsp;(regidx,&nbsp;bits(1))&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_normal(vd,&nbsp;vm)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(valid_rd_mask(vd,&nbsp;vm))</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;b.&nbsp;Masked&nbsp;check&nbsp;for&nbsp;instructions&nbsp;encoded&nbsp;with&nbsp;vm&nbsp;=&nbsp;0&nbsp;*/<br>
+val&nbsp;illegal_vd_masked&nbsp;:&nbsp;regidx&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_vd_masked(vd)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">vd&nbsp;==&nbsp;0b00000</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;c.&nbsp;Unmasked&nbsp;check&nbsp;for:<br>
+&nbsp;*&nbsp;&nbsp;1.&nbsp;instructions&nbsp;encoded&nbsp;with&nbsp;vm&nbsp;=&nbsp;1<br>
+&nbsp;*&nbsp;&nbsp;2.&nbsp;instructions&nbsp;with&nbsp;scalar&nbsp;rd:&nbsp;vcpop.m,&nbsp;vfirst.m<br>
+&nbsp;*&nbsp;&nbsp;3.&nbsp;vd&nbsp;as&nbsp;mask&nbsp;register&nbsp;(eew&nbsp;=&nbsp;1):<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vmadc.vvm/vxm/vim,&nbsp;vmsbc.vvm/vxm,&nbsp;mask&nbsp;logical,&nbsp;integer&nbsp;compare,&nbsp;vlm.v,&nbsp;vsm.v<br>
+&nbsp;*/<br>
+val&nbsp;illegal_vd_unmasked&nbsp;:&nbsp;unit&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_vd_unmasked()&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;not(valid_vtype())<br>
+}</span><br>
+<br>
+/*&nbsp;d.&nbsp;Variable&nbsp;width&nbsp;check&nbsp;for:<br>
+&nbsp;*&nbsp;&nbsp;1.&nbsp;integer/fixed-point&nbsp;widening/narrowing&nbsp;instructions<br>
+&nbsp;*&nbsp;&nbsp;2.&nbsp;vector&nbsp;integer&nbsp;extension:&nbsp;vzext,&nbsp;vsext<br>
+&nbsp;*/<br>
+val&nbsp;illegal_variable_width&nbsp;:&nbsp;(regidx,&nbsp;bits(1),&nbsp;int,&nbsp;int)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_variable_width(vd,&nbsp;vm,&nbsp;SEW_new,&nbsp;LMUL_pow_new)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(valid_rd_mask(vd,&nbsp;vm))&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_eew_emul(SEW_new,&nbsp;LMUL_pow_new))</span></span></span><br>
+}</span><br>
+<br>
+/*&nbsp;e.&nbsp;Normal&nbsp;check&nbsp;for&nbsp;reduction&nbsp;instructions:<br>
+&nbsp;*&nbsp;&nbsp;The&nbsp;destination&nbsp;vector&nbsp;register&nbsp;can&nbsp;overlap&nbsp;the&nbsp;source&nbsp;operands,&nbsp;including&nbsp;the&nbsp;mask&nbsp;register.<br>
+&nbsp;*&nbsp;&nbsp;Vector&nbsp;reduction&nbsp;operations&nbsp;raise&nbsp;an&nbsp;illegal&nbsp;instruction&nbsp;exception&nbsp;if&nbsp;vstart&nbsp;is&nbsp;non-zero.<br>
+&nbsp;*/<br>
+val&nbsp;illegal_reduction&nbsp;:&nbsp;unit&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_reduction()&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(assert_vstart(0))</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;f.&nbsp;Variable&nbsp;width&nbsp;check&nbsp;for&nbsp;widening&nbsp;reduction&nbsp;instructions&nbsp;*/<br>
+val&nbsp;illegal_reduction_widen&nbsp;:&nbsp;(int,&nbsp;int)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_reduction_widen(SEW_widen,&nbsp;LMUL_pow_widen)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(assert_vstart(0))&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_eew_emul(SEW_widen,&nbsp;LMUL_pow_widen))</span></span></span><br>
+}</span><br>
+<br>
+/*&nbsp;g.&nbsp;Normal&nbsp;check&nbsp;for&nbsp;floating-point&nbsp;instructions&nbsp;*/<br>
+val&nbsp;illegal_fp_normal&nbsp;:&nbsp;(regidx,&nbsp;bits(1),&nbsp;{|8,&nbsp;16,&nbsp;32,&nbsp;64|},&nbsp;bits(3))&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_fp_normal(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(valid_rd_mask(vd,&nbsp;vm))&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_fp_op(SEW,&nbsp;rm_3b))</span></span></span><br>
+}</span><br>
+<br>
+/*&nbsp;h.&nbsp;Masked&nbsp;check&nbsp;for&nbsp;floating-point&nbsp;instructions&nbsp;encoded&nbsp;with&nbsp;vm&nbsp;=&nbsp;0&nbsp;*/<br>
+val&nbsp;illegal_fp_vd_masked&nbsp;:&nbsp;(regidx,&nbsp;{|8,&nbsp;16,&nbsp;32,&nbsp;64|},&nbsp;bits(3))&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_fp_vd_masked(vd,&nbsp;SEW,&nbsp;rm_3b)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">vd&nbsp;==&nbsp;0b00000&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_fp_op(SEW,&nbsp;rm_3b))</span></span></span><br>
+}</span><br>
+<br>
+/*&nbsp;i.&nbsp;Unmasked&nbsp;check&nbsp;for&nbsp;floating-point&nbsp;instructions&nbsp;encoded&nbsp;with&nbsp;vm&nbsp;=&nbsp;1&nbsp;*/<br>
+val&nbsp;illegal_fp_vd_unmasked&nbsp;:&nbsp;({|8,&nbsp;16,&nbsp;32,&nbsp;64|},&nbsp;bits(3))&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_fp_vd_unmasked(SEW,&nbsp;rm_3b)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(valid_fp_op(SEW,&nbsp;rm_3b))</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;j.&nbsp;Variable&nbsp;width&nbsp;check&nbsp;for&nbsp;floating-point&nbsp;widening/narrowing&nbsp;instructions&nbsp;*/<br>
+val&nbsp;illegal_fp_variable_width&nbsp;:&nbsp;(regidx,&nbsp;bits(1),&nbsp;{|8,&nbsp;16,&nbsp;32,&nbsp;64|},&nbsp;bits(3),&nbsp;int,&nbsp;int)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_fp_variable_width(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b,&nbsp;SEW_new,&nbsp;LMUL_pow_new)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(valid_rd_mask(vd,&nbsp;vm))&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_fp_op(SEW,&nbsp;rm_3b))&nbsp;|<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">not(valid_eew_emul(SEW_new,&nbsp;LMUL_pow_new))</span></span></span></span><br>
+}</span><br>
+<br>
+/*&nbsp;k.&nbsp;Normal&nbsp;check&nbsp;for&nbsp;floating-point&nbsp;reduction&nbsp;instructions&nbsp;*/<br>
+val&nbsp;illegal_fp_reduction&nbsp;:&nbsp;({|8,&nbsp;16,&nbsp;32,&nbsp;64|},&nbsp;bits(3))&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_fp_reduction(SEW,&nbsp;rm_3b)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(assert_vstart(0))&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_fp_op(SEW,&nbsp;rm_3b))</span></span></span><br>
+}</span><br>
+<br>
+/*&nbsp;l.&nbsp;Variable&nbsp;width&nbsp;check&nbsp;for&nbsp;floating-point&nbsp;widening&nbsp;reduction&nbsp;instructions&nbsp;*/<br>
+val&nbsp;illegal_fp_reduction_widen&nbsp;:&nbsp;({|8,&nbsp;16,&nbsp;32,&nbsp;64|},&nbsp;bits(3),&nbsp;int,&nbsp;int)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_fp_reduction_widen(SEW,&nbsp;rm_3b,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(assert_vstart(0))&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_fp_op(SEW,&nbsp;rm_3b))&nbsp;|<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">not(valid_eew_emul(SEW_widen,&nbsp;LMUL_pow_widen))</span></span></span></span><br>
+}</span><br>
+<br>
+/*&nbsp;m.&nbsp;Non-indexed&nbsp;load&nbsp;instruction&nbsp;check&nbsp;*/<br>
+val&nbsp;illegal_load&nbsp;:&nbsp;(regidx,&nbsp;bits(1),&nbsp;int,&nbsp;int,&nbsp;int)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_load(vd,&nbsp;vm,&nbsp;nf,&nbsp;EEW,&nbsp;EMUL_pow)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(valid_rd_mask(vd,&nbsp;vm))&nbsp;|<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_eew_emul(EEW,&nbsp;EMUL_pow))&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 60%)">not(valid_segment(nf,&nbsp;EMUL_pow))</span></span></span></span><br>
+}</span><br>
+<br>
+/*&nbsp;n.&nbsp;Non-indexed&nbsp;store&nbsp;instruction&nbsp;check&nbsp;(with&nbsp;vs3&nbsp;rather&nbsp;than&nbsp;vd)&nbsp;*/<br>
+val&nbsp;illegal_store&nbsp;:&nbsp;(int,&nbsp;int,&nbsp;int)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_store(nf,&nbsp;EEW,&nbsp;EMUL_pow)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(valid_eew_emul(EEW,&nbsp;EMUL_pow))&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_segment(nf,&nbsp;EMUL_pow))</span></span></span><br>
+}</span><br>
+<br>
+/*&nbsp;o.&nbsp;Indexed&nbsp;load&nbsp;instruction&nbsp;check&nbsp;*/<br>
+val&nbsp;illegal_indexed_load&nbsp;:&nbsp;(regidx,&nbsp;bits(1),&nbsp;int,&nbsp;int,&nbsp;int,&nbsp;int)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_indexed_load(vd,&nbsp;vm,&nbsp;nf,&nbsp;EEW_index,&nbsp;EMUL_pow_index,&nbsp;EMUL_pow_data)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(valid_rd_mask(vd,&nbsp;vm))&nbsp;|<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_eew_emul(EEW_index,&nbsp;EMUL_pow_index))&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 60%)">not(valid_segment(nf,&nbsp;EMUL_pow_data))</span></span></span></span><br>
+}</span><br>
+<br>
+/*&nbsp;p.&nbsp;Indexed&nbsp;store&nbsp;instruction&nbsp;check&nbsp;(with&nbsp;vs3&nbsp;rather&nbsp;than&nbsp;vd)&nbsp;*/<br>
+val&nbsp;illegal_indexed_store&nbsp;:&nbsp;(int,&nbsp;int,&nbsp;int,&nbsp;int)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;illegal_indexed_store(nf,&nbsp;EEW_index,&nbsp;EMUL_pow_index,&nbsp;EMUL_pow_data)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_vtype())&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">not(valid_eew_emul(EEW_index,&nbsp;EMUL_pow_index))&nbsp;|<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_segment(nf,&nbsp;EMUL_pow_data))</span></span></span><br>
+}</span><br>
+<br>
+/*&nbsp;Scalar&nbsp;register&nbsp;shaping&nbsp;*/<br>
+val&nbsp;get_scalar&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;&gt;=&nbsp;8.&nbsp;(regidx,&nbsp;int('m))&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;get_scalar(rs1,&nbsp;SEW)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;SEW&nbsp;&lt;=&nbsp;sizeof(xlen)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Least&nbsp;significant&nbsp;SEW&nbsp;bits&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;X(rs1)[SEW&nbsp;-&nbsp;1&nbsp;..&nbsp;0]<br>
+&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Sign&nbsp;extend&nbsp;to&nbsp;SEW&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sign_extend(SEW,&nbsp;X(rs1))<br>
+&nbsp;&nbsp;}</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;Get&nbsp;the&nbsp;starting&nbsp;element&nbsp;index&nbsp;from&nbsp;csr&nbsp;vtype&nbsp;*/<br>
+val&nbsp;get_start_element&nbsp;:&nbsp;unit&nbsp;-&gt;&nbsp;nat<br>
+function&nbsp;get_start_element()&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;start_element&nbsp;=&nbsp;unsigned(vstart);<br>
+&nbsp;&nbsp;let&nbsp;VLEN_pow&nbsp;=&nbsp;get_vlen_pow();<br>
+&nbsp;&nbsp;let&nbsp;SEW_pow&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;/*&nbsp;The&nbsp;use&nbsp;of&nbsp;vstart&nbsp;values&nbsp;greater&nbsp;than&nbsp;the&nbsp;largest&nbsp;element<br>
+&nbsp;&nbsp;&nbsp;&nbsp;index&nbsp;for&nbsp;the&nbsp;current&nbsp;SEW&nbsp;setting&nbsp;is&nbsp;reserved.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;It&nbsp;is&nbsp;recommended&nbsp;that&nbsp;implementations&nbsp;trap&nbsp;if&nbsp;vstart&nbsp;is&nbsp;out&nbsp;of&nbsp;bounds.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;It&nbsp;is&nbsp;not&nbsp;required&nbsp;to&nbsp;trap,&nbsp;as&nbsp;a&nbsp;possible&nbsp;future&nbsp;use&nbsp;of&nbsp;upper&nbsp;vstart&nbsp;bits<br>
+&nbsp;&nbsp;&nbsp;&nbsp;is&nbsp;to&nbsp;store&nbsp;imprecise&nbsp;trap&nbsp;information.&nbsp;*/<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;start_element&nbsp;&gt;&nbsp;(2&nbsp;^&nbsp;(3&nbsp;+&nbsp;VLEN_pow&nbsp;-&nbsp;SEW_pow)&nbsp;-&nbsp;1)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">handle_illegal()</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;start_element<br>
+}</span><br>
+<br>
+/*&nbsp;Get&nbsp;the&nbsp;ending&nbsp;element&nbsp;index&nbsp;from&nbsp;csr&nbsp;vl&nbsp;*/<br>
+val&nbsp;get_end_element&nbsp;:&nbsp;unit&nbsp;-&gt;&nbsp;int<br>
+function&nbsp;get_end_element()&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">unsigned(vl)&nbsp;-&nbsp;1</span><br>
+<br>
+/*&nbsp;Mask&nbsp;handling;&nbsp;creates&nbsp;a&nbsp;pre-masked&nbsp;result&nbsp;vector&nbsp;for&nbsp;vstart,&nbsp;vl,&nbsp;vta/vma,&nbsp;and&nbsp;vm&nbsp;*/<br>
+/*&nbsp;vm&nbsp;should&nbsp;be&nbsp;baked&nbsp;into&nbsp;vm_val&nbsp;from&nbsp;doing&nbsp;read_vmask&nbsp;*/<br>
+/*&nbsp;tail&nbsp;masking&nbsp;when&nbsp;lmul&nbsp;&lt;&nbsp;1&nbsp;is&nbsp;handled&nbsp;in&nbsp;write_vreg&nbsp;*/<br>
+/*&nbsp;Returns&nbsp;two&nbsp;vectors:<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;vector1&nbsp;is&nbsp;the&nbsp;result&nbsp;vector&nbsp;with&nbsp;values&nbsp;applied&nbsp;to&nbsp;masked&nbsp;elements<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;vector2&nbsp;is&nbsp;a&nbsp;&quot;mask&quot;&nbsp;vector&nbsp;that&nbsp;is&nbsp;true&nbsp;for&nbsp;an&nbsp;element&nbsp;if&nbsp;the&nbsp;corresponding&nbsp;element<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;the&nbsp;result&nbsp;vector&nbsp;should&nbsp;be&nbsp;updated&nbsp;by&nbsp;the&nbsp;calling&nbsp;instruction<br>
+&nbsp;*/<br>
+val&nbsp;init_masked_result&nbsp;:&nbsp;forall&nbsp;'n&nbsp;'m&nbsp;'p,&nbsp;'n&nbsp;&gt;=&nbsp;0.&nbsp;(int('n),&nbsp;int('m),&nbsp;int('p),&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m)),&nbsp;vector('n,&nbsp;dec,&nbsp;bool))&nbsp;-&gt;&nbsp;(vector('n,&nbsp;dec,&nbsp;bits('m)),&nbsp;vector('n,&nbsp;dec,&nbsp;bool))<br>
+function&nbsp;init_masked_result(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd_val,&nbsp;vm_val)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;start_element&nbsp;=&nbsp;get_start_element();<br>
+&nbsp;&nbsp;let&nbsp;end_element&nbsp;&nbsp;&nbsp;=&nbsp;get_end_element();<br>
+&nbsp;&nbsp;let&nbsp;tail_ag&nbsp;:&nbsp;agtype&nbsp;=&nbsp;get_vtype_vta();<br>
+&nbsp;&nbsp;let&nbsp;mask_ag&nbsp;:&nbsp;agtype&nbsp;=&nbsp;get_vtype_vma();<br>
+&nbsp;&nbsp;mask&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;result&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;Determine&nbsp;the&nbsp;actual&nbsp;number&nbsp;of&nbsp;elements&nbsp;when&nbsp;lmul&nbsp;&lt;&nbsp;1&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;real_num_elem&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;LMUL_pow&nbsp;&gt;=&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">num_elem</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">num_elem&nbsp;/&nbsp;int_power(2,&nbsp;0&nbsp;-&nbsp;LMUL_pow)</span></span>;<br>
+&nbsp;&nbsp;assert(num_elem&nbsp;&gt;=&nbsp;real_num_elem);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;i&nbsp;&lt;&nbsp;start_element&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Prestart&nbsp;elements&nbsp;defined&nbsp;by&nbsp;vstart&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;vd_val[i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;i&nbsp;&gt;&nbsp;end_element&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Tail&nbsp;elements&nbsp;defined&nbsp;by&nbsp;vl&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 60%)">match&nbsp;tail_ag&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNDISTURBED&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">vd_val[i]</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AGNOSTIC&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">vd_val[i]</span>&nbsp;/*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;i&nbsp;&gt;=&nbsp;real_num_elem&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Tail&nbsp;elements&nbsp;defined&nbsp;by&nbsp;lmul&nbsp;&lt;&nbsp;1&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 55%)">match&nbsp;tail_ag&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNDISTURBED&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">vd_val[i]</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AGNOSTIC&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">vd_val[i]</span>&nbsp;/*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;not(vm_val[i])&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Inactive&nbsp;body&nbsp;elements&nbsp;defined&nbsp;by&nbsp;vm&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 50%)">match&nbsp;mask_ag&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNDISTURBED&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">vd_val[i]</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AGNOSTIC&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">vd_val[i]</span>&nbsp;/*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Active&nbsp;body&nbsp;elements&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span></span></span></span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)<br>
+}</span><br>
+<br>
+/*&nbsp;For&nbsp;instructions&nbsp;like&nbsp;vector&nbsp;reduction&nbsp;and&nbsp;vector&nbsp;store,<br>
+&nbsp;*&nbsp;masks&nbsp;on&nbsp;prestart,&nbsp;inactive&nbsp;and&nbsp;tail&nbsp;elements&nbsp;only&nbsp;affect&nbsp;the&nbsp;validation&nbsp;of&nbsp;source&nbsp;register&nbsp;elements<br>
+&nbsp;*&nbsp;(vs3&nbsp;for&nbsp;store&nbsp;and&nbsp;vs2&nbsp;for&nbsp;reduction).&nbsp;There's&nbsp;no&nbsp;destination&nbsp;register&nbsp;to&nbsp;be&nbsp;masked.<br>
+&nbsp;*&nbsp;In&nbsp;these&nbsp;cases,&nbsp;this&nbsp;function&nbsp;can&nbsp;be&nbsp;called&nbsp;to&nbsp;simply&nbsp;get&nbsp;the&nbsp;mask&nbsp;vector&nbsp;for&nbsp;vs&nbsp;(without&nbsp;the&nbsp;prepared&nbsp;vd&nbsp;result&nbsp;vector).<br>
+&nbsp;*/<br>
+val&nbsp;init_masked_source&nbsp;:&nbsp;forall&nbsp;'n&nbsp;'p,&nbsp;'n&nbsp;&gt;=&nbsp;0.&nbsp;(int('n),&nbsp;int('p),&nbsp;vector('n,&nbsp;dec,&nbsp;bool))&nbsp;-&gt;&nbsp;vector('n,&nbsp;dec,&nbsp;bool)<br>
+function&nbsp;init_masked_source(num_elem,&nbsp;LMUL_pow,&nbsp;vm_val)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;start_element&nbsp;=&nbsp;get_start_element();<br>
+&nbsp;&nbsp;let&nbsp;end_element&nbsp;&nbsp;&nbsp;=&nbsp;get_end_element();<br>
+&nbsp;&nbsp;mask&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;Determine&nbsp;the&nbsp;actual&nbsp;number&nbsp;of&nbsp;elements&nbsp;when&nbsp;lmul&nbsp;&lt;&nbsp;1&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;real_num_elem&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;LMUL_pow&nbsp;&gt;=&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">num_elem</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">num_elem&nbsp;/&nbsp;int_power(2,&nbsp;0&nbsp;-&nbsp;LMUL_pow)</span></span>;<br>
+&nbsp;&nbsp;assert(num_elem&nbsp;&gt;=&nbsp;real_num_elem);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;i&nbsp;&lt;&nbsp;start_element&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Prestart&nbsp;elements&nbsp;defined&nbsp;by&nbsp;vstart&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;i&nbsp;&gt;&nbsp;end_element&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Tail&nbsp;elements&nbsp;defined&nbsp;by&nbsp;vl&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;i&nbsp;&gt;=&nbsp;real_num_elem&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Tail&nbsp;elements&nbsp;defined&nbsp;by&nbsp;lmul&nbsp;&lt;&nbsp;1&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;not(vm_val[i])&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Inactive&nbsp;body&nbsp;elements&nbsp;defined&nbsp;by&nbsp;vm&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Active&nbsp;body&nbsp;elements&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span></span></span></span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;mask<br>
+}</span><br>
+<br>
+/*&nbsp;Mask&nbsp;handling&nbsp;for&nbsp;carry&nbsp;functions&nbsp;that&nbsp;use&nbsp;masks&nbsp;as&nbsp;input/output&nbsp;*/<br>
+/*&nbsp;Only&nbsp;prestart&nbsp;and&nbsp;tail&nbsp;elements&nbsp;are&nbsp;masked&nbsp;in&nbsp;a&nbsp;mask&nbsp;value&nbsp;*/<br>
+val&nbsp;init_masked_result_carry&nbsp;:&nbsp;forall&nbsp;'n&nbsp;'m&nbsp;'p,&nbsp;'n&nbsp;&gt;=&nbsp;0.&nbsp;(int('n),&nbsp;int('m),&nbsp;int('p),&nbsp;vector('n,&nbsp;dec,&nbsp;bool))&nbsp;-&gt;&nbsp;(vector('n,&nbsp;dec,&nbsp;bool),&nbsp;vector('n,&nbsp;dec,&nbsp;bool))<br>
+function&nbsp;init_masked_result_carry(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd_val)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;start_element&nbsp;=&nbsp;get_start_element();<br>
+&nbsp;&nbsp;let&nbsp;end_element&nbsp;&nbsp;&nbsp;=&nbsp;get_end_element();<br>
+&nbsp;&nbsp;mask&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;result&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;Determine&nbsp;the&nbsp;actual&nbsp;number&nbsp;of&nbsp;elements&nbsp;when&nbsp;lmul&nbsp;&lt;&nbsp;1&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;real_num_elem&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;LMUL_pow&nbsp;&gt;=&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">num_elem</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">num_elem&nbsp;/&nbsp;int_power(2,&nbsp;0&nbsp;-&nbsp;LMUL_pow)</span></span>;<br>
+&nbsp;&nbsp;assert(num_elem&nbsp;&gt;=&nbsp;real_num_elem);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;i&nbsp;&lt;&nbsp;start_element&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Prestart&nbsp;elements&nbsp;defined&nbsp;by&nbsp;vstart&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;vd_val[i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;i&nbsp;&gt;&nbsp;end_element&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Tail&nbsp;elements&nbsp;defined&nbsp;by&nbsp;vl&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Mask&nbsp;tail&nbsp;is&nbsp;always&nbsp;agnostic&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;vd_val[i];&nbsp;/*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;i&nbsp;&gt;=&nbsp;real_num_elem&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Tail&nbsp;elements&nbsp;defined&nbsp;by&nbsp;lmul&nbsp;&lt;&nbsp;1&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Mask&nbsp;tail&nbsp;is&nbsp;always&nbsp;agnostic&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;vd_val[i];&nbsp;/*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Active&nbsp;body&nbsp;elements&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;true<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span></span></span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)<br>
+}</span><br>
+<br>
+/*&nbsp;Mask&nbsp;handling&nbsp;for&nbsp;cmp&nbsp;functions&nbsp;that&nbsp;use&nbsp;masks&nbsp;as&nbsp;output&nbsp;*/<br>
+val&nbsp;init_masked_result_cmp&nbsp;:&nbsp;forall&nbsp;'n&nbsp;'m&nbsp;'p,&nbsp;'n&nbsp;&gt;=&nbsp;0.&nbsp;(int('n),&nbsp;int('m),&nbsp;int('p),&nbsp;vector('n,&nbsp;dec,&nbsp;bool),&nbsp;vector('n,&nbsp;dec,&nbsp;bool))&nbsp;-&gt;&nbsp;(vector('n,&nbsp;dec,&nbsp;bool),&nbsp;vector('n,&nbsp;dec,&nbsp;bool))<br>
+function&nbsp;init_masked_result_cmp(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd_val,&nbsp;vm_val)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;start_element&nbsp;=&nbsp;get_start_element();<br>
+&nbsp;&nbsp;let&nbsp;end_element&nbsp;&nbsp;&nbsp;=&nbsp;get_end_element();<br>
+&nbsp;&nbsp;let&nbsp;mask_ag&nbsp;:&nbsp;agtype&nbsp;=&nbsp;get_vtype_vma();<br>
+&nbsp;&nbsp;mask&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;result&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;Determine&nbsp;the&nbsp;actual&nbsp;number&nbsp;of&nbsp;elements&nbsp;when&nbsp;lmul&nbsp;&lt;&nbsp;1&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;real_num_elem&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;LMUL_pow&nbsp;&gt;=&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">num_elem</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">num_elem&nbsp;/&nbsp;int_power(2,&nbsp;0&nbsp;-&nbsp;LMUL_pow)</span></span>;<br>
+&nbsp;&nbsp;assert(num_elem&nbsp;&gt;=&nbsp;real_num_elem);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;i&nbsp;&lt;&nbsp;start_element&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Prestart&nbsp;elements&nbsp;defined&nbsp;by&nbsp;vstart&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;vd_val[i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;i&nbsp;&gt;&nbsp;end_element&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Tail&nbsp;elements&nbsp;defined&nbsp;by&nbsp;vl&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Mask&nbsp;tail&nbsp;is&nbsp;always&nbsp;agnostic&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;vd_val[i];&nbsp;/*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;i&nbsp;&gt;=&nbsp;real_num_elem&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Tail&nbsp;elements&nbsp;defined&nbsp;by&nbsp;lmul&nbsp;&lt;&nbsp;1&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Mask&nbsp;tail&nbsp;is&nbsp;always&nbsp;agnostic&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;vd_val[i];&nbsp;/*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;not(vm_val[i])&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Inactive&nbsp;body&nbsp;elements&nbsp;defined&nbsp;by&nbsp;vm&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 50%)">match&nbsp;mask_ag&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNDISTURBED&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">vd_val[i]</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AGNOSTIC&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">vd_val[i]</span>&nbsp;/*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;Active&nbsp;body&nbsp;elements&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mask[i]&nbsp;=&nbsp;true<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span></span></span></span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)<br>
+}</span><br>
+<br>
+/*&nbsp;For&nbsp;vector&nbsp;load/store&nbsp;segment&nbsp;instructions:<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;Read&nbsp;multiple&nbsp;register&nbsp;groups&nbsp;and&nbsp;concatenate&nbsp;them&nbsp;in&nbsp;parallel<br>
+&nbsp;*&nbsp;&nbsp;&nbsp;The&nbsp;whole&nbsp;segments&nbsp;with&nbsp;the&nbsp;same&nbsp;element&nbsp;index&nbsp;are&nbsp;combined&nbsp;together<br>
+&nbsp;*/<br>
+val&nbsp;read_vreg_seg&nbsp;:&nbsp;forall&nbsp;'n&nbsp;'m&nbsp;'p&nbsp;'q,&nbsp;'n&nbsp;&gt;=&nbsp;0&nbsp;&&nbsp;'q&nbsp;&gt;=&nbsp;0.&nbsp;(int('n),&nbsp;int('m),&nbsp;int('p),&nbsp;int('q),&nbsp;regidx)&nbsp;-&gt;&nbsp;vector('n,&nbsp;dec,&nbsp;bits('q&nbsp;*&nbsp;'m))<br>
+function&nbsp;read_vreg_seg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;nf,&nbsp;vrid)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert('q&nbsp;*&nbsp;'m&nbsp;&gt;&nbsp;0);<br>
+&nbsp;&nbsp;let&nbsp;LMUL_reg&nbsp;:&nbsp;int&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;LMUL_pow&nbsp;&lt;=&nbsp;0&nbsp;then&nbsp;1&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">int_power(2,&nbsp;LMUL_pow)</span></span>;<br>
+&nbsp;&nbsp;vreg_list&nbsp;:&nbsp;vector('q,&nbsp;dec,&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m)))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;result&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('q&nbsp;*&nbsp;'m))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vreg_list[j]&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vrid&nbsp;+&nbsp;to_bits(5,&nbsp;j&nbsp;*&nbsp;LMUL_reg));<br>
+&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;zeros('q&nbsp;*&nbsp;'m);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;result[i]&nbsp;|&nbsp;(zero_extend(vreg_list[j][i])&nbsp;&lt;&lt;&nbsp;(j&nbsp;*&nbsp;'m))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;result<br>
+}</span><br>
+<br>
+/*&nbsp;Floating&nbsp;point&nbsp;canonical&nbsp;NaN&nbsp;for&nbsp;16-bit,&nbsp;32-bit&nbsp;and&nbsp;64-bit&nbsp;types&nbsp;*/<br>
+val&nbsp;canonical_NaN&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;int('m)&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;canonical_NaN('m)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;canonical_NaN_H(),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;canonical_NaN_S(),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;canonical_NaN_D()<br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+/*&nbsp;Floating&nbsp;point&nbsp;classification&nbsp;functions&nbsp;*/<br>
+val&nbsp;f_is_neg_inf&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_neg_inf(xf)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_neg_inf_H(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_neg_inf_S(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_neg_inf_D(xf)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;f_is_neg_norm&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_neg_norm(xf)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_neg_norm_H(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_neg_norm_S(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_neg_norm_D(xf)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;f_is_neg_subnorm&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_neg_subnorm(xf)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_neg_subnorm_H(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_neg_subnorm_S(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_neg_subnorm_D(xf)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;f_is_neg_zero&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_neg_zero(xf)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_neg_zero_H(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_neg_zero_S(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_neg_zero_D(xf)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;f_is_pos_zero&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_pos_zero(xf)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_pos_zero_H(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_pos_zero_S(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_pos_zero_D(xf)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;f_is_pos_subnorm&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_pos_subnorm(xf)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_pos_subnorm_H(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_pos_subnorm_S(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_pos_subnorm_D(xf)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;f_is_pos_norm&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_pos_norm(xf)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_pos_norm_H(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_pos_norm_S(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_pos_norm_D(xf)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;f_is_pos_inf&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_pos_inf(xf)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_pos_inf_H(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_pos_inf_S(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_pos_inf_D(xf)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;f_is_SNaN&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_SNaN(xf)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_SNaN_H(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_SNaN_S(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_SNaN_D(xf)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;f_is_QNaN&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_QNaN(xf)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_QNaN_H(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_QNaN_S(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_QNaN_D(xf)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;f_is_NaN&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;f_is_NaN(xf)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_NaN_H(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_NaN_S(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">f_is_NaN_D(xf)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+/*&nbsp;Scalar&nbsp;register&nbsp;shaping&nbsp;for&nbsp;floating&nbsp;point&nbsp;operations&nbsp;*/<br>
+val&nbsp;get_scalar_fp&nbsp;:&nbsp;forall&nbsp;'n,&nbsp;'n&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(regidx,&nbsp;int('n))&nbsp;-&gt;&nbsp;bits('n)<br>
+function&nbsp;get_scalar_fp(rs1,&nbsp;SEW)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;assert(sizeof(flen)&nbsp;&gt;=&nbsp;SEW,&nbsp;&quot;invalid&nbsp;vector&nbsp;floating-point&nbsp;type&nbsp;width:&nbsp;FLEN&nbsp;&lt;&nbsp;SEW&quot;);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;SEW&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">F_H(rs1)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">F_S(rs1)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">F_D(rs1)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+/*&nbsp;Shift&nbsp;amounts&nbsp;*/<br>
+val&nbsp;get_shift_amount&nbsp;:&nbsp;forall&nbsp;'n&nbsp;'m,&nbsp;0&nbsp;&lt;=&nbsp;'n&nbsp;&&nbsp;'m&nbsp;in&nbsp;{8,&nbsp;16,&nbsp;32,&nbsp;64}.&nbsp;(bits('n),&nbsp;int('m))&nbsp;-&gt;&nbsp;nat<br>
+function&nbsp;get_shift_amount(bit_val,&nbsp;SEW)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;lowlog2bits&nbsp;=&nbsp;log2(SEW);<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 75%)">0&nbsp;&lt;&nbsp;lowlog2bits&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">lowlog2bits&nbsp;&lt;&nbsp;'n</span></span>);<br>
+&nbsp;&nbsp;unsigned(bit_val[lowlog2bits&nbsp;-&nbsp;1&nbsp;..&nbsp;0]);<br>
+}</span><br>
+<br>
+/*&nbsp;Fixed&nbsp;point&nbsp;rounding&nbsp;increment&nbsp;*/<br>
+val&nbsp;get_fixed_rounding_incr&nbsp;:&nbsp;forall&nbsp;('m&nbsp;'n&nbsp;:&nbsp;Int),&nbsp;('m&nbsp;&gt;&nbsp;0&nbsp;&&nbsp;'n&nbsp;&gt;=&nbsp;0).&nbsp;(bits('m),&nbsp;int('n))&nbsp;-&gt;&nbsp;bits(1)<br>
+function&nbsp;get_fixed_rounding_incr(vec_elem,&nbsp;shift_amount)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;shift_amount&nbsp;==&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">0b0</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;rounding_mode&nbsp;=&nbsp;vxrm[1&nbsp;..&nbsp;0];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;rounding_mode&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0b00&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">slice(vec_elem,&nbsp;shift_amount&nbsp;-&nbsp;1,&nbsp;1)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0b01&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">bool_to_bits(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(slice(vec_elem,&nbsp;shift_amount&nbsp;-&nbsp;1,&nbsp;1)&nbsp;==&nbsp;0b1)&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 50%)">slice(vec_elem,&nbsp;0,&nbsp;shift_amount&nbsp;-&nbsp;1)&nbsp;!=&nbsp;zeros()&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 45%)">slice(vec_elem,&nbsp;shift_amount,&nbsp;1)&nbsp;==&nbsp;0b1</span></span>)</span>)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0b10&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">0b0</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0b11&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">bool_to_bits(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">not(slice(vec_elem,&nbsp;shift_amount,&nbsp;1)&nbsp;==&nbsp;0b1)&nbsp;&&nbsp;(<span style="background-color: hsl(0, 85%, 50%)">slice(vec_elem,&nbsp;0,&nbsp;shift_amount)&nbsp;!=&nbsp;zeros()</span>)</span>)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;}</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;Fixed&nbsp;point&nbsp;unsigned&nbsp;saturation&nbsp;*/<br>
+val&nbsp;unsigned_saturation&nbsp;:&nbsp;forall&nbsp;('m&nbsp;'n:&nbsp;Int),&nbsp;('n&nbsp;&gt;=&nbsp;'m&nbsp;&gt;&nbsp;1).&nbsp;(int('m),&nbsp;bits('n))&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;unsigned_saturation(len,&nbsp;elem)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;unsigned(elem)&nbsp;&gt;&nbsp;unsigned(ones('m))&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vxsat&nbsp;=&nbsp;0b1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ones('m)<br>
+&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vxsat&nbsp;=&nbsp;0b0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;elem['m&nbsp;-&nbsp;1&nbsp;..&nbsp;0]<br>
+&nbsp;&nbsp;}</span></span><br>
+}</span><br>
+<br>
+/*&nbsp;Fixed&nbsp;point&nbsp;signed&nbsp;saturation&nbsp;*/<br>
+val&nbsp;signed_saturation&nbsp;:&nbsp;forall&nbsp;('m&nbsp;'n:&nbsp;Int),&nbsp;('n&nbsp;&gt;=&nbsp;'m&nbsp;&gt;&nbsp;1).&nbsp;(int('m),&nbsp;bits('n))&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;signed_saturation(len,&nbsp;elem)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;signed(elem)&nbsp;&gt;&nbsp;signed(0b0&nbsp;@&nbsp;ones('m&nbsp;-&nbsp;1))&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vxsat&nbsp;=&nbsp;0b1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b0&nbsp;@&nbsp;ones('m&nbsp;-&nbsp;1)<br>
+&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;signed(elem)&nbsp;&lt;&nbsp;signed(0b1&nbsp;@&nbsp;zeros('m&nbsp;-&nbsp;1))&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vxsat&nbsp;=&nbsp;0b1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0b1&nbsp;@&nbsp;zeros('m&nbsp;-&nbsp;1)<br>
+&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vxsat&nbsp;=&nbsp;0b0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;elem['m&nbsp;-&nbsp;1&nbsp;..&nbsp;0]<br>
+&nbsp;&nbsp;}</span></span></span>;<br>
+}</span><br>
+<br>
+/*&nbsp;Get&nbsp;the&nbsp;floating&nbsp;point&nbsp;rounding&nbsp;mode&nbsp;from&nbsp;csr&nbsp;fcsr&nbsp;*/<br>
+val&nbsp;get_fp_rounding_mode&nbsp;:&nbsp;unit&nbsp;-&gt;&nbsp;rounding_mode<br>
+function&nbsp;get_fp_rounding_mode()&nbsp;=&nbsp;encdec_rounding_mode(fcsr.FRM())<br>
+<br>
+/*&nbsp;Negate&nbsp;a&nbsp;floating&nbsp;point&nbsp;number&nbsp;*/<br>
+val&nbsp;negate_fp&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;negate_fp(xf)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">negate_H(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">negate_S(xf)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">negate_D(xf)</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+/*&nbsp;Floating&nbsp;point&nbsp;functions&nbsp;using&nbsp;softfloat&nbsp;interface&nbsp;*/<br>
+val&nbsp;fp_add:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits(3),&nbsp;bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;fp_add(rm_3b,&nbsp;op1,&nbsp;op2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;result_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16Add(rm_3b,&nbsp;op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32Add(rm_3b,&nbsp;op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64Add(rm_3b,&nbsp;op1,&nbsp;op2)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_sub:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits(3),&nbsp;bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;fp_sub(rm_3b,&nbsp;op1,&nbsp;op2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;result_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16Sub(rm_3b,&nbsp;op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32Sub(rm_3b,&nbsp;op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64Sub(rm_3b,&nbsp;op1,&nbsp;op2)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_min&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;fp_min(op1,&nbsp;op2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;op1_lt_op2)&nbsp;:&nbsp;(bits_fflags,&nbsp;bool)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16Lt_quiet(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32Lt_quiet(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64Lt_quiet(op1,&nbsp;op2)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;result_val&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;(<span style="background-color: hsl(0, 85%, 65%)">f_is_NaN(op1)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 60%)">f_is_NaN(op2)</span></span>)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">canonical_NaN('m)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;f_is_NaN(op1)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">op2</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;f_is_NaN(op2)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">op1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">if&nbsp;(<span style="background-color: hsl(0, 85%, 50%)">f_is_neg_zero(op1)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 45%)">f_is_pos_zero(op2)</span></span>)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 50%)">op1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 50%)">if&nbsp;(<span style="background-color: hsl(0, 85%, 45%)">f_is_neg_zero(op2)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 40%)">f_is_pos_zero(op1)</span></span>)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 45%)">op2</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 45%)">if&nbsp;op1_lt_op2&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 40%)">op1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 40%)">op2</span></span></span></span></span></span></span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_max&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;fp_max(op1,&nbsp;op2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;op1_lt_op2)&nbsp;:&nbsp;(bits_fflags,&nbsp;bool)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16Lt_quiet(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32Lt_quiet(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64Lt_quiet(op1,&nbsp;op2)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;result_val&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;(<span style="background-color: hsl(0, 85%, 65%)">f_is_NaN(op1)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 60%)">f_is_NaN(op2)</span></span>)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">canonical_NaN('m)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;f_is_NaN(op1)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">op2</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;f_is_NaN(op2)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">op1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">if&nbsp;(<span style="background-color: hsl(0, 85%, 50%)">f_is_neg_zero(op1)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 45%)">f_is_pos_zero(op2)</span></span>)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 50%)">op2</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 50%)">if&nbsp;(<span style="background-color: hsl(0, 85%, 45%)">f_is_neg_zero(op2)&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 40%)">f_is_pos_zero(op1)</span></span>)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 45%)">op1</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 45%)">if&nbsp;op1_lt_op2&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 40%)">op2</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 40%)">op1</span></span></span></span></span></span></span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_eq&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;fp_eq(op1,&nbsp;op2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;result_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bool)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16Eq(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32Eq(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64Eq(op1,&nbsp;op2)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_gt&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;fp_gt(op1,&nbsp;op2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;temp_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bool)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16Le(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32Le(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64Le(op1,&nbsp;op2)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;let&nbsp;result_val&nbsp;=&nbsp;(<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;fflags&nbsp;==&nbsp;0b10000&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">false</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(temp_val)</span></span>);<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_ge&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;fp_ge(op1,&nbsp;op2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;temp_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bool)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16Lt(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32Lt(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64Lt(op1,&nbsp;op2)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;let&nbsp;result_val&nbsp;=&nbsp;(<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;fflags&nbsp;==&nbsp;0b10000&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">false</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(temp_val)</span></span>);<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_lt&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;fp_lt(op1,&nbsp;op2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;result_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bool)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16Lt(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32Lt(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64Lt(op1,&nbsp;op2)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_le&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bool<br>
+function&nbsp;fp_le(op1,&nbsp;op2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;result_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bool)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16Le(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32Le(op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64Le(op1,&nbsp;op2)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_mul&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits(3),&nbsp;bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;fp_mul(rm_3b,&nbsp;op1,&nbsp;op2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;result_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16Mul(rm_3b,&nbsp;op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32Mul(rm_3b,&nbsp;op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64Mul(rm_3b,&nbsp;op1,&nbsp;op2)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_div&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits(3),&nbsp;bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;fp_div(rm_3b,&nbsp;op1,&nbsp;op2)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;result_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16Div(rm_3b,&nbsp;op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32Div(rm_3b,&nbsp;op1,&nbsp;op2)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64Div(rm_3b,&nbsp;op1,&nbsp;op2)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_muladd&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits(3),&nbsp;bits('m),&nbsp;bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;fp_muladd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opadd)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;result_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16MulAdd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opadd)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32MulAdd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opadd)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64MulAdd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opadd)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_nmuladd&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits(3),&nbsp;bits('m),&nbsp;bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;fp_nmuladd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opadd)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;op1&nbsp;=&nbsp;negate_fp(op1);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;result_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16MulAdd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opadd)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32MulAdd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opadd)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64MulAdd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opadd)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_mulsub&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits(3),&nbsp;bits('m),&nbsp;bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;fp_mulsub(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opsub)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;opsub&nbsp;=&nbsp;negate_fp(opsub);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;result_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16MulAdd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opsub)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32MulAdd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opsub)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64MulAdd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opsub)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_nmulsub&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits(3),&nbsp;bits('m),&nbsp;bits('m),&nbsp;bits('m))&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;fp_nmulsub(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opsub)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;opsub&nbsp;=&nbsp;negate_fp(opsub);<br>
+&nbsp;&nbsp;let&nbsp;op1&nbsp;=&nbsp;negate_fp(op1);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;result_val)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16MulAdd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opsub)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32MulAdd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opsub)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f64MulAdd(rm_3b,&nbsp;op1,&nbsp;op2,&nbsp;opsub)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;result_val</span><br>
+}</span><br>
+<br>
+val&nbsp;fp_class&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bits('m)<br>
+function&nbsp;fp_class(xf)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;result_val_10b&nbsp;:&nbsp;bits(10)&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f_is_neg_inf(xf)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">0b_00_0000_0001</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;f_is_neg_norm(xf)&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">0b_00_0000_0010</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;f_is_neg_subnorm(xf)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">0b_00_0000_0100</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;f_is_neg_zero(xf)&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">0b_00_0000_1000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">if&nbsp;f_is_pos_zero(xf)&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 50%)">0b_00_0001_0000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 50%)">if&nbsp;f_is_pos_subnorm(xf)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 45%)">0b_00_0010_0000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 45%)">if&nbsp;f_is_pos_norm(xf)&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 40%)">0b_00_0100_0000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 40%)">if&nbsp;f_is_pos_inf(xf)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 35%)">0b_00_1000_0000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 35%)">if&nbsp;f_is_SNaN(xf)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 30%)">0b_01_0000_0000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 30%)">if&nbsp;f_is_QNaN(xf)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 30%)">0b_10_0000_0000</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;zeros()</span></span></span></span></span></span></span></span></span></span>;<br>
+<br>
+&nbsp;&nbsp;zero_extend(result_val_10b)<br>
+}</span><br>
+<br>
+val&nbsp;fp_widen&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32}.&nbsp;bits('m)&nbsp;-&gt;&nbsp;bits('m&nbsp;*&nbsp;2)<br>
+function&nbsp;fp_widen(nval)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(fflags,&nbsp;wval)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m&nbsp;*&nbsp;2))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f16ToF32(rm_3b,&nbsp;nval)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">riscv_f32ToF64(rm_3b,&nbsp;nval)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;wval</span><br>
+}</span><br>
+<br>
+/*&nbsp;Floating&nbsp;point&nbsp;functions&nbsp;without&nbsp;softfloat&nbsp;support&nbsp;*/<br>
+val&nbsp;riscv_f16ToI16&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits(16))<br>
+function&nbsp;riscv_f16ToI16&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(_,&nbsp;sig32)&nbsp;=&nbsp;riscv_f16ToI32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;signed(sig32)&nbsp;&gt;&nbsp;signed(0b0&nbsp;@&nbsp;ones(15))&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(nvFlag(),&nbsp;0b0&nbsp;@&nbsp;ones(15))</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;signed(sig32)&nbsp;&lt;&nbsp;signed(0b1&nbsp;@&nbsp;zeros(15))&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(nvFlag(),&nbsp;0b1&nbsp;@&nbsp;zeros(15))</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(zeros(5),&nbsp;sig32[15&nbsp;..&nbsp;0])</span></span></span>;</span><br>
+}</span><br>
+<br>
+val&nbsp;riscv_f16ToI8&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits(8))<br>
+function&nbsp;riscv_f16ToI8&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(_,&nbsp;sig32)&nbsp;=&nbsp;riscv_f16ToI32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;signed(sig32)&nbsp;&gt;&nbsp;signed(0b0&nbsp;@&nbsp;ones(7))&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(nvFlag(),&nbsp;0b0&nbsp;@&nbsp;ones(7))</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;signed(sig32)&nbsp;&lt;&nbsp;signed(0b1&nbsp;@&nbsp;zeros(7))&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(nvFlag(),&nbsp;0b1&nbsp;@&nbsp;zeros(7))</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(zeros(5),&nbsp;sig32[7&nbsp;..&nbsp;0])</span></span></span>;</span><br>
+}</span><br>
+<br>
+val&nbsp;riscv_f32ToI16&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits(16))<br>
+function&nbsp;riscv_f32ToI16&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(_,&nbsp;sig32)&nbsp;=&nbsp;riscv_f32ToI32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;signed(sig32)&nbsp;&gt;&nbsp;signed(0b0&nbsp;@&nbsp;ones(15))&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(nvFlag(),&nbsp;0b0&nbsp;@&nbsp;ones(15))</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;signed(sig32)&nbsp;&lt;&nbsp;signed(0b1&nbsp;@&nbsp;zeros(15))&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(nvFlag(),&nbsp;0b1&nbsp;@&nbsp;zeros(15))</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(zeros(5),&nbsp;sig32[15&nbsp;..&nbsp;0])</span></span></span>;</span><br>
+}</span><br>
+<br>
+val&nbsp;riscv_f16ToUi16&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits(16))<br>
+function&nbsp;riscv_f16ToUi16&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(_,&nbsp;sig32)&nbsp;=&nbsp;riscv_f16ToUi32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;unsigned(sig32)&nbsp;&gt;&nbsp;unsigned(ones(16))&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(nvFlag(),&nbsp;ones(16))</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(zeros(5),&nbsp;sig32[15&nbsp;..&nbsp;0])</span></span>;</span><br>
+}</span><br>
+<br>
+val&nbsp;riscv_f16ToUi8&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits(8))<br>
+function&nbsp;riscv_f16ToUi8&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(_,&nbsp;sig32)&nbsp;=&nbsp;riscv_f16ToUi32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;unsigned(sig32)&nbsp;&gt;&nbsp;unsigned(ones(8))&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(nvFlag(),&nbsp;ones(8))</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(zeros(5),&nbsp;sig32[7&nbsp;..&nbsp;0])</span></span>;</span><br>
+}</span><br>
+<br>
+val&nbsp;riscv_f32ToUi16&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits(16))<br>
+function&nbsp;riscv_f32ToUi16&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(_,&nbsp;sig32)&nbsp;=&nbsp;riscv_f32ToUi32(rm,&nbsp;v);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;unsigned(sig32)&nbsp;&gt;&nbsp;unsigned(ones(16))&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(nvFlag(),&nbsp;ones(16))</span><br>
+&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(zeros(5),&nbsp;sig32[15&nbsp;..&nbsp;0])</span></span>;</span><br>
+}</span><br>
+<br>
+val&nbsp;count_leadingzeros&nbsp;:&nbsp;(bits(64),&nbsp;int)&nbsp;-&gt;&nbsp;int<br>
+function&nbsp;count_leadingzeros&nbsp;(sig,&nbsp;len)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;idx&nbsp;:&nbsp;int&nbsp;=&nbsp;-1;<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 75%)">len&nbsp;==&nbsp;10&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 70%)">len&nbsp;==&nbsp;23&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 65%)">len&nbsp;==&nbsp;52</span></span></span>);<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(len&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;sig[i]&nbsp;==&nbsp;bitone&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">idx&nbsp;=&nbsp;i</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;len&nbsp;-&nbsp;idx&nbsp;-&nbsp;1<br>
+}</span><br>
+<br>
+val&nbsp;rsqrt7&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits('m),&nbsp;bool)&nbsp;-&gt;&nbsp;bits_D<br>
+function&nbsp;rsqrt7&nbsp;(v,&nbsp;sub)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sig,&nbsp;exp,&nbsp;sign,&nbsp;e,&nbsp;s)&nbsp;:&nbsp;(bits(64),&nbsp;bits(64),&nbsp;bits(1),&nbsp;nat,&nbsp;nat)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(zero_extend(64,&nbsp;v[9&nbsp;..&nbsp;0]),&nbsp;zero_extend(64,&nbsp;v[14&nbsp;..&nbsp;10]),&nbsp;[v[15]],&nbsp;5,&nbsp;10)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(zero_extend(64,&nbsp;v[22&nbsp;..&nbsp;0]),&nbsp;zero_extend(64,&nbsp;v[30&nbsp;..&nbsp;23]),&nbsp;[v[31]],&nbsp;8,&nbsp;23)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(zero_extend(64,&nbsp;v[51&nbsp;..&nbsp;0]),&nbsp;zero_extend(64,&nbsp;v[62&nbsp;..&nbsp;52]),&nbsp;[v[63]],&nbsp;11,&nbsp;52)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 65%)"><span style="background-color: hsl(0, 85%, 65%)">s&nbsp;==&nbsp;10&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 60%)">e&nbsp;==&nbsp;5</span></span>&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 60%)"><span style="background-color: hsl(0, 85%, 60%)">s&nbsp;==&nbsp;23&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 55%)">e&nbsp;==&nbsp;8</span></span>&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 60%)">s&nbsp;==&nbsp;52&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 55%)">e&nbsp;==&nbsp;11</span></span></span></span>);<br>
+&nbsp;&nbsp;let&nbsp;table&nbsp;:&nbsp;vector(128,&nbsp;dec,&nbsp;int)&nbsp;=&nbsp;[<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;52,&nbsp;51,&nbsp;50,&nbsp;48,&nbsp;47,&nbsp;46,&nbsp;44,&nbsp;43,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;42,&nbsp;41,&nbsp;40,&nbsp;39,&nbsp;38,&nbsp;36,&nbsp;35,&nbsp;34,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;33,&nbsp;32,&nbsp;31,&nbsp;30,&nbsp;30,&nbsp;29,&nbsp;28,&nbsp;27,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;26,&nbsp;25,&nbsp;24,&nbsp;23,&nbsp;23,&nbsp;22,&nbsp;21,&nbsp;20,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;19,&nbsp;19,&nbsp;18,&nbsp;17,&nbsp;16,&nbsp;16,&nbsp;15,&nbsp;14,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;14,&nbsp;13,&nbsp;12,&nbsp;12,&nbsp;11,&nbsp;10,&nbsp;10,&nbsp;9,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9,&nbsp;8,&nbsp;7,&nbsp;7,&nbsp;6,&nbsp;6,&nbsp;5,&nbsp;4,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4,&nbsp;3,&nbsp;3,&nbsp;2,&nbsp;2,&nbsp;1,&nbsp;1,&nbsp;0,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;127,&nbsp;125,&nbsp;123,&nbsp;121,&nbsp;119,&nbsp;118,&nbsp;116,&nbsp;114,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;113,&nbsp;111,&nbsp;109,&nbsp;108,&nbsp;106,&nbsp;105,&nbsp;103,&nbsp;102,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;100,&nbsp;99,&nbsp;97,&nbsp;96,&nbsp;95,&nbsp;93,&nbsp;92,&nbsp;91,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;90,&nbsp;88,&nbsp;87,&nbsp;86,&nbsp;85,&nbsp;84,&nbsp;83,&nbsp;82,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;80,&nbsp;79,&nbsp;78,&nbsp;77,&nbsp;76,&nbsp;75,&nbsp;74,&nbsp;73,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;72,&nbsp;71,&nbsp;70,&nbsp;70,&nbsp;69,&nbsp;68,&nbsp;67,&nbsp;66,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;65,&nbsp;64,&nbsp;63,&nbsp;63,&nbsp;62,&nbsp;61,&nbsp;60,&nbsp;59,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;59,&nbsp;58,&nbsp;57,&nbsp;56,&nbsp;56,&nbsp;55,&nbsp;54,&nbsp;53];<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;(normalized_exp,&nbsp;normalized_sig)&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;sub&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;nr_leadingzeros&nbsp;=&nbsp;count_leadingzeros(sig,&nbsp;s);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assert(nr_leadingzeros&nbsp;&gt;=&nbsp;0);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(to_bits(64,&nbsp;(0&nbsp;-&nbsp;nr_leadingzeros)),&nbsp;zero_extend(64,&nbsp;sig[(s&nbsp;-&nbsp;1)&nbsp;..&nbsp;0]&nbsp;&lt;&lt;&nbsp;(1&nbsp;+&nbsp;nr_leadingzeros)))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(exp,&nbsp;sig)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span>;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;idx&nbsp;:&nbsp;nat&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">unsigned([normalized_exp[0]]&nbsp;@&nbsp;normalized_sig[9&nbsp;..&nbsp;4])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">unsigned([normalized_exp[0]]&nbsp;@&nbsp;normalized_sig[22&nbsp;..&nbsp;17])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">unsigned([normalized_exp[0]]&nbsp;@&nbsp;normalized_sig[51&nbsp;..&nbsp;46])</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 65%)">idx&nbsp;&gt;=&nbsp;0&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 60%)">idx&nbsp;&lt;&nbsp;128</span></span>);<br>
+&nbsp;&nbsp;let&nbsp;out_sig&nbsp;=&nbsp;to_bits(s,&nbsp;table[(127&nbsp;-&nbsp;idx)])&nbsp;&lt;&lt;&nbsp;(s&nbsp;-&nbsp;7);<br>
+&nbsp;&nbsp;let&nbsp;out_exp&nbsp;=&nbsp;to_bits(e,&nbsp;(3&nbsp;*&nbsp;(2^(e&nbsp;-&nbsp;1)&nbsp;-&nbsp;1)&nbsp;-&nbsp;1&nbsp;-&nbsp;signed(normalized_exp))&nbsp;/&nbsp;2);<br>
+&nbsp;&nbsp;zero_extend(64,&nbsp;sign&nbsp;@&nbsp;out_exp&nbsp;@&nbsp;out_sig)</span></span><br>
+}</span><br>
+<br>
+val&nbsp;riscv_f16Rsqrte7&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_f16Rsqrte7&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;fp_class(v)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0001&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(nvFlag(),&nbsp;0x7e00)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0002&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(nvFlag(),&nbsp;0x7e00)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0004&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(nvFlag(),&nbsp;0x7e00)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0100&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(nvFlag(),&nbsp;0x7e00)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0200&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(zeros(5),&nbsp;0x7e00)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0008&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(dzFlag(),&nbsp;0xfc00)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0010&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(dzFlag(),&nbsp;0x7c00)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0080&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(zeros(5),&nbsp;0x0000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0020&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(zeros(5),&nbsp;rsqrt7(v,&nbsp;true)[15&nbsp;..&nbsp;0])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(zeros(5),&nbsp;rsqrt7(v,&nbsp;false)[15&nbsp;..&nbsp;0])</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;riscv_f32Rsqrte7&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_f32Rsqrte7&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;fp_class(v)[15&nbsp;..&nbsp;0]&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0001&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(nvFlag(),&nbsp;0x7fc00000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0002&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(nvFlag(),&nbsp;0x7fc00000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0004&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(nvFlag(),&nbsp;0x7fc00000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0100&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(nvFlag(),&nbsp;0x7fc00000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0200&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(zeros(5),&nbsp;0x7fc00000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0008&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(dzFlag(),&nbsp;0xff800000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0010&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(dzFlag(),&nbsp;0x7f800000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0080&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(zeros(5),&nbsp;0x00000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0020&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(zeros(5),&nbsp;rsqrt7(v,&nbsp;true)[31&nbsp;..&nbsp;0])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(zeros(5),&nbsp;rsqrt7(v,&nbsp;false)[31&nbsp;..&nbsp;0])</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;riscv_f64Rsqrte7&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_f64Rsqrte7&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;fp_class(v)[15&nbsp;..&nbsp;0]&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0001&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(nvFlag(),&nbsp;0x7ff8000000000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0002&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(nvFlag(),&nbsp;0x7ff8000000000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0004&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(nvFlag(),&nbsp;0x7ff8000000000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0100&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(nvFlag(),&nbsp;0x7ff8000000000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0200&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(zeros(5),&nbsp;0x7ff8000000000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0008&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(dzFlag(),&nbsp;0xfff0000000000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0010&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(dzFlag(),&nbsp;0x7ff0000000000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0080&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(zeros(5),&nbsp;zeros(64))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0020&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(zeros(5),&nbsp;rsqrt7(v,&nbsp;true)[63&nbsp;..&nbsp;0])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">(zeros(5),&nbsp;rsqrt7(v,&nbsp;false)[63&nbsp;..&nbsp;0])</span><br>
+&nbsp;&nbsp;}</span><br>
+}</span><br>
+<br>
+val&nbsp;recip7&nbsp;:&nbsp;forall&nbsp;'m,&nbsp;'m&nbsp;in&nbsp;{16,&nbsp;32,&nbsp;64}.&nbsp;(bits('m),&nbsp;bits(3),&nbsp;bool)&nbsp;-&gt;&nbsp;(bool,&nbsp;bits_D)<br>
+function&nbsp;recip7&nbsp;(v,&nbsp;rm_3b,&nbsp;sub)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(sig,&nbsp;exp,&nbsp;sign,&nbsp;e,&nbsp;s)&nbsp;:&nbsp;(bits(64),&nbsp;bits(64),&nbsp;bits(1),&nbsp;nat,&nbsp;nat)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 70%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(zero_extend(64,&nbsp;v[9&nbsp;..&nbsp;0]),&nbsp;zero_extend(64,&nbsp;v[14&nbsp;..&nbsp;10]),&nbsp;[v[15]],&nbsp;5,&nbsp;10)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(zero_extend(64,&nbsp;v[22&nbsp;..&nbsp;0]),&nbsp;zero_extend(64,&nbsp;v[30&nbsp;..&nbsp;23]),&nbsp;[v[31]],&nbsp;8,&nbsp;23)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">(zero_extend(64,&nbsp;v[51&nbsp;..&nbsp;0]),&nbsp;zero_extend(64,&nbsp;v[62&nbsp;..&nbsp;52]),&nbsp;[v[63]],&nbsp;11,&nbsp;52)</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 65%)"><span style="background-color: hsl(0, 85%, 65%)">s&nbsp;==&nbsp;10&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 60%)">e&nbsp;==&nbsp;5</span></span>&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 60%)"><span style="background-color: hsl(0, 85%, 60%)">s&nbsp;==&nbsp;23&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 55%)">e&nbsp;==&nbsp;8</span></span>&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 60%)">s&nbsp;==&nbsp;52&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 55%)">e&nbsp;==&nbsp;11</span></span></span></span>);<br>
+&nbsp;&nbsp;let&nbsp;table&nbsp;:&nbsp;vector(128,&nbsp;dec,&nbsp;int)&nbsp;=&nbsp;[<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;127,&nbsp;125,&nbsp;123,&nbsp;121,&nbsp;119,&nbsp;117,&nbsp;116,&nbsp;114,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;112,&nbsp;110,&nbsp;109,&nbsp;107,&nbsp;105,&nbsp;104,&nbsp;102,&nbsp;100,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;99,&nbsp;97,&nbsp;96,&nbsp;94,&nbsp;93,&nbsp;91,&nbsp;90,&nbsp;88,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;87,&nbsp;85,&nbsp;84,&nbsp;83,&nbsp;81,&nbsp;80,&nbsp;79,&nbsp;77,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;76,&nbsp;75,&nbsp;74,&nbsp;72,&nbsp;71,&nbsp;70,&nbsp;69,&nbsp;68,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;66,&nbsp;65,&nbsp;64,&nbsp;63,&nbsp;62,&nbsp;61,&nbsp;60,&nbsp;59,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;58,&nbsp;57,&nbsp;56,&nbsp;55,&nbsp;54,&nbsp;53,&nbsp;52,&nbsp;51,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50,&nbsp;49,&nbsp;48,&nbsp;47,&nbsp;46,&nbsp;45,&nbsp;44,&nbsp;43,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;42,&nbsp;41,&nbsp;40,&nbsp;40,&nbsp;39,&nbsp;38,&nbsp;37,&nbsp;36,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;35,&nbsp;35,&nbsp;34,&nbsp;33,&nbsp;32,&nbsp;31,&nbsp;31,&nbsp;30,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;29,&nbsp;28,&nbsp;28,&nbsp;27,&nbsp;26,&nbsp;25,&nbsp;25,&nbsp;24,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23,&nbsp;23,&nbsp;22,&nbsp;21,&nbsp;21,&nbsp;20,&nbsp;19,&nbsp;19,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;18,&nbsp;17,&nbsp;17,&nbsp;16,&nbsp;15,&nbsp;15,&nbsp;14,&nbsp;14,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;13,&nbsp;12,&nbsp;12,&nbsp;11,&nbsp;11,&nbsp;10,&nbsp;9,&nbsp;9,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8,&nbsp;8,&nbsp;7,&nbsp;7,&nbsp;6,&nbsp;5,&nbsp;5,&nbsp;4,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4,&nbsp;3,&nbsp;3,&nbsp;2,&nbsp;2,&nbsp;1,&nbsp;1,&nbsp;0];<br>
+<br>
+&nbsp;&nbsp;let&nbsp;nr_leadingzeros&nbsp;=&nbsp;count_leadingzeros(sig,&nbsp;s);<br>
+&nbsp;&nbsp;assert(nr_leadingzeros&nbsp;&gt;=&nbsp;0);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;(normalized_exp,&nbsp;normalized_sig)&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;sub&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(to_bits(64,&nbsp;(0&nbsp;-&nbsp;nr_leadingzeros)),&nbsp;zero_extend(64,&nbsp;sig[(s&nbsp;-&nbsp;1)&nbsp;..&nbsp;0]&nbsp;&lt;&lt;&nbsp;(1&nbsp;+&nbsp;nr_leadingzeros)))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(exp,&nbsp;sig)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span>;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;idx&nbsp;:&nbsp;nat&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">unsigned(normalized_sig[9&nbsp;..&nbsp;3])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">unsigned(normalized_sig[22&nbsp;..&nbsp;16])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">unsigned(normalized_sig[51&nbsp;..&nbsp;45])</span><br>
+&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 65%)">idx&nbsp;&gt;=&nbsp;0&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 60%)">idx&nbsp;&lt;&nbsp;128</span></span>);<br>
+&nbsp;&nbsp;let&nbsp;mid_exp&nbsp;=&nbsp;to_bits(e,&nbsp;2&nbsp;*&nbsp;(2^(e&nbsp;-&nbsp;1)&nbsp;-&nbsp;1)&nbsp;-&nbsp;1&nbsp;-&nbsp;signed(normalized_exp));<br>
+&nbsp;&nbsp;let&nbsp;mid_sig&nbsp;=&nbsp;to_bits(s,&nbsp;table[(127&nbsp;-&nbsp;idx)])&nbsp;&lt;&lt;&nbsp;(s&nbsp;-&nbsp;7);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;(out_exp,&nbsp;out_sig)=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;mid_exp&nbsp;==&nbsp;zeros(e)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(mid_exp,&nbsp;mid_sig&nbsp;&gt;&gt;&nbsp;1&nbsp;|&nbsp;0b1&nbsp;@&nbsp;zeros(s&nbsp;-&nbsp;1))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">if&nbsp;mid_exp&nbsp;==&nbsp;ones(e)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(zeros(e),&nbsp;mid_sig&nbsp;&gt;&gt;&nbsp;2&nbsp;|&nbsp;0b01&nbsp;@&nbsp;zeros(s&nbsp;-&nbsp;2))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 50%)">(mid_exp,&nbsp;mid_sig)</span></span></span>;<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;<span style="background-color: hsl(0, 85%, 55%)">sub&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 50%)">nr_leadingzeros&nbsp;&gt;&nbsp;1</span></span>&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">if&nbsp;(<span style="background-color: hsl(0, 85%, 45%)">rm_3b&nbsp;==&nbsp;0b001&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 35%)"><span style="background-color: hsl(0, 85%, 35%)">rm_3b&nbsp;==&nbsp;0b010&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 30%)">sign&nbsp;==&nbsp;0b0</span></span>&nbsp;|&nbsp;<span style="background-color: hsl(0, 85%, 35%)">rm_3b&nbsp;==&nbsp;0b011&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 30%)">sign&nbsp;==&nbsp;0b1</span></span></span></span>)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(true,&nbsp;zero_extend(64,&nbsp;sign&nbsp;@&nbsp;ones(e&nbsp;-&nbsp;1)&nbsp;@&nbsp;0b0&nbsp;@&nbsp;ones(s)))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 45%)">(true,&nbsp;zero_extend(64,&nbsp;sign&nbsp;@&nbsp;ones(e)&nbsp;@&nbsp;zeros(s)))</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(false,&nbsp;zero_extend(64,&nbsp;sign&nbsp;@&nbsp;out_exp&nbsp;@&nbsp;out_sig))</span></span></span></span></span><br>
+}</span><br>
+<br>
+val&nbsp;riscv_f16Recip7&nbsp;:&nbsp;(bits_rm,&nbsp;bits_H)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_H)<br>
+function&nbsp;riscv_f16Recip7&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(round_abnormal_true,&nbsp;res_true)&nbsp;=&nbsp;recip7(v,&nbsp;rm,&nbsp;true);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;(round_abnormal_false,&nbsp;res_false)&nbsp;=&nbsp;recip7(v,&nbsp;rm,&nbsp;false);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;fp_class(v)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0001&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(zeros(5),&nbsp;0x8000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0080&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(zeros(5),&nbsp;0x0000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0008&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(dzFlag(),&nbsp;0xfc00)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0010&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(dzFlag(),&nbsp;0x7c00)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0100&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(nvFlag(),&nbsp;0x7e00)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0200&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(zeros(5),&nbsp;0x7e00)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0004&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;round_abnormal_true&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(nxFlag()&nbsp;|&nbsp;ofFlag(),&nbsp;res_true[15&nbsp;..&nbsp;0])</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(zeros(5),&nbsp;res_true[15&nbsp;..&nbsp;0])</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0020&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;round_abnormal_true&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(nxFlag()&nbsp;|&nbsp;ofFlag(),&nbsp;res_true[15&nbsp;..&nbsp;0])</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(zeros(5),&nbsp;res_true[15&nbsp;..&nbsp;0])</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;round_abnormal_false&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(nxFlag()&nbsp;|&nbsp;ofFlag(),&nbsp;res_false[15&nbsp;..&nbsp;0])</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(zeros(5),&nbsp;res_false[15&nbsp;..&nbsp;0])</span></span><br>
+&nbsp;&nbsp;}</span></span></span><br>
+}</span><br>
+<br>
+val&nbsp;riscv_f32Recip7&nbsp;:&nbsp;(bits_rm,&nbsp;bits_S)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_S)<br>
+function&nbsp;riscv_f32Recip7&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(round_abnormal_true,&nbsp;res_true)&nbsp;=&nbsp;recip7(v,&nbsp;rm,&nbsp;true);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;(round_abnormal_false,&nbsp;res_false)&nbsp;=&nbsp;recip7(v,&nbsp;rm,&nbsp;false);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;fp_class(v)[15&nbsp;..&nbsp;0]&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0001&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(zeros(5),&nbsp;0x80000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0080&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(zeros(5),&nbsp;0x00000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0008&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(dzFlag(),&nbsp;0xff800000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0010&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(dzFlag(),&nbsp;0x7f800000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0100&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(nvFlag(),&nbsp;0x7fc00000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0200&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(zeros(5),&nbsp;0x7fc00000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0004&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;round_abnormal_true&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(nxFlag()&nbsp;|&nbsp;ofFlag(),&nbsp;res_true[31&nbsp;..&nbsp;0])</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(zeros(5),&nbsp;res_true[31&nbsp;..&nbsp;0])</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0020&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;round_abnormal_true&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(nxFlag()&nbsp;|&nbsp;ofFlag(),&nbsp;res_true[31&nbsp;..&nbsp;0])</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(zeros(5),&nbsp;res_true[31&nbsp;..&nbsp;0])</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;round_abnormal_false&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(nxFlag()&nbsp;|&nbsp;ofFlag(),&nbsp;res_false[31&nbsp;..&nbsp;0])</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(zeros(5),&nbsp;res_false[31&nbsp;..&nbsp;0])</span></span><br>
+&nbsp;&nbsp;}</span></span></span><br>
+}</span><br>
+<br>
+val&nbsp;riscv_f64Recip7&nbsp;:&nbsp;(bits_rm,&nbsp;bits_D)&nbsp;-&gt;&nbsp;(bits_fflags,&nbsp;bits_D)<br>
+function&nbsp;riscv_f64Recip7&nbsp;(rm,&nbsp;v)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(round_abnormal_true,&nbsp;res_true)&nbsp;=&nbsp;recip7(v,&nbsp;rm,&nbsp;true);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;(round_abnormal_false,&nbsp;res_false)&nbsp;=&nbsp;recip7(v,&nbsp;rm,&nbsp;false);<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;fp_class(v)[15&nbsp;..&nbsp;0]&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0001&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(zeros(5),&nbsp;0x8000000000000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0080&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(zeros(5),&nbsp;0x0000000000000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0008&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(dzFlag(),&nbsp;0xfff0000000000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0010&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(dzFlag(),&nbsp;0x7ff0000000000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0100&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(nvFlag(),&nbsp;0x7ff8000000000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0200&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">(zeros(5),&nbsp;0x7ff8000000000000)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0004&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;round_abnormal_true&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(nxFlag()&nbsp;|&nbsp;ofFlag(),&nbsp;res_true[63&nbsp;..&nbsp;0])</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(zeros(5),&nbsp;res_true[63&nbsp;..&nbsp;0])</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0x0020&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;round_abnormal_true&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(nxFlag()&nbsp;|&nbsp;ofFlag(),&nbsp;res_true[63&nbsp;..&nbsp;0])</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(zeros(5),&nbsp;res_true[63&nbsp;..&nbsp;0])</span></span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;round_abnormal_false&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(nxFlag()&nbsp;|&nbsp;ofFlag(),&nbsp;res_false[63&nbsp;..&nbsp;0])</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">(zeros(5),&nbsp;res_false[63&nbsp;..&nbsp;0])</span></span><br>
+&nbsp;&nbsp;}</span></span></span><br>
+}</span><br>
+</code>
+</body>
+</html>

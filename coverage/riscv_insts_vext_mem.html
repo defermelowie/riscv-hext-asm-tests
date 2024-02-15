@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>riscv_insts_vext_mem</title></head>
+<body>
+<h1>riscv_insts_vext_mem.sail (0/316) 0%</h1>
+<code style="display: block">
+/*=================================================================================*/<br>
+/*&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2021-2023&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Authors&nbsp;from&nbsp;RIOS&nbsp;Lab,&nbsp;Tsinghua&nbsp;University:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Xinlai&nbsp;Wan&nbsp;&lt;xinlai.w@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Xi&nbsp;Wang&nbsp;&lt;xi.w@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yifei&nbsp;Zhu&nbsp;&lt;yifei.z@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Shenwei&nbsp;Hu&nbsp;&lt;shenwei.h@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Kalvin&nbsp;Vu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Other&nbsp;contributors:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jessica&nbsp;Clarke&nbsp;&lt;jrtc27@jrtc27.com&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Victor&nbsp;Moya&nbsp;&lt;victor.moya@semidynamics.com&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;All&nbsp;rights&nbsp;reserved.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Redistribution&nbsp;and&nbsp;use&nbsp;in&nbsp;source&nbsp;and&nbsp;binary&nbsp;forms,&nbsp;with&nbsp;or&nbsp;without&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;modification,&nbsp;are&nbsp;permitted&nbsp;provided&nbsp;that&nbsp;the&nbsp;following&nbsp;conditions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;are&nbsp;met:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;1.&nbsp;Redistributions&nbsp;of&nbsp;source&nbsp;code&nbsp;must&nbsp;retain&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;2.&nbsp;Redistributions&nbsp;in&nbsp;binary&nbsp;form&nbsp;must&nbsp;reproduce&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;documentation&nbsp;and/or&nbsp;other&nbsp;materials&nbsp;provided&nbsp;with&nbsp;the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;distribution.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;THIS&nbsp;SOFTWARE&nbsp;IS&nbsp;PROVIDED&nbsp;BY&nbsp;THE&nbsp;AUTHOR&nbsp;AND&nbsp;CONTRIBUTORS&nbsp;``AS&nbsp;IS''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;AND&nbsp;ANY&nbsp;EXPRESS&nbsp;OR&nbsp;IMPLIED&nbsp;WARRANTIES,&nbsp;INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;TO,&nbsp;THE&nbsp;IMPLIED&nbsp;WARRANTIES&nbsp;OF&nbsp;MERCHANTABILITY&nbsp;AND&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;PARTICULAR&nbsp;PURPOSE&nbsp;ARE&nbsp;DISCLAIMED.&nbsp;&nbsp;IN&nbsp;NO&nbsp;EVENT&nbsp;SHALL&nbsp;THE&nbsp;AUTHOR&nbsp;OR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;CONTRIBUTORS&nbsp;BE&nbsp;LIABLE&nbsp;FOR&nbsp;ANY&nbsp;DIRECT,&nbsp;INDIRECT,&nbsp;INCIDENTAL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SPECIAL,&nbsp;EXEMPLARY,&nbsp;OR&nbsp;CONSEQUENTIAL&nbsp;DAMAGES&nbsp;(INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;LIMITED&nbsp;TO,&nbsp;PROCUREMENT&nbsp;OF&nbsp;SUBSTITUTE&nbsp;GOODS&nbsp;OR&nbsp;SERVICES;&nbsp;LOSS&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;USE,&nbsp;DATA,&nbsp;OR&nbsp;PROFITS;&nbsp;OR&nbsp;BUSINESS&nbsp;INTERRUPTION)&nbsp;HOWEVER&nbsp;CAUSED&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;ON&nbsp;ANY&nbsp;THEORY&nbsp;OF&nbsp;LIABILITY,&nbsp;WHETHER&nbsp;IN&nbsp;CONTRACT,&nbsp;STRICT&nbsp;LIABILITY,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OR&nbsp;TORT&nbsp;(INCLUDING&nbsp;NEGLIGENCE&nbsp;OR&nbsp;OTHERWISE)&nbsp;ARISING&nbsp;IN&nbsp;ANY&nbsp;WAY&nbsp;OUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OF&nbsp;THE&nbsp;USE&nbsp;OF&nbsp;THIS&nbsp;SOFTWARE,&nbsp;EVEN&nbsp;IF&nbsp;ADVISED&nbsp;OF&nbsp;THE&nbsp;POSSIBILITY&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SUCH&nbsp;DAMAGE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*=================================================================================*/<br>
+<br>
+/*&nbsp;*******************************************************************************&nbsp;*/<br>
+/*&nbsp;This&nbsp;file&nbsp;implements&nbsp;part&nbsp;of&nbsp;the&nbsp;vector&nbsp;extension.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;Chapter&nbsp;7:&nbsp;Vector&nbsp;Loads&nbsp;and&nbsp;Stores&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;*******************************************************************************&nbsp;*/<br>
+<br>
+mapping&nbsp;nfields_int&nbsp;:&nbsp;bits(3)&nbsp;&lt;-&gt;&nbsp;{|1,&nbsp;2,&nbsp;3,&nbsp;4,&nbsp;5,&nbsp;6,&nbsp;7,&nbsp;8|}&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;0b000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;1,<br>
+&nbsp;&nbsp;0b001&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;2,<br>
+&nbsp;&nbsp;0b010&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;3,<br>
+&nbsp;&nbsp;0b011&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;4,<br>
+&nbsp;&nbsp;0b100&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;5,<br>
+&nbsp;&nbsp;0b101&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;6,<br>
+&nbsp;&nbsp;0b110&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;7,<br>
+&nbsp;&nbsp;0b111&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;8<br>
+}<br>
+<br>
+mapping&nbsp;nfields_string&nbsp;:&nbsp;bits(3)&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;0b000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;&quot;</span>,<br>
+&nbsp;&nbsp;0b001&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;seg2&quot;</span>,<br>
+&nbsp;&nbsp;0b010&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;seg3&quot;</span>,<br>
+&nbsp;&nbsp;0b011&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;seg4&quot;</span>,<br>
+&nbsp;&nbsp;0b100&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;seg5&quot;</span>,<br>
+&nbsp;&nbsp;0b101&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;seg6&quot;</span>,<br>
+&nbsp;&nbsp;0b110&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;seg7&quot;</span>,<br>
+&nbsp;&nbsp;0b111&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;seg8&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;vlewidth_bitsnumberstr&nbsp;:&nbsp;vlewidth&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;VLE8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;8&quot;</span>,<br>
+&nbsp;&nbsp;VLE16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;16&quot;</span>,<br>
+&nbsp;&nbsp;VLE32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;32&quot;</span>,<br>
+&nbsp;&nbsp;VLE64&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;64&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;encdec_vlewidth&nbsp;:&nbsp;vlewidth&nbsp;&lt;-&gt;&nbsp;bits(3)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VLE8</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VLE16</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VLE32</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b110,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VLE64</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b111<br>
+}<br>
+<br>
+mapping&nbsp;vlewidth_bytesnumber&nbsp;:&nbsp;vlewidth&nbsp;&lt;-&gt;&nbsp;{|1,&nbsp;2,&nbsp;4,&nbsp;8|}&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;VLE8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;1,<br>
+&nbsp;&nbsp;VLE16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;2,<br>
+&nbsp;&nbsp;VLE32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;4,<br>
+&nbsp;&nbsp;VLE64&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;8<br>
+}<br>
+<br>
+mapping&nbsp;vlewidth_pow&nbsp;:&nbsp;vlewidth&nbsp;&lt;-&gt;&nbsp;{|3,&nbsp;4,&nbsp;5,&nbsp;6|}&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;VLE8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;3,<br>
+&nbsp;&nbsp;VLE16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;4,<br>
+&nbsp;&nbsp;VLE32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;5,<br>
+&nbsp;&nbsp;VLE64&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;6<br>
+}<br>
+<br>
+mapping&nbsp;bytes_wordwidth&nbsp;:&nbsp;{|1,&nbsp;2,&nbsp;4,&nbsp;8|}&nbsp;&lt;-&gt;&nbsp;word_width&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;1&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">BYTE</span>,<br>
+&nbsp;&nbsp;2&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">HALF</span>,<br>
+&nbsp;&nbsp;4&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">WORD</span>,<br>
+&nbsp;&nbsp;8&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">DOUBLE</span><br>
+}<br>
+<br>
+/*&nbsp;********************&nbsp;Vector&nbsp;Load&nbsp;Unit-Stride&nbsp;Normal&nbsp;&&nbsp;Segment&nbsp;(mop=0b00,&nbsp;lumop=0b00000)&nbsp;*********************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VLSEGTYPE&nbsp;:&nbsp;(bits(3),&nbsp;bits(1),&nbsp;regidx,&nbsp;vlewidth,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VLSEGTYPE(nf,&nbsp;vm,&nbsp;rs1,&nbsp;width,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">nf&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b00&nbsp;@&nbsp;vm&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_vlewidth(width)&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b0000111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+val&nbsp;process_vlseg&nbsp;:&nbsp;forall&nbsp;'f&nbsp;'b&nbsp;'n&nbsp;'p,&nbsp;(0&nbsp;&lt;&nbsp;'f&nbsp;&&nbsp;'f&nbsp;&lt;=&nbsp;8)&nbsp;&&nbsp;('b&nbsp;in&nbsp;{1,&nbsp;2,&nbsp;4,&nbsp;8})&nbsp;&&nbsp;('n&nbsp;&gt;=&nbsp;0).&nbsp;(int('f),&nbsp;bits(1),&nbsp;regidx,&nbsp;int('b),&nbsp;regidx,&nbsp;int('p),&nbsp;int('n))&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_vlseg&nbsp;(nf,&nbsp;vm,&nbsp;vd,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;EMUL_pow,&nbsp;num_elem)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;EMUL_reg&nbsp;:&nbsp;int&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;EMUL_pow&nbsp;&lt;=&nbsp;0&nbsp;then&nbsp;1&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">int_power(2,&nbsp;EMUL_pow)</span></span>;<br>
+&nbsp;&nbsp;let&nbsp;width_type&nbsp;:&nbsp;word_width&nbsp;=&nbsp;bytes_wordwidth(load_width_bytes);<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vd_seg&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('f&nbsp;*&nbsp;'b&nbsp;*&nbsp;8))&nbsp;=&nbsp;read_vreg_seg(num_elem,&nbsp;load_width_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_pow,&nbsp;nf,&nbsp;vd);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;nf&nbsp;*&nbsp;load_width_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_pow,&nbsp;vd_seg,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;mask[i]&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{&nbsp;/*&nbsp;active&nbsp;segments&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vstart&nbsp;=&nbsp;to_bits(16,&nbsp;i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_offset&nbsp;=&nbsp;(i&nbsp;*&nbsp;nf&nbsp;+&nbsp;j)&nbsp;*&nbsp;load_width_bytes;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;to_bits(sizeof(xlen),&nbsp;elem_offset),&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">if&nbsp;check_misaligned(vaddr,&nbsp;width_type)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_Load_Addr_Align());&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 50%)">match&nbsp;translateAddr(vaddr,&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">match&nbsp;mem_read(Read(Data),&nbsp;paddr,&nbsp;load_width_bytes,&nbsp;false,&nbsp;false,&nbsp;false)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(elem)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">write_single_element(load_width_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vd&nbsp;+&nbsp;to_bits(5,&nbsp;j&nbsp;*&nbsp;EMUL_reg),&nbsp;elem)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{&nbsp;/*&nbsp;prestart,&nbsp;masked&nbsp;or&nbsp;tail&nbsp;segments&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;skipped_elem&nbsp;=&nbsp;(result[i]&nbsp;&gt;&gt;&nbsp;(j&nbsp;*&nbsp;load_width_bytes&nbsp;*&nbsp;8))[(load_width_bytes&nbsp;*&nbsp;8&nbsp;-&nbsp;1)&nbsp;..&nbsp;0];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write_single_element(load_width_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vd&nbsp;+&nbsp;to_bits(5,&nbsp;j&nbsp;*&nbsp;EMUL_reg),&nbsp;skipped_elem)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VLSEGTYPE(nf,&nbsp;vm,&nbsp;rs1,&nbsp;width,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;load_width_bytes&nbsp;=&nbsp;vlewidth_bytesnumber(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW&nbsp;=&nbsp;load_width_bytes&nbsp;*&nbsp;8;<br>
+&nbsp;&nbsp;let&nbsp;EEW_pow&nbsp;=&nbsp;vlewidth_pow(width);<br>
+&nbsp;&nbsp;let&nbsp;SEW_pow&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;EMUL_pow&nbsp;=&nbsp;EEW_pow&nbsp;-&nbsp;SEW_pow&nbsp;+&nbsp;LMUL_pow;<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(EMUL_pow,&nbsp;EEW);&nbsp;/*&nbsp;#&nbsp;of&nbsp;element&nbsp;of&nbsp;each&nbsp;register&nbsp;group&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;nf_int&nbsp;=&nbsp;nfields_int(nf);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_load(vd,&nbsp;vm,&nbsp;nf_int,&nbsp;EEW,&nbsp;EMUL_pow)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+<br>
+&nbsp;&nbsp;process_vlseg(nf_int,&nbsp;vm,&nbsp;vd,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;EMUL_pow,&nbsp;num_elem)<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VLSEGTYPE(nf,&nbsp;vm,&nbsp;rs1,&nbsp;width,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vl&quot;&nbsp;^&nbsp;nfields_string(nf)&nbsp;^&nbsp;&quot;e&quot;&nbsp;^&nbsp;vlewidth_bitsnumberstr(width)&nbsp;^&nbsp;&quot;.v&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;************&nbsp;Vector&nbsp;Load&nbsp;Unit-Stride&nbsp;Normal&nbsp;&&nbsp;Segment&nbsp;Fault-Only-First&nbsp;(mop=0b00,&nbsp;lumop=0b10000)&nbsp;************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VLSEGFFTYPE&nbsp;:&nbsp;(bits(3),&nbsp;bits(1),&nbsp;regidx,&nbsp;vlewidth,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VLSEGFFTYPE(nf,&nbsp;vm,&nbsp;rs1,&nbsp;width,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">nf&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b00&nbsp;@&nbsp;vm&nbsp;@&nbsp;0b10000&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_vlewidth(width)&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b0000111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+val&nbsp;process_vlsegff&nbsp;:&nbsp;forall&nbsp;'f&nbsp;'b&nbsp;'n&nbsp;'p,&nbsp;(0&nbsp;&lt;&nbsp;'f&nbsp;&&nbsp;'f&nbsp;&lt;=&nbsp;8)&nbsp;&&nbsp;('b&nbsp;in&nbsp;{1,&nbsp;2,&nbsp;4,&nbsp;8})&nbsp;&&nbsp;('n&nbsp;&gt;=&nbsp;0).&nbsp;(int('f),&nbsp;bits(1),&nbsp;regidx,&nbsp;int('b),&nbsp;regidx,&nbsp;int('p),&nbsp;int('n))&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_vlsegff&nbsp;(nf,&nbsp;vm,&nbsp;vd,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;EMUL_pow,&nbsp;num_elem)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;EMUL_reg&nbsp;:&nbsp;int&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;EMUL_pow&nbsp;&lt;=&nbsp;0&nbsp;then&nbsp;1&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">int_power(2,&nbsp;EMUL_pow)</span></span>;<br>
+&nbsp;&nbsp;let&nbsp;width_type&nbsp;:&nbsp;word_width&nbsp;=&nbsp;bytes_wordwidth(load_width_bytes);<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vd_seg&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('f&nbsp;*&nbsp;'b&nbsp;*&nbsp;8))&nbsp;=&nbsp;read_vreg_seg(num_elem,&nbsp;load_width_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_pow,&nbsp;nf,&nbsp;vd);<br>
+&nbsp;&nbsp;let&nbsp;tail_ag&nbsp;:&nbsp;agtype&nbsp;=&nbsp;get_vtype_vta();<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;nf&nbsp;*&nbsp;load_width_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_pow,&nbsp;vd_seg,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;trimmed&nbsp;:&nbsp;bool&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;not(trimmed)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;vm_val[i]&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{&nbsp;/*&nbsp;active&nbsp;segments&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_offset&nbsp;=&nbsp;(i&nbsp;*&nbsp;nf&nbsp;+&nbsp;j)&nbsp;*&nbsp;load_width_bytes;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;to_bits(sizeof(xlen),&nbsp;elem_offset),&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">if&nbsp;i&nbsp;==&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 35%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 35%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vl&nbsp;=&nbsp;to_bits(sizeof(xlen),&nbsp;i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vl&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vl));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;trimmed&nbsp;=&nbsp;true<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">if&nbsp;check_misaligned(vaddr,&nbsp;width_type)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 35%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">if&nbsp;i&nbsp;==&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_Load_Addr_Align());&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vl&nbsp;=&nbsp;to_bits(sizeof(xlen),&nbsp;i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vl&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vl));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;trimmed&nbsp;=&nbsp;true<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 35%)">match&nbsp;translateAddr(vaddr,&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">if&nbsp;i&nbsp;==&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vl&nbsp;=&nbsp;to_bits(sizeof(xlen),&nbsp;i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vl&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vl));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;trimmed&nbsp;=&nbsp;true<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">match&nbsp;mem_read(Read(Data),&nbsp;paddr,&nbsp;load_width_bytes,&nbsp;false,&nbsp;false,&nbsp;false)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(elem)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">write_single_element(load_width_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vd&nbsp;+&nbsp;to_bits(5,&nbsp;j&nbsp;*&nbsp;EMUL_reg),&nbsp;elem)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">if&nbsp;i&nbsp;==&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vl&nbsp;=&nbsp;to_bits(sizeof(xlen),&nbsp;i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_reg(&quot;CSR&nbsp;vl&nbsp;&lt;-&nbsp;&quot;&nbsp;^&nbsp;BitStr(vl));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;trimmed&nbsp;=&nbsp;true<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{&nbsp;/*&nbsp;prestart,&nbsp;masked&nbsp;or&nbsp;tail&nbsp;segments&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;skipped_elem&nbsp;=&nbsp;(result[i]&nbsp;&gt;&gt;&nbsp;(j&nbsp;*&nbsp;load_width_bytes&nbsp;*&nbsp;8))[(load_width_bytes&nbsp;*&nbsp;8&nbsp;-&nbsp;1)&nbsp;..&nbsp;0];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write_single_element(load_width_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vd&nbsp;+&nbsp;to_bits(5,&nbsp;j&nbsp;*&nbsp;EMUL_reg),&nbsp;skipped_elem)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;if&nbsp;vl&nbsp;is&nbsp;trimmed,&nbsp;elements&nbsp;past&nbsp;the&nbsp;new&nbsp;vl&nbsp;are&nbsp;treated&nbsp;as&nbsp;tail&nbsp;elements&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;tail_ag&nbsp;==&nbsp;AGNOSTIC&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;skipped_elem&nbsp;=&nbsp;(vd_seg[i]&nbsp;&gt;&gt;&nbsp;(j&nbsp;*&nbsp;load_width_bytes&nbsp;*&nbsp;8))[(load_width_bytes&nbsp;*&nbsp;8&nbsp;-&nbsp;1)&nbsp;..&nbsp;0];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write_single_element(load_width_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vd&nbsp;+&nbsp;to_bits(5,&nbsp;j&nbsp;*&nbsp;EMUL_reg),&nbsp;skipped_elem)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;for&nbsp;agnostic&nbsp;behavior&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 65%)">&#171;Invisible branch not taken here&#187</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VLSEGFFTYPE(nf,&nbsp;vm,&nbsp;rs1,&nbsp;width,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;load_width_bytes&nbsp;=&nbsp;vlewidth_bytesnumber(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW&nbsp;=&nbsp;load_width_bytes&nbsp;*&nbsp;8;<br>
+&nbsp;&nbsp;let&nbsp;EEW_pow&nbsp;=&nbsp;vlewidth_pow(width);<br>
+&nbsp;&nbsp;let&nbsp;SEW_pow&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;EMUL_pow&nbsp;=&nbsp;EEW_pow&nbsp;-&nbsp;SEW_pow&nbsp;+&nbsp;LMUL_pow;<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(EMUL_pow,&nbsp;EEW);<br>
+&nbsp;&nbsp;let&nbsp;nf_int&nbsp;=&nbsp;nfields_int(nf);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_load(vd,&nbsp;vm,&nbsp;nf_int,&nbsp;EEW,&nbsp;EMUL_pow)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+<br>
+&nbsp;&nbsp;process_vlsegff(nf_int,&nbsp;vm,&nbsp;vd,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;EMUL_pow,&nbsp;num_elem)<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VLSEGFFTYPE(nf,&nbsp;vm,&nbsp;rs1,&nbsp;width,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vl&quot;&nbsp;^&nbsp;nfields_string(nf)&nbsp;^&nbsp;&quot;e&quot;&nbsp;^&nbsp;vlewidth_bitsnumberstr(width)&nbsp;^&nbsp;&quot;ff.v&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;********************&nbsp;Vector&nbsp;Store&nbsp;Unit-Stride&nbsp;Normal&nbsp;&&nbsp;Segment&nbsp;(mop=0b00,&nbsp;sumop=0b00000)&nbsp;********************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VSSEGTYPE&nbsp;:&nbsp;(bits(3),&nbsp;bits(1),&nbsp;regidx,&nbsp;vlewidth,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VSSEGTYPE(nf,&nbsp;vm,&nbsp;rs1,&nbsp;width,&nbsp;vs3)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">nf&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b00&nbsp;@&nbsp;vm&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_vlewidth(width)&nbsp;@&nbsp;vs3&nbsp;@&nbsp;0b0100111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+val&nbsp;process_vsseg&nbsp;:&nbsp;forall&nbsp;'f&nbsp;'b&nbsp;'n&nbsp;'p,&nbsp;(0&nbsp;&lt;&nbsp;'f&nbsp;&&nbsp;'f&nbsp;&lt;=&nbsp;8)&nbsp;&&nbsp;('b&nbsp;in&nbsp;{1,&nbsp;2,&nbsp;4,&nbsp;8})&nbsp;&&nbsp;('n&nbsp;&gt;=&nbsp;0).&nbsp;(int('f),&nbsp;bits(1),&nbsp;regidx,&nbsp;int('b),&nbsp;regidx,&nbsp;int('p),&nbsp;int('n))&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_vsseg&nbsp;(nf,&nbsp;vm,&nbsp;vs3,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;EMUL_pow,&nbsp;num_elem)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;EMUL_reg&nbsp;:&nbsp;int&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;EMUL_pow&nbsp;&lt;=&nbsp;0&nbsp;then&nbsp;1&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">int_power(2,&nbsp;EMUL_pow)</span></span>;<br>
+&nbsp;&nbsp;let&nbsp;width_type&nbsp;:&nbsp;word_width&nbsp;=&nbsp;bytes_wordwidth(load_width_bytes);<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vs3_seg&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('f&nbsp;*&nbsp;'b&nbsp;*&nbsp;8))&nbsp;=&nbsp;read_vreg_seg(num_elem,&nbsp;load_width_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_pow,&nbsp;nf,&nbsp;vs3);<br>
+&nbsp;&nbsp;let&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;init_masked_source(num_elem,&nbsp;EMUL_pow,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;vm_val[i]&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;/*&nbsp;active&nbsp;segments&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vstart&nbsp;=&nbsp;to_bits(16,&nbsp;i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_offset&nbsp;=&nbsp;(i&nbsp;*&nbsp;nf&nbsp;+&nbsp;j)&nbsp;*&nbsp;load_width_bytes;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;to_bits(sizeof(xlen),&nbsp;elem_offset),&nbsp;Write(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;check_misaligned(vaddr,&nbsp;width_type)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_SAMO_Addr_Align());&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">match&nbsp;translateAddr(vaddr,&nbsp;Write(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;eares&nbsp;:&nbsp;MemoryOpResult(unit)&nbsp;=&nbsp;mem_write_ea(paddr,&nbsp;load_width_bytes,&nbsp;false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">match&nbsp;(eares)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_val&nbsp;:&nbsp;bits('b&nbsp;*&nbsp;8)&nbsp;=&nbsp;read_single_element(load_width_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vs3&nbsp;+&nbsp;to_bits(5,&nbsp;j&nbsp;*&nbsp;EMUL_reg));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;res&nbsp;:&nbsp;MemoryOpResult(bool)&nbsp;=&nbsp;mem_write_value(paddr,&nbsp;load_width_bytes,&nbsp;elem_val,&nbsp;false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">match&nbsp;(res)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;store&nbsp;got&nbsp;false&nbsp;from&nbsp;mem_write_value&quot;)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VSSEGTYPE(nf,&nbsp;vm,&nbsp;rs1,&nbsp;width,&nbsp;vs3))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;load_width_bytes&nbsp;=&nbsp;vlewidth_bytesnumber(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW&nbsp;=&nbsp;load_width_bytes&nbsp;*&nbsp;8;<br>
+&nbsp;&nbsp;let&nbsp;EEW_pow&nbsp;=&nbsp;vlewidth_pow(width);<br>
+&nbsp;&nbsp;let&nbsp;SEW_pow&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;EMUL_pow&nbsp;=&nbsp;EEW_pow&nbsp;-&nbsp;SEW_pow&nbsp;+&nbsp;LMUL_pow;<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(EMUL_pow,&nbsp;EEW);<br>
+&nbsp;&nbsp;let&nbsp;nf_int&nbsp;=&nbsp;nfields_int(nf);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_store(nf_int,&nbsp;EEW,&nbsp;EMUL_pow)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+<br>
+&nbsp;&nbsp;process_vsseg(nf_int,&nbsp;vm,&nbsp;vs3,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;EMUL_pow,&nbsp;num_elem)<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VSSEGTYPE(nf,&nbsp;vm,&nbsp;rs1,&nbsp;width,&nbsp;vs3)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vs&quot;&nbsp;^&nbsp;nfields_string(nf)&nbsp;^&nbsp;&quot;e&quot;&nbsp;^&nbsp;vlewidth_bitsnumberstr(width)&nbsp;^&nbsp;&quot;.v&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vs3)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;******************************&nbsp;Vector&nbsp;Load&nbsp;Strided&nbsp;Normal&nbsp;&&nbsp;Segment&nbsp;(mop=0b10)&nbsp;******************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VLSSEGTYPE&nbsp;:&nbsp;(bits(3),&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;vlewidth,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VLSSEGTYPE(nf,&nbsp;vm,&nbsp;rs2,&nbsp;rs1,&nbsp;width,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">nf&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b10&nbsp;@&nbsp;vm&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_vlewidth(width)&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b0000111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+val&nbsp;process_vlsseg&nbsp;:&nbsp;forall&nbsp;'f&nbsp;'b&nbsp;'n&nbsp;'p,&nbsp;(0&nbsp;&lt;&nbsp;'f&nbsp;&&nbsp;'f&nbsp;&lt;=&nbsp;8)&nbsp;&&nbsp;('b&nbsp;in&nbsp;{1,&nbsp;2,&nbsp;4,&nbsp;8})&nbsp;&&nbsp;('n&nbsp;&gt;=&nbsp;0).&nbsp;(int('f),&nbsp;bits(1),&nbsp;regidx,&nbsp;int('b),&nbsp;regidx,&nbsp;regidx,&nbsp;int('p),&nbsp;int('n))&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_vlsseg&nbsp;(nf,&nbsp;vm,&nbsp;vd,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;rs2,&nbsp;EMUL_pow,&nbsp;num_elem)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;EMUL_reg&nbsp;:&nbsp;int&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;EMUL_pow&nbsp;&lt;=&nbsp;0&nbsp;then&nbsp;1&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">int_power(2,&nbsp;EMUL_pow)</span></span>;<br>
+&nbsp;&nbsp;let&nbsp;width_type&nbsp;:&nbsp;word_width&nbsp;=&nbsp;bytes_wordwidth(load_width_bytes);<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vd_seg&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('f&nbsp;*&nbsp;'b&nbsp;*&nbsp;8))&nbsp;=&nbsp;read_vreg_seg(num_elem,&nbsp;load_width_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_pow,&nbsp;nf,&nbsp;vd);<br>
+&nbsp;&nbsp;let&nbsp;rs2_val&nbsp;:&nbsp;int&nbsp;=&nbsp;signed(get_scalar(rs2,&nbsp;sizeof(xlen)));<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;nf&nbsp;*&nbsp;load_width_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_pow,&nbsp;vd_seg,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;mask[i]&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{&nbsp;/*&nbsp;active&nbsp;segments&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vstart&nbsp;=&nbsp;to_bits(16,&nbsp;i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_offset&nbsp;=&nbsp;i&nbsp;*&nbsp;rs2_val&nbsp;+&nbsp;j&nbsp;*&nbsp;load_width_bytes;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;to_bits(sizeof(xlen),&nbsp;elem_offset),&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">if&nbsp;check_misaligned(vaddr,&nbsp;width_type)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_Load_Addr_Align());&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 50%)">match&nbsp;translateAddr(vaddr,&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">match&nbsp;mem_read(Read(Data),&nbsp;paddr,&nbsp;load_width_bytes,&nbsp;false,&nbsp;false,&nbsp;false)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(elem)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">write_single_element(load_width_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vd&nbsp;+&nbsp;to_bits(5,&nbsp;j&nbsp;*&nbsp;EMUL_reg),&nbsp;elem)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{&nbsp;/*&nbsp;prestart,&nbsp;masked&nbsp;or&nbsp;tail&nbsp;segments&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;skipped_elem&nbsp;=&nbsp;(result[i]&nbsp;&gt;&gt;&nbsp;(j&nbsp;*&nbsp;load_width_bytes&nbsp;*&nbsp;8))[(load_width_bytes&nbsp;*&nbsp;8&nbsp;-&nbsp;1)&nbsp;..&nbsp;0];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write_single_element(load_width_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vd&nbsp;+&nbsp;to_bits(5,&nbsp;j&nbsp;*&nbsp;EMUL_reg),&nbsp;skipped_elem)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VLSSEGTYPE(nf,&nbsp;vm,&nbsp;rs2,&nbsp;rs1,&nbsp;width,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;load_width_bytes&nbsp;=&nbsp;vlewidth_bytesnumber(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW&nbsp;=&nbsp;load_width_bytes&nbsp;*&nbsp;8;<br>
+&nbsp;&nbsp;let&nbsp;EEW_pow&nbsp;=&nbsp;vlewidth_pow(width);<br>
+&nbsp;&nbsp;let&nbsp;SEW_pow&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;EMUL_pow&nbsp;=&nbsp;EEW_pow&nbsp;-&nbsp;SEW_pow&nbsp;+&nbsp;LMUL_pow;<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(EMUL_pow,&nbsp;EEW);<br>
+&nbsp;&nbsp;let&nbsp;nf_int&nbsp;=&nbsp;nfields_int(nf);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_load(vd,&nbsp;vm,&nbsp;nf_int,&nbsp;EEW,&nbsp;EMUL_pow)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+<br>
+&nbsp;&nbsp;process_vlsseg(nf_int,&nbsp;vm,&nbsp;vd,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;rs2,&nbsp;EMUL_pow,&nbsp;num_elem)<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VLSSEGTYPE(nf,&nbsp;vm,&nbsp;rs2,&nbsp;rs1,&nbsp;width,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vls&quot;&nbsp;^&nbsp;nfields_string(nf)&nbsp;^&nbsp;&quot;e&quot;&nbsp;^&nbsp;vlewidth_bitsnumberstr(width)&nbsp;^&nbsp;&quot;.v&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;*****************************&nbsp;Vector&nbsp;Store&nbsp;Strided&nbsp;Normal&nbsp;&&nbsp;Segment&nbsp;(mop=0b10)&nbsp;******************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VSSSEGTYPE&nbsp;:&nbsp;(bits(3),&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;vlewidth,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VSSSEGTYPE(nf,&nbsp;vm,&nbsp;rs2,&nbsp;rs1,&nbsp;width,&nbsp;vs3)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">nf&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b10&nbsp;@&nbsp;vm&nbsp;@&nbsp;rs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_vlewidth(width)&nbsp;@&nbsp;vs3&nbsp;@&nbsp;0b0100111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+val&nbsp;process_vssseg&nbsp;:&nbsp;forall&nbsp;'f&nbsp;'b&nbsp;'n&nbsp;'p,&nbsp;(0&nbsp;&lt;&nbsp;'f&nbsp;&&nbsp;'f&nbsp;&lt;=&nbsp;8)&nbsp;&&nbsp;('b&nbsp;in&nbsp;{1,&nbsp;2,&nbsp;4,&nbsp;8})&nbsp;&&nbsp;('n&nbsp;&gt;=&nbsp;0).&nbsp;(int('f),&nbsp;bits(1),&nbsp;regidx,&nbsp;int('b),&nbsp;regidx,&nbsp;regidx,&nbsp;int('p),&nbsp;int('n))&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_vssseg&nbsp;(nf,&nbsp;vm,&nbsp;vs3,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;rs2,&nbsp;EMUL_pow,&nbsp;num_elem)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;EMUL_reg&nbsp;:&nbsp;int&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;EMUL_pow&nbsp;&lt;=&nbsp;0&nbsp;then&nbsp;1&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">int_power(2,&nbsp;EMUL_pow)</span></span>;<br>
+&nbsp;&nbsp;let&nbsp;width_type&nbsp;:&nbsp;word_width&nbsp;=&nbsp;bytes_wordwidth(load_width_bytes);<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vs3_seg&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('f&nbsp;*&nbsp;'b&nbsp;*&nbsp;8))&nbsp;=&nbsp;read_vreg_seg(num_elem,&nbsp;load_width_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_pow,&nbsp;nf,&nbsp;vs3);<br>
+&nbsp;&nbsp;let&nbsp;rs2_val&nbsp;:&nbsp;int&nbsp;=&nbsp;signed(get_scalar(rs2,&nbsp;sizeof(xlen)));<br>
+&nbsp;&nbsp;let&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;init_masked_source(num_elem,&nbsp;EMUL_pow,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;mask[i]&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;/*&nbsp;active&nbsp;segments&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vstart&nbsp;=&nbsp;to_bits(16,&nbsp;i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_offset&nbsp;=&nbsp;i&nbsp;*&nbsp;rs2_val&nbsp;+&nbsp;j&nbsp;*&nbsp;load_width_bytes;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;to_bits(sizeof(xlen),&nbsp;elem_offset),&nbsp;Write(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;check_misaligned(vaddr,&nbsp;width_type)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_SAMO_Addr_Align());&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">match&nbsp;translateAddr(vaddr,&nbsp;Write(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;eares&nbsp;:&nbsp;MemoryOpResult(unit)&nbsp;=&nbsp;mem_write_ea(paddr,&nbsp;load_width_bytes,&nbsp;false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">match&nbsp;(eares)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_val&nbsp;:&nbsp;bits('b&nbsp;*&nbsp;8)&nbsp;=&nbsp;read_single_element(load_width_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vs3&nbsp;+&nbsp;to_bits(5,&nbsp;j&nbsp;*&nbsp;EMUL_reg));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;res&nbsp;:&nbsp;MemoryOpResult(bool)&nbsp;=&nbsp;mem_write_value(paddr,&nbsp;load_width_bytes,&nbsp;elem_val,&nbsp;false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">match&nbsp;(res)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;store&nbsp;got&nbsp;false&nbsp;from&nbsp;mem_write_value&quot;)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VSSSEGTYPE(nf,&nbsp;vm,&nbsp;rs2,&nbsp;rs1,&nbsp;width,&nbsp;vs3))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;load_width_bytes&nbsp;=&nbsp;vlewidth_bytesnumber(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW&nbsp;=&nbsp;load_width_bytes&nbsp;*&nbsp;8;<br>
+&nbsp;&nbsp;let&nbsp;EEW_pow&nbsp;=&nbsp;vlewidth_pow(width);<br>
+&nbsp;&nbsp;let&nbsp;SEW_pow&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;EMUL_pow&nbsp;=&nbsp;EEW_pow&nbsp;-&nbsp;SEW_pow&nbsp;+&nbsp;LMUL_pow;<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(EMUL_pow,&nbsp;EEW);<br>
+&nbsp;&nbsp;let&nbsp;nf_int&nbsp;=&nbsp;nfields_int(nf);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_store(nf_int,&nbsp;EEW,&nbsp;EMUL_pow)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+<br>
+&nbsp;&nbsp;process_vssseg(nf_int,&nbsp;vm,&nbsp;vs3,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;rs2,&nbsp;EMUL_pow,&nbsp;num_elem)<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VSSSEGTYPE(nf,&nbsp;vm,&nbsp;rs2,&nbsp;rs1,&nbsp;width,&nbsp;vs3)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vss&quot;&nbsp;^&nbsp;nfields_string(nf)&nbsp;^&nbsp;&quot;e&quot;&nbsp;^&nbsp;vlewidth_bitsnumberstr(width)&nbsp;^&nbsp;&quot;.v&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vs3)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;*************************&nbsp;Vector&nbsp;Load&nbsp;Indexed&nbsp;Unordered&nbsp;Normal&nbsp;&&nbsp;Segment&nbsp;(mop=0b01)&nbsp;*************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VLUXSEGTYPE&nbsp;:&nbsp;(bits(3),&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;vlewidth,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VLUXSEGTYPE(nf,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;width,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">nf&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b01&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_vlewidth(width)&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b0000111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+val&nbsp;process_vlxseg&nbsp;:&nbsp;forall&nbsp;'f&nbsp;'ib&nbsp;'db&nbsp;'ip&nbsp;'dp&nbsp;'n,&nbsp;(0&nbsp;&lt;&nbsp;'f&nbsp;&&nbsp;'f&nbsp;&lt;=&nbsp;8)&nbsp;&&nbsp;('ib&nbsp;in&nbsp;{1,&nbsp;2,&nbsp;4,&nbsp;8})&nbsp;&&nbsp;('db&nbsp;in&nbsp;{1,&nbsp;2,&nbsp;4,&nbsp;8})&nbsp;&&nbsp;('n&nbsp;&gt;=&nbsp;0).&nbsp;(int('f),&nbsp;bits(1),&nbsp;regidx,&nbsp;int('ib),&nbsp;int('db),&nbsp;int('ip),&nbsp;int('dp),&nbsp;regidx,&nbsp;regidx,&nbsp;int('n),&nbsp;int)&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_vlxseg&nbsp;(nf,&nbsp;vm,&nbsp;vd,&nbsp;EEW_index_bytes,&nbsp;EEW_data_bytes,&nbsp;EMUL_index_pow,&nbsp;EMUL_data_pow,&nbsp;rs1,&nbsp;vs2,&nbsp;num_elem,&nbsp;mop)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;EMUL_data_reg&nbsp;:&nbsp;int&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;EMUL_data_pow&nbsp;&lt;=&nbsp;0&nbsp;then&nbsp;1&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">int_power(2,&nbsp;EMUL_data_pow)</span></span>;<br>
+&nbsp;&nbsp;let&nbsp;width_type&nbsp;:&nbsp;word_width&nbsp;=&nbsp;bytes_wordwidth(EEW_data_bytes);<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vd_seg&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('f&nbsp;*&nbsp;'db&nbsp;*&nbsp;8))&nbsp;=&nbsp;read_vreg_seg(num_elem,&nbsp;EEW_data_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_data_pow,&nbsp;nf,&nbsp;vd);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('ib&nbsp;*&nbsp;8))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;EEW_index_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_index_pow,&nbsp;vs2);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;nf&nbsp;*&nbsp;EEW_data_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_data_pow,&nbsp;vd_seg,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;currently&nbsp;mop&nbsp;=&nbsp;1&nbsp;(unordered)&nbsp;or&nbsp;3&nbsp;(ordered)&nbsp;do&nbsp;the&nbsp;same&nbsp;operations&nbsp;*/<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;mask[i]&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{&nbsp;/*&nbsp;active&nbsp;segments&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vstart&nbsp;=&nbsp;to_bits(16,&nbsp;i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_offset&nbsp;:&nbsp;int&nbsp;=&nbsp;signed(vs2_val[i])&nbsp;+&nbsp;j&nbsp;*&nbsp;EEW_data_bytes;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;to_bits(sizeof(xlen),&nbsp;elem_offset),&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">if&nbsp;check_misaligned(vaddr,&nbsp;width_type)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_Load_Addr_Align());&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 50%)">match&nbsp;translateAddr(vaddr,&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">match&nbsp;mem_read(Read(Data),&nbsp;paddr,&nbsp;EEW_data_bytes,&nbsp;false,&nbsp;false,&nbsp;false)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(elem)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">write_single_element(EEW_data_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vd&nbsp;+&nbsp;to_bits(5,&nbsp;j&nbsp;*&nbsp;EMUL_data_reg),&nbsp;elem)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{&nbsp;/*&nbsp;prestart,&nbsp;masked&nbsp;or&nbsp;tail&nbsp;segments&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;skipped_elem&nbsp;=&nbsp;(result[i]&nbsp;&gt;&gt;&nbsp;(j&nbsp;*&nbsp;EEW_data_bytes&nbsp;*&nbsp;8))[(EEW_data_bytes&nbsp;*&nbsp;8&nbsp;-&nbsp;1)&nbsp;..&nbsp;0];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write_single_element(EEW_data_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vd&nbsp;+&nbsp;to_bits(5,&nbsp;j&nbsp;*&nbsp;EMUL_data_reg),&nbsp;skipped_elem)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span><br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VLUXSEGTYPE(nf,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;width,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;EEW_index_pow&nbsp;=&nbsp;vlewidth_pow(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW_index_bytes&nbsp;=&nbsp;vlewidth_bytesnumber(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW_data_pow&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;let&nbsp;EEW_data_bytes&nbsp;=&nbsp;get_sew_bytes();<br>
+&nbsp;&nbsp;let&nbsp;EMUL_data_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;EMUL_index_pow&nbsp;=&nbsp;EEW_index_pow&nbsp;-&nbsp;EEW_data_pow&nbsp;+&nbsp;EMUL_data_pow;<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(EMUL_data_pow,&nbsp;EEW_data_bytes&nbsp;*&nbsp;8);<br>
+&nbsp;&nbsp;let&nbsp;nf_int&nbsp;=&nbsp;nfields_int(nf);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_indexed_load(vd,&nbsp;vm,&nbsp;nf_int,&nbsp;EEW_index_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_index_pow,&nbsp;EMUL_data_pow)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+<br>
+&nbsp;&nbsp;process_vlxseg(nf_int,&nbsp;vm,&nbsp;vd,&nbsp;EEW_index_bytes,&nbsp;EEW_data_bytes,&nbsp;EMUL_index_pow,&nbsp;EMUL_data_pow,&nbsp;rs1,&nbsp;vs2,&nbsp;num_elem,&nbsp;1)<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VLUXSEGTYPE(nf,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;width,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vlux&quot;&nbsp;^&nbsp;nfields_string(nf)&nbsp;^&nbsp;&quot;ei&quot;&nbsp;^&nbsp;vlewidth_bitsnumberstr(width)&nbsp;^&nbsp;&quot;.v&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(vs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;**************************&nbsp;Vector&nbsp;Load&nbsp;Indexed&nbsp;Ordered&nbsp;Normal&nbsp;&&nbsp;Segment&nbsp;(mop=0b11)&nbsp;**************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VLOXSEGTYPE&nbsp;:&nbsp;(bits(3),&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;vlewidth,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VLOXSEGTYPE(nf,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;width,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">nf&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b11&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_vlewidth(width)&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b0000111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VLOXSEGTYPE(nf,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;width,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;EEW_index_pow&nbsp;=&nbsp;vlewidth_pow(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW_index_bytes&nbsp;=&nbsp;vlewidth_bytesnumber(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW_data_pow&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;let&nbsp;EEW_data_bytes&nbsp;=&nbsp;get_sew_bytes();<br>
+&nbsp;&nbsp;let&nbsp;EMUL_data_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;EMUL_index_pow&nbsp;=&nbsp;EEW_index_pow&nbsp;-&nbsp;EEW_data_pow&nbsp;+&nbsp;EMUL_data_pow;<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(EMUL_data_pow,&nbsp;EEW_data_bytes&nbsp;*&nbsp;8);<br>
+&nbsp;&nbsp;let&nbsp;nf_int&nbsp;=&nbsp;nfields_int(nf);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_indexed_load(vd,&nbsp;vm,&nbsp;nf_int,&nbsp;EEW_index_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_index_pow,&nbsp;EMUL_data_pow)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+<br>
+&nbsp;&nbsp;process_vlxseg(nf_int,&nbsp;vm,&nbsp;vd,&nbsp;EEW_index_bytes,&nbsp;EEW_data_bytes,&nbsp;EMUL_index_pow,&nbsp;EMUL_data_pow,&nbsp;rs1,&nbsp;vs2,&nbsp;num_elem,&nbsp;3)<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VLOXSEGTYPE(nf,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;width,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vlox&quot;&nbsp;^&nbsp;nfields_string(nf)&nbsp;^&nbsp;&quot;ei&quot;&nbsp;^&nbsp;vlewidth_bitsnumberstr(width)&nbsp;^&nbsp;&quot;.v&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(vs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;************************&nbsp;Vector&nbsp;Store&nbsp;Indexed&nbsp;Unordered&nbsp;Normal&nbsp;&&nbsp;Segment&nbsp;(mop=0b01)&nbsp;*************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VSUXSEGTYPE&nbsp;:&nbsp;(bits(3),&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;vlewidth,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VSUXSEGTYPE(nf,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;width,&nbsp;vs3)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">nf&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b01&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_vlewidth(width)&nbsp;@&nbsp;vs3&nbsp;@&nbsp;0b0100111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+val&nbsp;process_vsxseg&nbsp;:&nbsp;forall&nbsp;'f&nbsp;'ib&nbsp;'db&nbsp;'ip&nbsp;'dp&nbsp;'n,&nbsp;(0&nbsp;&lt;&nbsp;'f&nbsp;&&nbsp;'f&nbsp;&lt;=&nbsp;8)&nbsp;&&nbsp;('ib&nbsp;in&nbsp;{1,&nbsp;2,&nbsp;4,&nbsp;8})&nbsp;&&nbsp;('db&nbsp;in&nbsp;{1,&nbsp;2,&nbsp;4,&nbsp;8})&nbsp;&&nbsp;('n&nbsp;&gt;=&nbsp;0).&nbsp;(int('f),&nbsp;bits(1),&nbsp;regidx,&nbsp;int('ib),&nbsp;int('db),&nbsp;int('ip),&nbsp;int('dp),&nbsp;regidx,&nbsp;regidx,&nbsp;int('n),&nbsp;int)&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_vsxseg&nbsp;(nf,&nbsp;vm,&nbsp;vs3,&nbsp;EEW_index_bytes,&nbsp;EEW_data_bytes,&nbsp;EMUL_index_pow,&nbsp;EMUL_data_pow,&nbsp;rs1,&nbsp;vs2,&nbsp;num_elem,&nbsp;mop)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;EMUL_data_reg&nbsp;:&nbsp;int&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;EMUL_data_pow&nbsp;&lt;=&nbsp;0&nbsp;then&nbsp;1&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">int_power(2,&nbsp;EMUL_data_pow)</span></span>;<br>
+&nbsp;&nbsp;let&nbsp;width_type&nbsp;:&nbsp;word_width&nbsp;=&nbsp;bytes_wordwidth(EEW_data_bytes);<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vs3_seg&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('f&nbsp;*&nbsp;'db&nbsp;*&nbsp;8))&nbsp;=&nbsp;read_vreg_seg(num_elem,&nbsp;EEW_data_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_data_pow,&nbsp;nf,&nbsp;vs3);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('ib&nbsp;*&nbsp;8))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;EEW_index_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_index_pow,&nbsp;vs2);<br>
+&nbsp;&nbsp;let&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;=&nbsp;init_masked_source(num_elem,&nbsp;EMUL_data_pow,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;currently&nbsp;mop&nbsp;=&nbsp;1&nbsp;(unordered)&nbsp;or&nbsp;3&nbsp;(ordered)&nbsp;do&nbsp;the&nbsp;same&nbsp;operations&nbsp;*/<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;mask[i]&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;/*&nbsp;active&nbsp;segments&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vstart&nbsp;=&nbsp;to_bits(16,&nbsp;i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;0&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_offset&nbsp;:&nbsp;int&nbsp;=&nbsp;signed(vs2_val[i])&nbsp;+&nbsp;j&nbsp;*&nbsp;EEW_data_bytes;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;to_bits(sizeof(xlen),&nbsp;elem_offset),&nbsp;Write(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;check_misaligned(vaddr,&nbsp;width_type)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_SAMO_Addr_Align());&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">match&nbsp;translateAddr(vaddr,&nbsp;Write(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;eares&nbsp;:&nbsp;MemoryOpResult(unit)&nbsp;=&nbsp;mem_write_ea(paddr,&nbsp;EEW_data_bytes,&nbsp;false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">match&nbsp;(eares)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_val&nbsp;:&nbsp;bits('db&nbsp;*&nbsp;8)&nbsp;=&nbsp;read_single_element(EEW_data_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vs3&nbsp;+&nbsp;to_bits(5,&nbsp;j&nbsp;*&nbsp;EMUL_data_reg));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;res&nbsp;:&nbsp;MemoryOpResult(bool)&nbsp;=&nbsp;mem_write_value(paddr,&nbsp;EEW_data_bytes,&nbsp;elem_val,&nbsp;false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">match&nbsp;(res)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;store&nbsp;got&nbsp;false&nbsp;from&nbsp;mem_write_value&quot;)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VSUXSEGTYPE(nf,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;width,&nbsp;vs3))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;EEW_index_pow&nbsp;=&nbsp;vlewidth_pow(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW_index_bytes&nbsp;=&nbsp;vlewidth_bytesnumber(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW_data_pow&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;let&nbsp;EEW_data_bytes&nbsp;=&nbsp;get_sew_bytes();<br>
+&nbsp;&nbsp;let&nbsp;EMUL_data_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;EMUL_index_pow&nbsp;=&nbsp;EEW_index_pow&nbsp;-&nbsp;EEW_data_pow&nbsp;+&nbsp;EMUL_data_pow;<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(EMUL_data_pow,&nbsp;EEW_data_bytes&nbsp;*&nbsp;8);&nbsp;/*&nbsp;number&nbsp;of&nbsp;data&nbsp;and&nbsp;indices&nbsp;are&nbsp;the&nbsp;same&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;nf_int&nbsp;=&nbsp;nfields_int(nf);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_indexed_store(nf_int,&nbsp;EEW_index_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_index_pow,&nbsp;EMUL_data_pow)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+<br>
+&nbsp;&nbsp;process_vsxseg(nf_int,&nbsp;vm,&nbsp;vs3,&nbsp;EEW_index_bytes,&nbsp;EEW_data_bytes,&nbsp;EMUL_index_pow,&nbsp;EMUL_data_pow,&nbsp;rs1,&nbsp;vs2,&nbsp;num_elem,&nbsp;1)<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VSUXSEGTYPE(nf,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;width,&nbsp;vs3)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vsux&quot;&nbsp;^&nbsp;nfields_string(nf)&nbsp;^&nbsp;&quot;ei&quot;&nbsp;^&nbsp;vlewidth_bitsnumberstr(width)&nbsp;^&nbsp;&quot;.v&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vs3)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(vs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;*************************&nbsp;Vector&nbsp;Store&nbsp;Indexed&nbsp;Ordered&nbsp;Normal&nbsp;&&nbsp;Segment&nbsp;(mop=0b11)&nbsp;**************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VSOXSEGTYPE&nbsp;:&nbsp;(bits(3),&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;vlewidth,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VSOXSEGTYPE(nf,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;width,&nbsp;vs3)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">nf&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b11&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_vlewidth(width)&nbsp;@&nbsp;vs3&nbsp;@&nbsp;0b0100111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VSOXSEGTYPE(nf,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;width,&nbsp;vs3))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;EEW_index_pow&nbsp;=&nbsp;vlewidth_pow(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW_index_bytes&nbsp;=&nbsp;vlewidth_bytesnumber(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW_data_pow&nbsp;=&nbsp;get_sew_pow();<br>
+&nbsp;&nbsp;let&nbsp;EEW_data_bytes&nbsp;=&nbsp;get_sew_bytes();<br>
+&nbsp;&nbsp;let&nbsp;EMUL_data_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;EMUL_index_pow&nbsp;=&nbsp;EEW_index_pow&nbsp;-&nbsp;EEW_data_pow&nbsp;+&nbsp;EMUL_data_pow;<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(EMUL_data_pow,&nbsp;EEW_data_bytes&nbsp;*&nbsp;8);&nbsp;/*&nbsp;number&nbsp;of&nbsp;data&nbsp;and&nbsp;indices&nbsp;are&nbsp;the&nbsp;same&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;nf_int&nbsp;=&nbsp;nfields_int(nf);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_indexed_store(nf_int,&nbsp;EEW_index_bytes&nbsp;*&nbsp;8,&nbsp;EMUL_index_pow,&nbsp;EMUL_data_pow)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+<br>
+&nbsp;&nbsp;process_vsxseg(nf_int,&nbsp;vm,&nbsp;vs3,&nbsp;EEW_index_bytes,&nbsp;EEW_data_bytes,&nbsp;EMUL_index_pow,&nbsp;EMUL_data_pow,&nbsp;rs1,&nbsp;vs2,&nbsp;num_elem,&nbsp;3)<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VSUXSEGTYPE(nf,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;width,&nbsp;vs3)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vsox&quot;&nbsp;^&nbsp;nfields_string(nf)&nbsp;^&nbsp;&quot;ei&quot;&nbsp;^&nbsp;vlewidth_bitsnumberstr(width)&nbsp;^&nbsp;&quot;.v&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vs3)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(vs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;*****************&nbsp;Vector&nbsp;Load&nbsp;Unit-Stride&nbsp;Whole&nbsp;Register&nbsp;(vm=0b1,&nbsp;mop=0b00,&nbsp;lumop=0b01000)&nbsp;******************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VLRETYPE&nbsp;:&nbsp;(bits(3),&nbsp;regidx,&nbsp;vlewidth,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VLRETYPE(nf,&nbsp;rs1,&nbsp;width,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">nf&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b00&nbsp;@&nbsp;0b1&nbsp;@&nbsp;0b01000&nbsp;@&nbsp;rs1&nbsp;@&nbsp;encdec_vlewidth(width)&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b0000111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+val&nbsp;process_vlre&nbsp;:&nbsp;forall&nbsp;'f&nbsp;'b&nbsp;'n,&nbsp;('f&nbsp;in&nbsp;{1,&nbsp;2,&nbsp;4,&nbsp;8})&nbsp;&&nbsp;('b&nbsp;in&nbsp;{1,&nbsp;2,&nbsp;4,&nbsp;8})&nbsp;&&nbsp;('n&nbsp;&gt;=&nbsp;0).&nbsp;(int('f),&nbsp;regidx,&nbsp;int('b),&nbsp;regidx,&nbsp;int('n))&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_vlre&nbsp;(nf,&nbsp;vd,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;elem_per_reg)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;width_type&nbsp;:&nbsp;word_width&nbsp;=&nbsp;bytes_wordwidth(load_width_bytes);<br>
+&nbsp;&nbsp;let&nbsp;start_element&nbsp;=&nbsp;get_start_element();<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;start_element&nbsp;&gt;=&nbsp;nf&nbsp;*&nbsp;elem_per_reg&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">return&nbsp;RETIRE_SUCCESS</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;&nbsp;/*&nbsp;no&nbsp;elements&nbsp;are&nbsp;written&nbsp;if&nbsp;vstart&nbsp;&gt;=&nbsp;evl&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;elem_to_align&nbsp;:&nbsp;int&nbsp;=&nbsp;start_element&nbsp;%&nbsp;elem_per_reg;<br>
+&nbsp;&nbsp;cur_field&nbsp;:&nbsp;int&nbsp;=&nbsp;start_element&nbsp;/&nbsp;elem_per_reg;<br>
+&nbsp;&nbsp;cur_elem&nbsp;&nbsp;:&nbsp;int&nbsp;=&nbsp;start_element;<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;elem_to_align&nbsp;&gt;&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;elem_to_align&nbsp;to&nbsp;(elem_per_reg&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vstart&nbsp;=&nbsp;to_bits(16,&nbsp;cur_elem);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_offset&nbsp;=&nbsp;cur_elem&nbsp;*&nbsp;load_width_bytes;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;to_bits(sizeof(xlen),&nbsp;elem_offset),&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;check_misaligned(vaddr,&nbsp;width_type)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_Load_Addr_Align());&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">match&nbsp;translateAddr(vaddr,&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">match&nbsp;mem_read(Read(Data),&nbsp;paddr,&nbsp;load_width_bytes,&nbsp;false,&nbsp;false,&nbsp;false)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(elem)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">write_single_element(load_width_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vd&nbsp;+&nbsp;to_bits(5,&nbsp;cur_field),&nbsp;elem)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_elem&nbsp;=&nbsp;cur_elem&nbsp;+&nbsp;1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cur_field&nbsp;=&nbsp;cur_field&nbsp;+&nbsp;1<br>
+&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;cur_field&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(elem_per_reg&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vstart&nbsp;=&nbsp;to_bits(16,&nbsp;cur_elem);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_offset&nbsp;=&nbsp;cur_elem&nbsp;*&nbsp;load_width_bytes;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;to_bits(sizeof(xlen),&nbsp;elem_offset),&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;check_misaligned(vaddr,&nbsp;width_type)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_Load_Addr_Align());&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;translateAddr(vaddr,&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">match&nbsp;mem_read(Read(Data),&nbsp;paddr,&nbsp;load_width_bytes,&nbsp;false,&nbsp;false,&nbsp;false)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(elem)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">write_single_element(load_width_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vd&nbsp;+&nbsp;to_bits(5,&nbsp;j),&nbsp;elem)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_elem&nbsp;=&nbsp;cur_elem&nbsp;+&nbsp;1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VLRETYPE(nf,&nbsp;rs1,&nbsp;width,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;load_width_bytes&nbsp;=&nbsp;vlewidth_bytesnumber(width);<br>
+&nbsp;&nbsp;let&nbsp;EEW&nbsp;=&nbsp;load_width_bytes&nbsp;*&nbsp;8;<br>
+&nbsp;&nbsp;let&nbsp;VLEN&nbsp;=&nbsp;unsigned(vlenb)&nbsp;*&nbsp;8;<br>
+&nbsp;&nbsp;let&nbsp;elem_per_reg&nbsp;:&nbsp;int&nbsp;=&nbsp;VLEN&nbsp;/&nbsp;EEW;<br>
+&nbsp;&nbsp;let&nbsp;nf_int&nbsp;=&nbsp;nfields_int(nf);<br>
+<br>
+&nbsp;&nbsp;assert(elem_per_reg&nbsp;&gt;=&nbsp;0);<br>
+&nbsp;&nbsp;if&nbsp;not(nf_int&nbsp;==&nbsp;1&nbsp;|&nbsp;nf_int&nbsp;==&nbsp;2&nbsp;|&nbsp;nf_int&nbsp;==&nbsp;4&nbsp;|&nbsp;nf_int&nbsp;==&nbsp;8)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+<br>
+&nbsp;&nbsp;process_vlre(nf_int,&nbsp;vd,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;elem_per_reg)<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VLRETYPE(nf,&nbsp;rs1,&nbsp;width,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vl&quot;&nbsp;^&nbsp;nfields_string(nf)&nbsp;^&nbsp;&quot;re&quot;&nbsp;^&nbsp;vlewidth_bitsnumberstr(width)&nbsp;^&nbsp;&quot;.v&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;<br>
+<br>
+/*&nbsp;*****************&nbsp;Vector&nbsp;Store&nbsp;Unit-Stride&nbsp;Whole&nbsp;Register&nbsp;(vm=0b1,&nbsp;mop=0b00,&nbsp;lumop=0b01000)&nbsp;*****************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VSRETYPE&nbsp;:&nbsp;(bits(3),&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VSRETYPE(nf,&nbsp;rs1,&nbsp;vs3)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">nf&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b00&nbsp;@&nbsp;0b1&nbsp;@&nbsp;0b01000&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b000&nbsp;@&nbsp;vs3&nbsp;@&nbsp;0b0100111</span>&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveVExt()</span><br>
+<br>
+val&nbsp;process_vsre&nbsp;:&nbsp;forall&nbsp;'f&nbsp;'b&nbsp;'n,&nbsp;('f&nbsp;in&nbsp;{1,&nbsp;2,&nbsp;4,&nbsp;8})&nbsp;&&nbsp;('b&nbsp;in&nbsp;{1,&nbsp;2,&nbsp;4,&nbsp;8})&nbsp;&&nbsp;('n&nbsp;&gt;=&nbsp;0).&nbsp;(int('f),&nbsp;int('b),&nbsp;regidx,&nbsp;regidx,&nbsp;int('n))&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_vsre&nbsp;(nf,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;vs3,&nbsp;elem_per_reg)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;width_type&nbsp;:&nbsp;word_width&nbsp;=&nbsp;BYTE;<br>
+&nbsp;&nbsp;let&nbsp;start_element&nbsp;=&nbsp;get_start_element();<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;start_element&nbsp;&gt;=&nbsp;nf&nbsp;*&nbsp;elem_per_reg&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">return&nbsp;RETIRE_SUCCESS</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;&nbsp;/*&nbsp;no&nbsp;elements&nbsp;are&nbsp;written&nbsp;if&nbsp;vstart&nbsp;&gt;=&nbsp;evl&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;elem_to_align&nbsp;:&nbsp;int&nbsp;=&nbsp;start_element&nbsp;%&nbsp;elem_per_reg;<br>
+&nbsp;&nbsp;cur_field&nbsp;:&nbsp;int&nbsp;=&nbsp;start_element&nbsp;/&nbsp;elem_per_reg;<br>
+&nbsp;&nbsp;cur_elem&nbsp;&nbsp;:&nbsp;int&nbsp;=&nbsp;start_element;<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;elem_to_align&nbsp;&gt;&nbsp;0&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;elem_to_align&nbsp;to&nbsp;(elem_per_reg&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vstart&nbsp;=&nbsp;to_bits(16,&nbsp;cur_elem);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_offset&nbsp;:&nbsp;int&nbsp;=&nbsp;cur_elem&nbsp;*&nbsp;load_width_bytes;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;to_bits(sizeof(xlen),&nbsp;elem_offset),&nbsp;Write(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;check_misaligned(vaddr,&nbsp;width_type)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_SAMO_Addr_Align());&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 55%)">match&nbsp;translateAddr(vaddr,&nbsp;Write(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;eares&nbsp;:&nbsp;MemoryOpResult(unit)&nbsp;=&nbsp;mem_write_ea(paddr,&nbsp;load_width_bytes,&nbsp;false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">match&nbsp;(eares)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem&nbsp;:&nbsp;bits('b&nbsp;*&nbsp;8)&nbsp;=&nbsp;read_single_element(load_width_bytes&nbsp;*&nbsp;8,&nbsp;i,&nbsp;vs3&nbsp;+&nbsp;to_bits(5,&nbsp;cur_field));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;res&nbsp;:&nbsp;MemoryOpResult(bool)&nbsp;=&nbsp;mem_write_value(paddr,&nbsp;load_width_bytes,&nbsp;elem,&nbsp;false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">match&nbsp;(res)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;store&nbsp;got&nbsp;false&nbsp;from&nbsp;mem_write_value&quot;)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_elem&nbsp;=&nbsp;cur_elem&nbsp;+&nbsp;1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cur_field&nbsp;=&nbsp;cur_field&nbsp;+&nbsp;1<br>
+&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(j&nbsp;from&nbsp;cur_field&nbsp;to&nbsp;(nf&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;vs3_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('b&nbsp;*&nbsp;8))&nbsp;=&nbsp;read_vreg(elem_per_reg,&nbsp;load_width_bytes&nbsp;*&nbsp;8,&nbsp;0,&nbsp;vs3&nbsp;+&nbsp;to_bits(5,&nbsp;j));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(elem_per_reg&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vstart&nbsp;=&nbsp;to_bits(16,&nbsp;cur_elem);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;elem_offset&nbsp;=&nbsp;cur_elem&nbsp;*&nbsp;load_width_bytes;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;to_bits(sizeof(xlen),&nbsp;elem_offset),&nbsp;Write(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">if&nbsp;check_misaligned(vaddr,&nbsp;width_type)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 65%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_SAMO_Addr_Align());&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 65%)">match&nbsp;translateAddr(vaddr,&nbsp;Write(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;eares&nbsp;:&nbsp;MemoryOpResult(unit)&nbsp;=&nbsp;mem_write_ea(paddr,&nbsp;load_width_bytes,&nbsp;false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">match&nbsp;(eares)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;res&nbsp;:&nbsp;MemoryOpResult(bool)&nbsp;=&nbsp;mem_write_value(paddr,&nbsp;load_width_bytes,&nbsp;vs3_val[i],&nbsp;false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">match&nbsp;(res)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;store&nbsp;got&nbsp;false&nbsp;from&nbsp;mem_write_value&quot;)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur_elem&nbsp;=&nbsp;cur_elem&nbsp;+&nbsp;1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VSRETYPE(nf,&nbsp;rs1,&nbsp;vs3))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;load_width_bytes&nbsp;=&nbsp;1;<br>
+&nbsp;&nbsp;let&nbsp;EEW&nbsp;=&nbsp;8;<br>
+&nbsp;&nbsp;let&nbsp;VLEN&nbsp;=&nbsp;unsigned(vlenb)&nbsp;*&nbsp;8;<br>
+&nbsp;&nbsp;let&nbsp;elem_per_reg&nbsp;:&nbsp;int&nbsp;=&nbsp;VLEN&nbsp;/&nbsp;EEW;<br>
+&nbsp;&nbsp;let&nbsp;nf_int&nbsp;=&nbsp;nfields_int(nf);<br>
+<br>
+&nbsp;&nbsp;assert(elem_per_reg&nbsp;&gt;=&nbsp;0);<br>
+&nbsp;&nbsp;if&nbsp;not(nf_int&nbsp;==&nbsp;1&nbsp;|&nbsp;nf_int&nbsp;==&nbsp;2&nbsp;|&nbsp;nf_int&nbsp;==&nbsp;4&nbsp;|&nbsp;nf_int&nbsp;==&nbsp;8)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+<br>
+&nbsp;&nbsp;process_vsre(nf_int,&nbsp;load_width_bytes,&nbsp;rs1,&nbsp;vs3,&nbsp;elem_per_reg)<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VSRETYPE(nf,&nbsp;rs1,&nbsp;vs3)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vs&quot;&nbsp;^&nbsp;nfields_string(nf)&nbsp;^&nbsp;&quot;r.v&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vs3)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;<br>
+<br>
+/*&nbsp;**************&nbsp;Vector&nbsp;Mask&nbsp;Load/Store&nbsp;Unit-Stride&nbsp;(nf=0b000,&nbsp;mop=0b00,&nbsp;lumop&nbsp;or&nbsp;sumop=0b01011)&nbsp;**************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VMTYPE&nbsp;:&nbsp;(regidx,&nbsp;regidx,&nbsp;vmlsop)<br>
+<br>
+mapping&nbsp;encdec_lsop&nbsp;:&nbsp;vmlsop&nbsp;&lt;-&gt;&nbsp;bits(7)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VLM</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b0000111,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VSM</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b0100111<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VMTYPE(rs1,&nbsp;vd_or_vs3,&nbsp;op)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">0b000&nbsp;@&nbsp;0b0&nbsp;@&nbsp;0b00&nbsp;@&nbsp;0b1&nbsp;@&nbsp;0b01011&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b000&nbsp;@&nbsp;vd_or_vs3&nbsp;@&nbsp;encdec_lsop(op)</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+val&nbsp;process_vm&nbsp;:&nbsp;forall&nbsp;'n&nbsp;'l,&nbsp;('n&nbsp;&gt;=&nbsp;0&nbsp;&&nbsp;'l&nbsp;&gt;=&nbsp;0).&nbsp;(regidx,&nbsp;regidx,&nbsp;int('n),&nbsp;int('l),&nbsp;vmlsop)&nbsp;-&gt;&nbsp;Retired<br>
+function&nbsp;process_vm(vd_or_vs3,&nbsp;rs1,&nbsp;num_elem,&nbsp;evl,&nbsp;op)&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;width_type&nbsp;:&nbsp;word_width&nbsp;=&nbsp;BYTE;<br>
+&nbsp;&nbsp;let&nbsp;start_element&nbsp;=&nbsp;get_start_element();<br>
+&nbsp;&nbsp;let&nbsp;vd_or_vs3_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits(8))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;8,&nbsp;0,&nbsp;vd_or_vs3);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;start_element&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;i&nbsp;&lt;&nbsp;evl&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;/*&nbsp;active&nbsp;elements&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vstart&nbsp;=&nbsp;to_bits(16,&nbsp;i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;op&nbsp;==&nbsp;VLM&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{&nbsp;/*&nbsp;load&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 55%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;to_bits(sizeof(xlen),&nbsp;i),&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">if&nbsp;check_misaligned(vaddr,&nbsp;width_type)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_Load_Addr_Align());&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 45%)">match&nbsp;translateAddr(vaddr,&nbsp;Read(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 40%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">match&nbsp;mem_read(Read(Data),&nbsp;paddr,&nbsp;1,&nbsp;false,&nbsp;false,&nbsp;false)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(elem)&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">write_single_element(8,&nbsp;i,&nbsp;vd_or_vs3,&nbsp;elem)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;op&nbsp;==&nbsp;VSM&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{&nbsp;/*&nbsp;store&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">match&nbsp;ext_data_get_addr(rs1,&nbsp;to_bits(sizeof(xlen),&nbsp;i),&nbsp;Write(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_Error(e)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">{&nbsp;ext_handle_data_check_error(e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ext_DataAddr_OK(vaddr)&nbsp;=&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">if&nbsp;check_misaligned(vaddr,&nbsp;width_type)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 40%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;E_SAMO_Addr_Align());&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 40%)">match&nbsp;translateAddr(vaddr,&nbsp;Write(Data),&nbsp;width_type)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Failure(e,&nbsp;c,&nbsp;_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">{&nbsp;handle_exception(e,&nbsp;c);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TR_Address(paddr,&nbsp;_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;eares&nbsp;:&nbsp;MemoryOpResult(unit)&nbsp;=&nbsp;mem_write_ea(paddr,&nbsp;1,&nbsp;false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">match&nbsp;(eares)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(_)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;res&nbsp;:&nbsp;MemoryOpResult(bool)&nbsp;=&nbsp;mem_write_value(paddr,&nbsp;1,&nbsp;vd_or_vs3_val[i],&nbsp;false,&nbsp;false,&nbsp;false);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">match&nbsp;(res)&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(true)&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">()</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemValue(false)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">internal_error(__FILE__,&nbsp;__LINE__,&nbsp;&quot;store&nbsp;got&nbsp;false&nbsp;from&nbsp;mem_write_value&quot;)</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MemException(e)&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 30%)">{&nbsp;handle_mem_exception(vaddr,&nbsp;e);&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span></span><span style="background-color: hsl(0, 85%, 70%)">&#171;Invisible branch not taken here&#187</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span>&nbsp;else&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;/*&nbsp;tail&nbsp;elements&nbsp;for&nbsp;mask&nbsp;load,&nbsp;always&nbsp;with&nbsp;agnostic&nbsp;policy&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;op&nbsp;==&nbsp;VLM&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write_single_element(8,&nbsp;i,&nbsp;vd_or_vs3,&nbsp;vd_or_vs3_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;for&nbsp;agnostic&nbsp;behavior&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 70%)">&#171;Invisible branch not taken here&#187</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VMTYPE(rs1,&nbsp;vd_or_vs3,&nbsp;op))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;EEW&nbsp;=&nbsp;8;<br>
+&nbsp;&nbsp;let&nbsp;EMUL_pow&nbsp;=&nbsp;0;<br>
+&nbsp;&nbsp;let&nbsp;vl_val&nbsp;=&nbsp;unsigned(vl);<br>
+&nbsp;&nbsp;let&nbsp;evl&nbsp;:&nbsp;int&nbsp;=&nbsp;if&nbsp;vl_val&nbsp;%&nbsp;8&nbsp;==&nbsp;0&nbsp;then&nbsp;vl_val&nbsp;/&nbsp;8&nbsp;else&nbsp;vl_val&nbsp;/&nbsp;8&nbsp;+&nbsp;1;&nbsp;/*&nbsp;the&nbsp;effective&nbsp;vector&nbsp;length&nbsp;is&nbsp;evl=ceil(vl/8)&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(EMUL_pow,&nbsp;EEW);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_vd_unmasked()&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+<br>
+&nbsp;&nbsp;assert(evl&nbsp;&gt;=&nbsp;0);<br>
+&nbsp;&nbsp;process_vm(vd_or_vs3,&nbsp;rs1,&nbsp;num_elem,&nbsp;evl,&nbsp;op)<br>
+}<br>
+<br>
+mapping&nbsp;vmtype_mnemonic&nbsp;:&nbsp;vmlsop&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;VLM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vlm.v&quot;</span>,<br>
+&nbsp;&nbsp;VSM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vsm.v&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VMTYPE(rs1,&nbsp;vd_or_vs3,&nbsp;op)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;vmtype_mnemonic(op)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd_or_vs3)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;(&quot;&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;&quot;)&quot;<br>
+</code>
+</body>
+</html>

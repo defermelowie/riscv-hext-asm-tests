@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>riscv_insts_vext_fp</title></head>
+<body>
+<h1>riscv_insts_vext_fp.sail (0/339) 0%</h1>
+<code style="display: block">
+/*=================================================================================*/<br>
+/*&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2021-2023&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Authors&nbsp;from&nbsp;RIOS&nbsp;Lab,&nbsp;Tsinghua&nbsp;University:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Xinlai&nbsp;Wan&nbsp;&lt;xinlai.w@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Xi&nbsp;Wang&nbsp;&lt;xi.w@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yifei&nbsp;Zhu&nbsp;&lt;yifei.z@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Shenwei&nbsp;Hu&nbsp;&lt;shenwei.h@rioslab.org&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Kalvin&nbsp;Vu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;Other&nbsp;contributors:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jessica&nbsp;Clarke&nbsp;&lt;jrtc27@jrtc27.com&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Victor&nbsp;Moya&nbsp;&lt;victor.moya@semidynamics.com&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;All&nbsp;rights&nbsp;reserved.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;Redistribution&nbsp;and&nbsp;use&nbsp;in&nbsp;source&nbsp;and&nbsp;binary&nbsp;forms,&nbsp;with&nbsp;or&nbsp;without&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;modification,&nbsp;are&nbsp;permitted&nbsp;provided&nbsp;that&nbsp;the&nbsp;following&nbsp;conditions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;are&nbsp;met:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;1.&nbsp;Redistributions&nbsp;of&nbsp;source&nbsp;code&nbsp;must&nbsp;retain&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;2.&nbsp;Redistributions&nbsp;in&nbsp;binary&nbsp;form&nbsp;must&nbsp;reproduce&nbsp;the&nbsp;above&nbsp;copyright&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;notice,&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;documentation&nbsp;and/or&nbsp;other&nbsp;materials&nbsp;provided&nbsp;with&nbsp;the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;distribution.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;THIS&nbsp;SOFTWARE&nbsp;IS&nbsp;PROVIDED&nbsp;BY&nbsp;THE&nbsp;AUTHOR&nbsp;AND&nbsp;CONTRIBUTORS&nbsp;``AS&nbsp;IS''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;AND&nbsp;ANY&nbsp;EXPRESS&nbsp;OR&nbsp;IMPLIED&nbsp;WARRANTIES,&nbsp;INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;TO,&nbsp;THE&nbsp;IMPLIED&nbsp;WARRANTIES&nbsp;OF&nbsp;MERCHANTABILITY&nbsp;AND&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;PARTICULAR&nbsp;PURPOSE&nbsp;ARE&nbsp;DISCLAIMED.&nbsp;&nbsp;IN&nbsp;NO&nbsp;EVENT&nbsp;SHALL&nbsp;THE&nbsp;AUTHOR&nbsp;OR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;CONTRIBUTORS&nbsp;BE&nbsp;LIABLE&nbsp;FOR&nbsp;ANY&nbsp;DIRECT,&nbsp;INDIRECT,&nbsp;INCIDENTAL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SPECIAL,&nbsp;EXEMPLARY,&nbsp;OR&nbsp;CONSEQUENTIAL&nbsp;DAMAGES&nbsp;(INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;LIMITED&nbsp;TO,&nbsp;PROCUREMENT&nbsp;OF&nbsp;SUBSTITUTE&nbsp;GOODS&nbsp;OR&nbsp;SERVICES;&nbsp;LOSS&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;USE,&nbsp;DATA,&nbsp;OR&nbsp;PROFITS;&nbsp;OR&nbsp;BUSINESS&nbsp;INTERRUPTION)&nbsp;HOWEVER&nbsp;CAUSED&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;ON&nbsp;ANY&nbsp;THEORY&nbsp;OF&nbsp;LIABILITY,&nbsp;WHETHER&nbsp;IN&nbsp;CONTRACT,&nbsp;STRICT&nbsp;LIABILITY,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OR&nbsp;TORT&nbsp;(INCLUDING&nbsp;NEGLIGENCE&nbsp;OR&nbsp;OTHERWISE)&nbsp;ARISING&nbsp;IN&nbsp;ANY&nbsp;WAY&nbsp;OUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;OF&nbsp;THE&nbsp;USE&nbsp;OF&nbsp;THIS&nbsp;SOFTWARE,&nbsp;EVEN&nbsp;IF&nbsp;ADVISED&nbsp;OF&nbsp;THE&nbsp;POSSIBILITY&nbsp;OF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;&nbsp;SUCH&nbsp;DAMAGE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*=================================================================================*/<br>
+<br>
+/*&nbsp;*******************************************************************************&nbsp;*/<br>
+/*&nbsp;This&nbsp;file&nbsp;implements&nbsp;part&nbsp;of&nbsp;the&nbsp;vector&nbsp;extension.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;Chapter&nbsp;13:&nbsp;Vector&nbsp;Floating-Point&nbsp;Instructions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;Chapter&nbsp;16:&nbsp;Vector&nbsp;Permutation&nbsp;Instructions&nbsp;(floating-point&nbsp;part)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+/*&nbsp;*******************************************************************************&nbsp;*/<br>
+<br>
+/*&nbsp;*******************************&nbsp;OPFVV&nbsp;(VVTYPE)&nbsp;********************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;FVVTYPE&nbsp;:&nbsp;(fvvfunct6,&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_fvvfunct6&nbsp;:&nbsp;fvvfunct6&nbsp;&lt;-&gt;&nbsp;bits(6)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VADD</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b000000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VSUB</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b000010,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VMIN</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b000100,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VMAX</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b000110,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VSGNJ</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b001000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VSGNJN</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b001001,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VSGNJX</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b001010,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VDIV</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b100000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VMUL</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b100100<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;FVVTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;vs1,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">encdec_fvvfunct6(funct6)&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;vs1&nbsp;@&nbsp;0b001&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(FVVTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;vs1,&nbsp;vd))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;illegal_fp_normal(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;assert(SEW&nbsp;!=&nbsp;8);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vs1_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs1);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs2);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;mask[i]&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 55%)">match&nbsp;funct6&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_add(rm_3b,&nbsp;vs2_val[i],&nbsp;vs1_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_sub(rm_3b,&nbsp;vs2_val[i],&nbsp;vs1_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VMIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_min(vs2_val[i],&nbsp;vs1_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VMAX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_max(vs2_val[i],&nbsp;vs1_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VMUL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_mul(rm_3b,&nbsp;vs2_val[i],&nbsp;vs1_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VDIV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_div(rm_3b,&nbsp;vs2_val[i],&nbsp;vs1_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VSGNJ&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">[vs1_val[i]['m&nbsp;-&nbsp;1]]&nbsp;@&nbsp;vs2_val[i][('m&nbsp;-&nbsp;2)..0]</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VSGNJN&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">(0b1&nbsp;^&nbsp;[vs1_val[i]['m&nbsp;-&nbsp;1]])&nbsp;@&nbsp;vs2_val[i][('m&nbsp;-&nbsp;2)..0]</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VSGNJX&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">([vs2_val[i]['m&nbsp;-&nbsp;1]]&nbsp;^&nbsp;[vs1_val[i]['m&nbsp;-&nbsp;1]])&nbsp;@&nbsp;vs2_val[i][('m&nbsp;-&nbsp;2)..0]</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 70%)">&#171;Invisible branch not taken here&#187</span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span></span><br>
+}</span><br>
+<br>
+mapping&nbsp;fvvtype_mnemonic&nbsp;:&nbsp;fvvfunct6&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FVV_VADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfadd.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfsub.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VMIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmin.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VMAX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmax.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VSGNJ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfsgnj.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VSGNJN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfsgnjn.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VSGNJX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfsgnjx.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VDIV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfdiv.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VMUL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmul.vv&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;FVVTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;vs1,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;fvvtype_mnemonic(funct6)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs1)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;*************************&nbsp;OPFVV&nbsp;(VVtype&nbsp;Multiply-Add)&nbsp;*************************&nbsp;*/<br>
+/*&nbsp;Multiply-Add&nbsp;instructions&nbsp;switch&nbsp;the&nbsp;order&nbsp;of&nbsp;source&nbsp;operands&nbsp;in&nbsp;assembly&nbsp;(vs1/rs1&nbsp;before&nbsp;vs2)&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;FVVMATYPE&nbsp;:&nbsp;(fvvmafunct6,&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_fvvmafunct6&nbsp;:&nbsp;fvvmafunct6&nbsp;&lt;-&gt;&nbsp;bits(6)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VMADD</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VNMADD</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101001,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VMSUB</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101010,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VNMSUB</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101011,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VMACC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101100,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VNMACC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101101,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VMSAC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101110,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VNMSAC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101111<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;FVVMATYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;vs1,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">encdec_fvvmafunct6(funct6)&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;vs1&nbsp;@&nbsp;0b001&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(FVVMATYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;vs1,&nbsp;vd))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;illegal_fp_normal(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;assert(SEW&nbsp;!=&nbsp;8);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vs1_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs1);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs2);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;mask[i]&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 55%)">match&nbsp;funct6&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VMACC&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_muladd(rm_3b,&nbsp;vs1_val[i],&nbsp;vs2_val[i],&nbsp;vd_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VNMACC&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_nmulsub(rm_3b,&nbsp;vs1_val[i],&nbsp;vs2_val[i],&nbsp;vd_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VMSAC&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_mulsub(rm_3b,&nbsp;vs1_val[i],&nbsp;vs2_val[i],&nbsp;vd_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VNMSAC&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_nmuladd(rm_3b,&nbsp;vs1_val[i],&nbsp;vs2_val[i],&nbsp;vd_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VMADD&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_muladd(rm_3b,&nbsp;vs1_val[i],&nbsp;vd_val[i],&nbsp;vs2_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VNMADD&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_nmulsub(rm_3b,&nbsp;vs1_val[i],&nbsp;vd_val[i],&nbsp;vs2_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VMSUB&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_mulsub(rm_3b,&nbsp;vs1_val[i],&nbsp;vd_val[i],&nbsp;vs2_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VNMSUB&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">fp_nmuladd(rm_3b,&nbsp;vs1_val[i],&nbsp;vd_val[i],&nbsp;vs2_val[i])</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 70%)">&#171;Invisible branch not taken here&#187</span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span></span><br>
+}</span><br>
+<br>
+mapping&nbsp;fvvmatype_mnemonic&nbsp;:&nbsp;fvvmafunct6&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FVV_VMADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmadd.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VNMADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfnmadd.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VMSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmsub.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VNMSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfnmsub.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VMACC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmacc.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VNMACC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfnmacc.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VMSAC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmsac.vv&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VNMSAC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfnmsac.vv&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;FVVMATYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;vs1,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;fvvmatype_mnemonic(funct6)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs1)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;***************************&nbsp;OPFVV&nbsp;(VVTYPE&nbsp;Widening)&nbsp;***************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;FWVVTYPE&nbsp;:&nbsp;(fwvvfunct6,&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_fwvvfunct6&nbsp;:&nbsp;fwvvfunct6&nbsp;&lt;-&gt;&nbsp;bits(6)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVV_VADD</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b110000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVV_VSUB</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b110010,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVV_VMUL</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b111000<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;FWVVTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;vs1,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">encdec_fwvvfunct6(funct6)&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;vs1&nbsp;@&nbsp;0b001&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(FWVVTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;vs1,&nbsp;vd))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+&nbsp;&nbsp;let&nbsp;SEW_widen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SEW&nbsp;*&nbsp;2;<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow_widen&nbsp;=&nbsp;LMUL_pow&nbsp;+&nbsp;1;<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">illegal_fp_variable_width(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen)&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_reg_overlap(vs1,&nbsp;vd,&nbsp;LMUL_pow,&nbsp;LMUL_pow_widen))&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">not(valid_reg_overlap(vs2,&nbsp;vd,&nbsp;LMUL_pow,&nbsp;LMUL_pow_widen))</span></span></span><br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 75%)">SEW&nbsp;&gt;=&nbsp;16&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">SEW_widen&nbsp;&lt;=&nbsp;64</span></span>);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;'o&nbsp;=&nbsp;SEW_widen;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd);<br>
+&nbsp;&nbsp;let&nbsp;vs1_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs1);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs2);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;mask[i]&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 50%)">match&nbsp;funct6&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVV_VADD&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">fp_add(rm_3b,&nbsp;fp_widen(vs2_val[i]),&nbsp;fp_widen(vs1_val[i]))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVV_VSUB&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">fp_sub(rm_3b,&nbsp;fp_widen(vs2_val[i]),&nbsp;fp_widen(vs1_val[i]))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVV_VMUL&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">fp_mul(rm_3b,&nbsp;fp_widen(vs2_val[i]),&nbsp;fp_widen(vs1_val[i]))</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 65%)">&#171;Invisible branch not taken here&#187</span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span></span></span><br>
+}</span><br>
+<br>
+mapping&nbsp;fwvvtype_mnemonic&nbsp;:&nbsp;fwvvfunct6&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FWVV_VADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwadd.vv&quot;</span>,<br>
+&nbsp;&nbsp;FWVV_VSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwsub.vv&quot;</span>,<br>
+&nbsp;&nbsp;FWVV_VMUL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwmul.vv&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;FWVVTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;vs1,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;fwvvtype_mnemonic(funct6)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs1)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;********************&nbsp;OPFVV&nbsp;(VVtype&nbsp;Widening&nbsp;Multiply-Add)&nbsp;*********************&nbsp;*/<br>
+/*&nbsp;Multiply-Add&nbsp;instructions&nbsp;switch&nbsp;the&nbsp;order&nbsp;of&nbsp;source&nbsp;operands&nbsp;in&nbsp;assembly&nbsp;(vs1/rs1&nbsp;before&nbsp;vs2)&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;FWVVMATYPE&nbsp;:&nbsp;(fwvvmafunct6,&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_fwvvmafunct6&nbsp;:&nbsp;fwvvmafunct6&nbsp;&lt;-&gt;&nbsp;bits(6)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVV_VMACC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b111100,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVV_VNMACC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b111101,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVV_VMSAC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b111110,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVV_VNMSAC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b111111<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;FWVVMATYPE(funct6,&nbsp;vm,&nbsp;vs1,&nbsp;vs2,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">encdec_fwvvmafunct6(funct6)&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs1&nbsp;@&nbsp;vs2&nbsp;@&nbsp;0b001&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(FWVVMATYPE(funct6,&nbsp;vm,&nbsp;vs1,&nbsp;vs2,&nbsp;vd))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+&nbsp;&nbsp;let&nbsp;SEW_widen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SEW&nbsp;*&nbsp;2;<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow_widen&nbsp;=&nbsp;LMUL_pow&nbsp;+&nbsp;1;<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">illegal_fp_variable_width(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen)&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_reg_overlap(vs1,&nbsp;vd,&nbsp;LMUL_pow,&nbsp;LMUL_pow_widen))&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">not(valid_reg_overlap(vs2,&nbsp;vd,&nbsp;LMUL_pow,&nbsp;LMUL_pow_widen))</span></span></span><br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 75%)">SEW&nbsp;&gt;=&nbsp;16&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">SEW_widen&nbsp;&lt;=&nbsp;64</span></span>);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;'o&nbsp;=&nbsp;SEW_widen;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd);<br>
+&nbsp;&nbsp;let&nbsp;vs1_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs1);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs2);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;mask[i]&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 50%)">match&nbsp;funct6&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVV_VMACC&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">fp_muladd(rm_3b,&nbsp;fp_widen(vs1_val[i]),&nbsp;fp_widen(vs2_val[i]),&nbsp;vd_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVV_VNMACC&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">fp_nmulsub(rm_3b,&nbsp;fp_widen(vs1_val[i]),&nbsp;fp_widen(vs2_val[i]),&nbsp;vd_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVV_VMSAC&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">fp_mulsub(rm_3b,&nbsp;fp_widen(vs1_val[i]),&nbsp;fp_widen(vs2_val[i]),&nbsp;vd_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVV_VNMSAC&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">fp_nmuladd(rm_3b,&nbsp;fp_widen(vs1_val[i]),&nbsp;fp_widen(vs2_val[i]),&nbsp;vd_val[i])</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 65%)">&#171;Invisible branch not taken here&#187</span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span></span></span><br>
+}</span><br>
+<br>
+mapping&nbsp;fwvvmatype_mnemonic&nbsp;:&nbsp;fwvvmafunct6&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FWVV_VMACC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwmacc.vv&quot;</span>,<br>
+&nbsp;&nbsp;FWVV_VNMACC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwnmacc.vv&quot;</span>,<br>
+&nbsp;&nbsp;FWVV_VMSAC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwmsac.vv&quot;</span>,<br>
+&nbsp;&nbsp;FWVV_VNMSAC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwnmsac.vv&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;FWVVMATYPE(funct6,&nbsp;vm,&nbsp;vs1,&nbsp;vs2,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;fwvvmatype_mnemonic(funct6)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs1)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;***************************&nbsp;OPFVV&nbsp;(WVTYPE&nbsp;Widening)&nbsp;***************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;FWVTYPE&nbsp;:&nbsp;(fwvfunct6,&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_fwvfunct6&nbsp;:&nbsp;fwvfunct6&nbsp;&lt;-&gt;&nbsp;bits(6)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWV_VADD</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b110100,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWV_VSUB</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b110110<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;FWVTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;vs1,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">encdec_fwvfunct6(funct6)&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;vs1&nbsp;@&nbsp;0b001&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(FWVTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;vs1,&nbsp;vd))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+&nbsp;&nbsp;let&nbsp;SEW_widen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SEW&nbsp;*&nbsp;2;<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow_widen&nbsp;=&nbsp;LMUL_pow&nbsp;+&nbsp;1;<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">illegal_fp_variable_width(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen)&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">not(valid_reg_overlap(vs1,&nbsp;vd,&nbsp;LMUL_pow,&nbsp;LMUL_pow_widen))</span></span><br>
+&nbsp;&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+&nbsp;&nbsp;assert(<span style="background-color: hsl(0, 85%, 75%)">SEW&nbsp;&gt;=&nbsp;16&nbsp;&&nbsp;<span style="background-color: hsl(0, 85%, 70%)">SEW_widen&nbsp;&lt;=&nbsp;64</span></span>);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">let&nbsp;'o&nbsp;=&nbsp;SEW_widen;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd);<br>
+&nbsp;&nbsp;let&nbsp;vs1_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs1);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vs2);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 60%)">if&nbsp;mask[i]&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 55%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 50%)">match&nbsp;funct6&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWV_VADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">fp_add(rm_3b,&nbsp;vs2_val[i],&nbsp;fp_widen(vs1_val[i]))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWV_VSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">fp_sub(rm_3b,&nbsp;vs2_val[i],&nbsp;fp_widen(vs1_val[i]))</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 65%)">&#171;Invisible branch not taken here&#187</span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span></span></span><br>
+}</span><br>
+<br>
+mapping&nbsp;fwvtype_mnemonic&nbsp;:&nbsp;fwvfunct6&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FWV_VADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwadd.wv&quot;</span>,<br>
+&nbsp;&nbsp;FWV_VSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwsub.wv&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;FWVTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;vs1,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;fwvtype_mnemonic(funct6)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs1)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;******************************&nbsp;OPFVV&nbsp;(VFUNARY0)&nbsp;*******************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VFUNARY0&nbsp;:&nbsp;(bits(1),&nbsp;regidx,&nbsp;vfunary0,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_vfunary0_vs1&nbsp;:&nbsp;vfunary0&nbsp;&lt;-&gt;&nbsp;bits(5)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FV_CVT_XU_F</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b00000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FV_CVT_X_F</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b00001,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FV_CVT_F_XU</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b00010,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FV_CVT_F_X</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b00011,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FV_CVT_RTZ_XU_F</span>&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b00110,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FV_CVT_RTZ_X_F</span>&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b00111<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VFUNARY0(vm,&nbsp;vs2,&nbsp;vfunary0,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">0b010010&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;encdec_vfunary0_vs1(vfunary0)&nbsp;@&nbsp;0b001&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VFUNARY0(vm,&nbsp;vs2,&nbsp;vfunary0,&nbsp;vd))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 80%)">{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">if&nbsp;illegal_fp_normal(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b)&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 70%)">{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 80%)">&#171;Invisible branch not taken here&#187</span>;<br>
+<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 70%)">let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs2);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 65%)">if&nbsp;mask[i]&nbsp;then&nbsp;<span style="background-color: hsl(0, 85%, 60%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 55%)">match&nbsp;vfunary0&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FV_CVT_XU_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 40%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_f16ToUi16(rm_3b,&nbsp;vs2_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_f32ToUi32(rm_3b,&nbsp;vs2_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_f64ToUi64(rm_3b,&nbsp;vs2_val[i])</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FV_CVT_X_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 40%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_f16ToI16(rm_3b,&nbsp;vs2_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_f32ToI32(rm_3b,&nbsp;vs2_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_f64ToI64(rm_3b,&nbsp;vs2_val[i])</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FV_CVT_F_XU&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 40%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_ui32ToF16(rm_3b,&nbsp;zero_extend(vs2_val[i]))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_ui32ToF32(rm_3b,&nbsp;vs2_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_ui64ToF64(rm_3b,&nbsp;vs2_val[i])</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FV_CVT_F_X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 40%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_i32ToF16(rm_3b,&nbsp;sign_extend(vs2_val[i]))</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_i32ToF32(rm_3b,&nbsp;vs2_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_i64ToF64(rm_3b,&nbsp;vs2_val[i])</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FV_CVT_RTZ_XU_F&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 40%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_f16ToUi16(0b001,&nbsp;vs2_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_f32ToUi32(0b001,&nbsp;vs2_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_f64ToUi64(0b001,&nbsp;vs2_val[i])</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FV_CVT_RTZ_X_F&nbsp;&nbsp;&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 50%)">{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 45%)">let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;<span style="background-color: hsl(0, 85%, 40%)">match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_f16ToI16(0b001,&nbsp;vs2_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_f32ToI32(0b001,&nbsp;vs2_val[i])</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;<span style="background-color: hsl(0, 85%, 35%)">riscv_f64ToI64(0b001,&nbsp;vs2_val[i])</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}</span></span><span style="background-color: hsl(0, 85%, 70%)">&#171;Invisible branch not taken here&#187</span><br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS</span></span><br>
+}</span><br>
+<br>
+mapping&nbsp;vfunary0_mnemonic&nbsp;:&nbsp;vfunary0&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FV_CVT_XU_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfcvt.xu.f.v&quot;</span>,<br>
+&nbsp;&nbsp;FV_CVT_X_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfcvt.x.f.v&quot;</span>,<br>
+&nbsp;&nbsp;FV_CVT_F_XU&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfcvt.f.xu.v&quot;</span>,<br>
+&nbsp;&nbsp;FV_CVT_F_X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfcvt.f.x.v&quot;</span>,<br>
+&nbsp;&nbsp;FV_CVT_RTZ_XU_F&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfcvt.rtz.xu.f.v&quot;</span>,<br>
+&nbsp;&nbsp;FV_CVT_RTZ_X_F&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfcvt.rtz.x.f.v&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VFUNARY0(vm,&nbsp;vs2,&nbsp;vfunary0,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;vfunary0_mnemonic(vfunary0)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;**************************&nbsp;OPFVV&nbsp;(VFUNARY0&nbsp;Widening)&nbsp;**************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VFWUNARY0&nbsp;:&nbsp;(bits(1),&nbsp;regidx,&nbsp;vfwunary0,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_vfwunary0_vs1&nbsp;:&nbsp;vfwunary0&nbsp;&lt;-&gt;&nbsp;bits(5)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWV_CVT_XU_F</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b01000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWV_CVT_X_F</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b01001,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWV_CVT_F_XU</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b01010,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWV_CVT_F_X</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b01011,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWV_CVT_F_F</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b01100,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWV_CVT_RTZ_XU_F</span>&nbsp;&nbsp;&lt;-&gt;&nbsp;0b01110,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWV_CVT_RTZ_X_F</span>&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b01111<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VFWUNARY0(vm,&nbsp;vs2,&nbsp;vfwunary0,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">0b010010&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;encdec_vfwunary0_vs1(vfwunary0)&nbsp;@&nbsp;0b001&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VFWUNARY0(vm,&nbsp;vs2,&nbsp;vfwunary0,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+&nbsp;&nbsp;let&nbsp;SEW_widen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SEW&nbsp;*&nbsp;2;<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow_widen&nbsp;=&nbsp;LMUL_pow&nbsp;+&nbsp;1;<br>
+<br>
+&nbsp;&nbsp;if&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">illegal_fp_variable_width(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen)&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 75%)">not(valid_reg_overlap(vs2,&nbsp;vd,&nbsp;LMUL_pow,&nbsp;LMUL_pow_widen))</span></span><br>
+&nbsp;&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+&nbsp;&nbsp;assert(SEW&nbsp;&gt;=&nbsp;8&nbsp;&&nbsp;SEW_widen&nbsp;&lt;=&nbsp;64);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+&nbsp;&nbsp;let&nbsp;'o&nbsp;=&nbsp;SEW_widen;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs2);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;mask[i]&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;match&nbsp;vfwunary0&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWV_CVT_XU_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('o))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_f16ToUi32(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_f32ToUi64(rm_3b,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWV_CVT_X_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('o))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_f16ToI32(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_f32ToI64(rm_3b,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWV_CVT_F_XU&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('o))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;riscv_ui32ToF16(rm_3b,&nbsp;zero_extend(vs2_val[i])),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_ui32ToF32(rm_3b,&nbsp;zero_extend(vs2_val[i])),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_ui32ToF64(rm_3b,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWV_CVT_F_X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('o))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;riscv_i32ToF16(rm_3b,&nbsp;sign_extend(vs2_val[i])),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_i32ToF32(rm_3b,&nbsp;sign_extend(vs2_val[i])),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_i32ToF64(rm_3b,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWV_CVT_F_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('o))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_f16ToF32(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_f32ToF64(rm_3b,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWV_CVT_RTZ_XU_F&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('o))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_f16ToUi32(0b001,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_f32ToUi64(0b001,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWV_CVT_RTZ_X_F&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('o))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_f16ToI32(0b001,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_f32ToI64(0b001,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}<br>
+<br>
+mapping&nbsp;vfwunary0_mnemonic&nbsp;:&nbsp;vfwunary0&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FWV_CVT_XU_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwcvt.xu.f.v&quot;</span>,<br>
+&nbsp;&nbsp;FWV_CVT_X_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwcvt.x.f.v&quot;</span>,<br>
+&nbsp;&nbsp;FWV_CVT_F_XU&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwcvt.f.xu.v&quot;</span>,<br>
+&nbsp;&nbsp;FWV_CVT_F_X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwcvt.f.x.v&quot;</span>,<br>
+&nbsp;&nbsp;FWV_CVT_F_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwcvt.f.f.v&quot;</span>,<br>
+&nbsp;&nbsp;FWV_CVT_RTZ_XU_F&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwcvt.rtz.xu.f.v&quot;</span>,<br>
+&nbsp;&nbsp;FWV_CVT_RTZ_X_F&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwcvt.rtz.x.f.v&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VFWUNARY0(vm,&nbsp;vs2,&nbsp;vfwunary0,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;vfwunary0_mnemonic(vfwunary0)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;*************************&nbsp;OPFVV&nbsp;(VFUNARY0&nbsp;Narrowing)&nbsp;**************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VFNUNARY0&nbsp;:&nbsp;(bits(1),&nbsp;regidx,&nbsp;vfnunary0,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_vfnunary0_vs1&nbsp;:&nbsp;vfnunary0&nbsp;&lt;-&gt;&nbsp;bits(5)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FNV_CVT_XU_F</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b10000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FNV_CVT_X_F</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b10001,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FNV_CVT_F_XU</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b10010,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FNV_CVT_F_X</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b10011,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FNV_CVT_F_F</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b10100,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FNV_CVT_ROD_F_F</span>&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b10101,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FNV_CVT_RTZ_XU_F</span>&nbsp;&nbsp;&lt;-&gt;&nbsp;0b10110,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FNV_CVT_RTZ_X_F</span>&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b10111<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VFNUNARY0(vm,&nbsp;vs2,&nbsp;vfnunary0,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">0b010010&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;encdec_vfnunary0_vs1(vfnunary0)&nbsp;@&nbsp;0b001&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VFNUNARY0(vm,&nbsp;vs2,&nbsp;vfnunary0,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+&nbsp;&nbsp;let&nbsp;SEW_widen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SEW&nbsp;*&nbsp;2;<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow_widen&nbsp;=&nbsp;LMUL_pow&nbsp;+&nbsp;1;<br>
+<br>
+&nbsp;&nbsp;if&nbsp;&nbsp;illegal_fp_variable_width(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen)&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not(valid_reg_overlap(vs2,&nbsp;vd,&nbsp;LMUL_pow_widen,&nbsp;LMUL_pow))<br>
+&nbsp;&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+<br>
+&nbsp;&nbsp;let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+&nbsp;&nbsp;let&nbsp;'o&nbsp;=&nbsp;SEW_widen;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vs2);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;mask[i]&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;match&nbsp;vfnunary0&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FNV_CVT_XU_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;riscv_f16ToUi8(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_f32ToUi16(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_f64ToUi32(rm_3b,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FNV_CVT_X_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;riscv_f16ToI8(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_f32ToI16(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_f64ToI32(rm_3b,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FNV_CVT_F_XU&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_ui32ToF16(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_ui64ToF32(rm_3b,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FNV_CVT_F_X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_i32ToF16(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_i64ToF32(rm_3b,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FNV_CVT_F_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_f32ToF16(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_f64ToF32(rm_3b,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FNV_CVT_ROD_F_F&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_f32ToF16(0b110,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_f64ToF32(0b110,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FNV_CVT_RTZ_XU_F&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;riscv_f16ToUi8(0b001,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_f32ToUi16(0b001,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_f64ToUi32(0b001,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FNV_CVT_RTZ_X_F&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;=&gt;&nbsp;riscv_f16ToI8(0b001,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;riscv_f32ToI16(0b001,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;riscv_f64ToI32(0b001,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}<br>
+<br>
+mapping&nbsp;vfnunary0_mnemonic&nbsp;:&nbsp;vfnunary0&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FNV_CVT_XU_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfncvt.xu.f.w&quot;</span>,<br>
+&nbsp;&nbsp;FNV_CVT_X_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfncvt.x.f.w&quot;</span>,<br>
+&nbsp;&nbsp;FNV_CVT_F_XU&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfncvt.f.xu.w&quot;</span>,<br>
+&nbsp;&nbsp;FNV_CVT_F_X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfncvt.f.x.w&quot;</span>,<br>
+&nbsp;&nbsp;FNV_CVT_F_F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfncvt.f.f.w&quot;</span>,<br>
+&nbsp;&nbsp;FNV_CVT_ROD_F_F&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfncvt.rod.f.f.w&quot;</span>,<br>
+&nbsp;&nbsp;FNV_CVT_RTZ_XU_F&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfncvt.rtz.xu.f.w&quot;</span>,<br>
+&nbsp;&nbsp;FNV_CVT_RTZ_X_F&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfncvt.rtz.x.f.w&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VFNUNARY0(vm,&nbsp;vs2,&nbsp;vfnunary0,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;vfnunary0_mnemonic(vfnunary0)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;******************************&nbsp;OPFVV&nbsp;(VFUNARY1)&nbsp;*******************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VFUNARY1&nbsp;:&nbsp;(bits(1),&nbsp;regidx,&nbsp;vfunary1,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_vfunary1_vs1&nbsp;:&nbsp;vfunary1&nbsp;&lt;-&gt;&nbsp;bits(5)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VSQRT</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b00000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VRSQRT7</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b00100,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VREC7</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b00101,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FVV_VCLASS</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b10000<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VFUNARY1(vm,&nbsp;vs2,&nbsp;vfunary1,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">0b010011&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;encdec_vfunary1_vs1(vfunary1)&nbsp;@&nbsp;0b001&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VFUNARY1(vm,&nbsp;vs2,&nbsp;vfunary1,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_fp_normal(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+&nbsp;&nbsp;assert(SEW&nbsp;!=&nbsp;8);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs2);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;mask[i]&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;match&nbsp;vfunary1&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VSQRT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;riscv_f16Sqrt(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;riscv_f32Sqrt(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;riscv_f64Sqrt(rm_3b,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VRSQRT7&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;riscv_f16Rsqrte7(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;riscv_f32Rsqrte7(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;riscv_f64Rsqrte7(rm_3b,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VREC7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;(fflags,&nbsp;elem)&nbsp;:&nbsp;(bits_fflags,&nbsp;bits('m))&nbsp;=&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;=&gt;&nbsp;riscv_f16Recip7(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;=&gt;&nbsp;riscv_f32Recip7(rm_3b,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;=&gt;&nbsp;riscv_f64Recip7(rm_3b,&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;accrue_fflags(fflags);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elem<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FVV_VCLASS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_class(vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}<br>
+<br>
+mapping&nbsp;vfunary1_mnemonic&nbsp;:&nbsp;vfunary1&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FVV_VSQRT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfsqrt.v&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VRSQRT7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfrsqrt7.v&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VREC7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfrec7.v&quot;</span>,<br>
+&nbsp;&nbsp;FVV_VCLASS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfclass.v&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VFUNARY1(vm,&nbsp;vs2,&nbsp;vfunary1,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;vfunary1_mnemonic(vfunary1)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;******************************&nbsp;OPFVV&nbsp;(VWFUNARY0)&nbsp;******************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VFMVFS&nbsp;:&nbsp;(regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VFMVFS(vs2,&nbsp;rd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b010000&nbsp;@&nbsp;0b1&nbsp;@&nbsp;vs2&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;0b001&nbsp;@&nbsp;rd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VFMVFS(vs2,&nbsp;rd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(0,&nbsp;SEW);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_fp_vd_unmasked(SEW,&nbsp;rm_3b)&nbsp;|&nbsp;SEW&nbsp;&gt;&nbsp;sizeof(flen)<br>
+&nbsp;&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+&nbsp;&nbsp;assert(num_elem&nbsp;&gt;&nbsp;0&nbsp;&&nbsp;SEW&nbsp;!=&nbsp;8);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;0,&nbsp;vs2);<br>
+&nbsp;&nbsp;match&nbsp;'m&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;=&gt;&nbsp;F_H(rd)&nbsp;=&nbsp;vs2_val[0],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;=&gt;&nbsp;F_S(rd)&nbsp;=&nbsp;vs2_val[0],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;=&gt;&nbsp;F_D(rd)&nbsp;=&nbsp;vs2_val[0]<br>
+&nbsp;&nbsp;};<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VFMVFS(vs2,&nbsp;rd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vfmv.f.s&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;freg_name(rd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)<br>
+<br>
+/*&nbsp;*******************************&nbsp;OPFVF&nbsp;(VFtype)&nbsp;********************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;FVFTYPE&nbsp;:&nbsp;(fvffunct6,&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_fvffunct6&nbsp;:&nbsp;fvffunct6&nbsp;&lt;-&gt;&nbsp;bits(6)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VADD</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b000000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VSUB</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b000010,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VMIN</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b000100,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VMAX</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b000110,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VSGNJ</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b001000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VSGNJN</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b001001,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VSGNJX</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b001010,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VSLIDE1UP</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b001110,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VSLIDE1DOWN</span>&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b001111,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VDIV</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b100000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VRDIV</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b100001,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VMUL</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b100100,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VRSUB</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b100111<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;FVFTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">encdec_fvffunct6(funct6)&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b101&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(FVFTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_fp_normal(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+&nbsp;&nbsp;assert(SEW&nbsp;!=&nbsp;8);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;rs1_val&nbsp;:&nbsp;bits('m)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_scalar_fp(rs1,&nbsp;'m);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs2);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;mask[i]&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;match&nbsp;funct6&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_add(rm_3b,&nbsp;vs2_val[i],&nbsp;rs1_val),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_sub(rm_3b,&nbsp;vs2_val[i],&nbsp;rs1_val),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VRSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_sub(rm_3b,&nbsp;rs1_val,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VMIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_min(vs2_val[i],&nbsp;rs1_val),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VMAX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_max(vs2_val[i],&nbsp;rs1_val),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VMUL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_mul(rm_3b,&nbsp;vs2_val[i],&nbsp;rs1_val),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VDIV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_div(rm_3b,&nbsp;vs2_val[i],&nbsp;rs1_val),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VRDIV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_div(rm_3b,&nbsp;rs1_val,&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VSGNJ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;[rs1_val['m&nbsp;-&nbsp;1]]&nbsp;@&nbsp;vs2_val[i][('m&nbsp;-&nbsp;2)..0],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VSGNJN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;(0b1&nbsp;^&nbsp;[rs1_val['m&nbsp;-&nbsp;1]])&nbsp;@&nbsp;vs2_val[i][('m&nbsp;-&nbsp;2)..0],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VSGNJX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;([vs2_val[i]['m&nbsp;-&nbsp;1]]&nbsp;^&nbsp;[rs1_val['m&nbsp;-&nbsp;1]])&nbsp;@&nbsp;vs2_val[i][('m&nbsp;-&nbsp;2)..0],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VSLIDE1UP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;vs2&nbsp;==&nbsp;vd&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;i&nbsp;==&nbsp;0&nbsp;then&nbsp;rs1_val&nbsp;else&nbsp;vs2_val[i&nbsp;-&nbsp;1]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VSLIDE1DOWN&nbsp;&nbsp;&nbsp;=&gt;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;last_elem&nbsp;=&nbsp;get_end_element();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assert(last_elem&nbsp;&lt;&nbsp;num_elem);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;i&nbsp;&lt;&nbsp;last_elem&nbsp;then&nbsp;vs2_val[i&nbsp;+&nbsp;1]&nbsp;else&nbsp;rs1_val<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}<br>
+<br>
+mapping&nbsp;fvftype_mnemonic&nbsp;:&nbsp;fvffunct6&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;VF_VADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfadd.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfsub.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VMIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmin.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VMAX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmax.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VSGNJ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfsgnj.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VSGNJN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfsgnjn.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VSGNJX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfsgnjx.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VSLIDE1UP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfslide1up.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VSLIDE1DOWN&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfslide1down.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VDIV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfdiv.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VRDIV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfrdiv.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VMUL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmul.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VRSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfrsub.vf&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;FVFTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;fvftype_mnemonic(funct6)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;*************************&nbsp;OPFVF&nbsp;(VFtype&nbsp;Multiply-Add)&nbsp;*************************&nbsp;*/<br>
+/*&nbsp;Multiply-Add&nbsp;instructions&nbsp;switch&nbsp;the&nbsp;order&nbsp;of&nbsp;source&nbsp;operands&nbsp;in&nbsp;assembly&nbsp;(vs1/rs1&nbsp;before&nbsp;vs2)&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;FVFMATYPE&nbsp;:&nbsp;(fvfmafunct6,&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_fvfmafunct6&nbsp;:&nbsp;fvfmafunct6&nbsp;&lt;-&gt;&nbsp;bits(6)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VMADD</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VNMADD</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101001,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VMSUB</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101010,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VNMSUB</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101011,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VMACC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101100,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VNMACC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101101,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VMSAC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101110,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">VF_VNMSAC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b101111<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;FVFMATYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">encdec_fvfmafunct6(funct6)&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b101&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(FVFMATYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_fp_normal(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+&nbsp;&nbsp;assert(SEW&nbsp;!=&nbsp;8);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;rs1_val&nbsp;:&nbsp;bits('m)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_scalar_fp(rs1,&nbsp;'m);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs2);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;mask[i]&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;match&nbsp;funct6&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VMACC&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_muladd(rm_3b,&nbsp;rs1_val,&nbsp;vs2_val[i],&nbsp;vd_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VNMACC&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_nmulsub(rm_3b,&nbsp;rs1_val,&nbsp;vs2_val[i],&nbsp;vd_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VMSAC&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_mulsub(rm_3b,&nbsp;rs1_val,&nbsp;vs2_val[i],&nbsp;vd_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VNMSAC&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_nmuladd(rm_3b,&nbsp;rs1_val,&nbsp;vs2_val[i],&nbsp;vd_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VMADD&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_muladd(rm_3b,&nbsp;rs1_val,&nbsp;vd_val[i],&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VNMADD&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_nmulsub(rm_3b,&nbsp;rs1_val,&nbsp;vd_val[i],&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VMSUB&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_mulsub(rm_3b,&nbsp;rs1_val,&nbsp;vd_val[i],&nbsp;vs2_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VF_VNMSUB&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_nmuladd(rm_3b,&nbsp;rs1_val,&nbsp;vd_val[i],&nbsp;vs2_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}<br>
+<br>
+mapping&nbsp;fvfmatype_mnemonic&nbsp;:&nbsp;fvfmafunct6&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;VF_VMADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmadd.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VNMADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfnmadd.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VMSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmsub.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VNMSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfnmsub.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VMACC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmacc.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VNMACC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfnmacc.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VMSAC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfmsac.vf&quot;</span>,<br>
+&nbsp;&nbsp;VF_VNMSAC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfnmsac.vf&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;FVFMATYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;fvfmatype_mnemonic(funct6)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;***************************&nbsp;OPFVF&nbsp;(VFTYPE&nbsp;Widening)&nbsp;***************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;FWVFTYPE&nbsp;:&nbsp;(fwvffunct6,&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_fwvffunct6&nbsp;:&nbsp;fwvffunct6&nbsp;&lt;-&gt;&nbsp;bits(6)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVF_VADD</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b110000,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVF_VSUB</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b110010,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVF_VMUL</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b111000<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;FWVFTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">encdec_fwvffunct6(funct6)&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b101&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(FWVFTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+&nbsp;&nbsp;let&nbsp;SEW_widen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SEW&nbsp;*&nbsp;2;<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow_widen&nbsp;=&nbsp;LMUL_pow&nbsp;+&nbsp;1;<br>
+<br>
+&nbsp;&nbsp;if&nbsp;&nbsp;illegal_fp_variable_width(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen)&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not(valid_reg_overlap(vs2,&nbsp;vd,&nbsp;LMUL_pow,&nbsp;LMUL_pow_widen))<br>
+&nbsp;&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+&nbsp;&nbsp;assert(SEW&nbsp;&gt;=&nbsp;16&nbsp;&&nbsp;SEW_widen&nbsp;&lt;=&nbsp;64);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+&nbsp;&nbsp;let&nbsp;'o&nbsp;=&nbsp;SEW_widen;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd);<br>
+&nbsp;&nbsp;let&nbsp;rs1_val&nbsp;:&nbsp;bits('m)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_scalar_fp(rs1,&nbsp;'m);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs2);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;mask[i]&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;match&nbsp;funct6&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVF_VADD&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_add(rm_3b,&nbsp;fp_widen(vs2_val[i]),&nbsp;fp_widen(rs1_val)),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVF_VSUB&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_sub(rm_3b,&nbsp;fp_widen(vs2_val[i]),&nbsp;fp_widen(rs1_val)),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVF_VMUL&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_mul(rm_3b,&nbsp;fp_widen(vs2_val[i]),&nbsp;fp_widen(rs1_val))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}<br>
+<br>
+mapping&nbsp;fwvftype_mnemonic&nbsp;:&nbsp;fwvffunct6&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FWVF_VADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwadd.vf&quot;</span>,<br>
+&nbsp;&nbsp;FWVF_VSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwsub.vf&quot;</span>,<br>
+&nbsp;&nbsp;FWVF_VMUL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwmul.vf&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;FWVFTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;fwvftype_mnemonic(funct6)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;********************&nbsp;OPFVF&nbsp;(VFtype&nbsp;Widening&nbsp;Multiply-Add)&nbsp;*********************&nbsp;*/<br>
+/*&nbsp;Multiply-Add&nbsp;instructions&nbsp;switch&nbsp;the&nbsp;order&nbsp;of&nbsp;source&nbsp;operands&nbsp;in&nbsp;assembly&nbsp;(vs1/rs1&nbsp;before&nbsp;vs2)&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;FWVFMATYPE&nbsp;:&nbsp;(fwvfmafunct6,&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_fwvfmafunct6&nbsp;:&nbsp;fwvfmafunct6&nbsp;&lt;-&gt;&nbsp;bits(6)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVF_VMACC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b111100,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVF_VNMACC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b111101,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVF_VMSAC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b111110,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWVF_VNMSAC</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b111111<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;FWVFMATYPE(funct6,&nbsp;vm,&nbsp;rs1,&nbsp;vs2,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">encdec_fwvfmafunct6(funct6)&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b101&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(FWVFMATYPE(funct6,&nbsp;vm,&nbsp;rs1,&nbsp;vs2,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+&nbsp;&nbsp;let&nbsp;SEW_widen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SEW&nbsp;*&nbsp;2;<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow_widen&nbsp;=&nbsp;LMUL_pow&nbsp;+&nbsp;1;<br>
+<br>
+&nbsp;&nbsp;if&nbsp;&nbsp;illegal_fp_variable_width(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen)&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not(valid_reg_overlap(vs2,&nbsp;vd,&nbsp;LMUL_pow,&nbsp;LMUL_pow_widen))<br>
+&nbsp;&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+&nbsp;&nbsp;assert(SEW&nbsp;&gt;=&nbsp;16&nbsp;&&nbsp;SEW_widen&nbsp;&lt;=&nbsp;64);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+&nbsp;&nbsp;let&nbsp;'o&nbsp;=&nbsp;SEW_widen;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd);<br>
+&nbsp;&nbsp;let&nbsp;rs1_val&nbsp;:&nbsp;bits('m)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_scalar_fp(rs1,&nbsp;'m);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs2);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;mask[i]&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;match&nbsp;funct6&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVF_VMACC&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_muladd(rm_3b,&nbsp;fp_widen(rs1_val),&nbsp;fp_widen(vs2_val[i]),&nbsp;vd_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVF_VNMACC&nbsp;&nbsp;=&gt;&nbsp;fp_nmulsub(rm_3b,&nbsp;fp_widen(rs1_val),&nbsp;fp_widen(vs2_val[i]),&nbsp;vd_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVF_VMSAC&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_mulsub(rm_3b,&nbsp;fp_widen(rs1_val),&nbsp;fp_widen(vs2_val[i]),&nbsp;vd_val[i]),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWVF_VNMSAC&nbsp;&nbsp;=&gt;&nbsp;fp_nmuladd(rm_3b,&nbsp;fp_widen(rs1_val),&nbsp;fp_widen(vs2_val[i]),&nbsp;vd_val[i])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}<br>
+<br>
+mapping&nbsp;fwvfmatype_mnemonic&nbsp;:&nbsp;fwvfmafunct6&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FWVF_VMACC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwmacc.vf&quot;</span>,<br>
+&nbsp;&nbsp;FWVF_VNMACC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwnmacc.vf&quot;</span>,<br>
+&nbsp;&nbsp;FWVF_VMSAC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwmsac.vf&quot;</span>,<br>
+&nbsp;&nbsp;FWVF_VNMSAC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwnmsac.vf&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;FWVFMATYPE(funct6,&nbsp;vm,&nbsp;rs1,&nbsp;vs2,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;fwvfmatype_mnemonic(funct6)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;***************************&nbsp;OPFVF&nbsp;(WFTYPE&nbsp;Widening)&nbsp;***************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;FWFTYPE&nbsp;:&nbsp;(fwffunct6,&nbsp;bits(1),&nbsp;regidx,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;encdec_fwffunct6&nbsp;:&nbsp;fwffunct6&nbsp;&lt;-&gt;&nbsp;bits(6)&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWF_VADD</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b110100,<br>
+&nbsp;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">FWF_VSUB</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;0b110110<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;FWFTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 75%)"><span style="background-color: hsl(0, 85%, 75%)">encdec_fwffunct6(funct6)&nbsp;@&nbsp;vm&nbsp;@&nbsp;vs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b101&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(FWFTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+&nbsp;&nbsp;let&nbsp;SEW_widen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SEW&nbsp;*&nbsp;2;<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow_widen&nbsp;=&nbsp;LMUL_pow&nbsp;+&nbsp;1;<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_fp_variable_width(vd,&nbsp;vm,&nbsp;SEW,&nbsp;rm_3b,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen)<br>
+&nbsp;&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+&nbsp;&nbsp;assert(SEW&nbsp;&gt;=&nbsp;16&nbsp;&&nbsp;SEW_widen&nbsp;&lt;=&nbsp;64);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+&nbsp;&nbsp;let&nbsp;'o&nbsp;=&nbsp;SEW_widen;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;vm,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd);<br>
+&nbsp;&nbsp;let&nbsp;rs1_val&nbsp;:&nbsp;bits('m)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_scalar_fp(rs1,&nbsp;'m);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vs2);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('o))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;mask[i]&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;match&nbsp;funct6&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWF_VADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_add(rm_3b,&nbsp;vs2_val[i],&nbsp;fp_widen(rs1_val)),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWF_VSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;fp_sub(rm_3b,&nbsp;vs2_val[i],&nbsp;fp_widen(rs1_val))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW_widen,&nbsp;LMUL_pow_widen,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}<br>
+<br>
+mapping&nbsp;fwftype_mnemonic&nbsp;:&nbsp;fwffunct6&nbsp;&lt;-&gt;&nbsp;string&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;FWF_VADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwadd.wf&quot;</span>,<br>
+&nbsp;&nbsp;FWF_VSUB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">&quot;vfwsub.wf&quot;</span><br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;FWFTYPE(funct6,&nbsp;vm,&nbsp;vs2,&nbsp;rs1,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;fwftype_mnemonic(funct6)&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;maybe_vmask(vm)<br>
+<br>
+/*&nbsp;**************************&nbsp;OPFVF&nbsp;(Merge&nbsp;Instruction)&nbsp;**************************&nbsp;*/<br>
+/*&nbsp;This&nbsp;instruction&nbsp;operates&nbsp;on&nbsp;all&nbsp;body&nbsp;elements&nbsp;regardless&nbsp;of&nbsp;mask&nbsp;value&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VFMERGE&nbsp;:&nbsp;(regidx,&nbsp;regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VFMERGE(vs2,&nbsp;rs1,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b010111&nbsp;@&nbsp;0b0&nbsp;@&nbsp;vs2&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b101&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VFMERGE(vs2,&nbsp;rs1,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;start_element&nbsp;=&nbsp;get_start_element();<br>
+&nbsp;&nbsp;let&nbsp;end_element&nbsp;&nbsp;&nbsp;=&nbsp;get_end_element();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);&nbsp;/*&nbsp;max(VLMAX,VLEN/SEW))&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;real_num_elem&nbsp;=&nbsp;if&nbsp;LMUL_pow&nbsp;&gt;=&nbsp;0&nbsp;then&nbsp;num_elem&nbsp;else&nbsp;num_elem&nbsp;/&nbsp;(0&nbsp;-&nbsp;LMUL_pow);&nbsp;/*&nbsp;VLMAX&nbsp;*/<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_fp_vd_masked(vd,&nbsp;SEW,&nbsp;rm_3b)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+&nbsp;&nbsp;assert(SEW&nbsp;!=&nbsp;8);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;0b0,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;rs1_val&nbsp;:&nbsp;bits('m)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_scalar_fp(rs1,&nbsp;'m);<br>
+&nbsp;&nbsp;let&nbsp;vs2_val&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vs2);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;tail_ag&nbsp;:&nbsp;agtype&nbsp;=&nbsp;get_vtype_vta();<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;i&nbsp;&lt;&nbsp;start_element&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;vd_val[i]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;else&nbsp;if&nbsp;i&nbsp;&gt;&nbsp;end_element&nbsp;|&nbsp;i&nbsp;&gt;=&nbsp;real_num_elem&nbsp;then&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;match&nbsp;tail_ag&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNDISTURBED&nbsp;=&gt;&nbsp;vd_val[i],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AGNOSTIC&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;vd_val[i]&nbsp;/*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;else&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*&nbsp;the&nbsp;merge&nbsp;operates&nbsp;on&nbsp;all&nbsp;body&nbsp;elements&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;if&nbsp;vm_val[i]&nbsp;then&nbsp;rs1_val&nbsp;else&nbsp;vs2_val[i]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VFMERGE(vs2,&nbsp;rs1,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vfmerge.vfm&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;vreg_name(vs2)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs1)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;&quot;v0&quot;<br>
+<br>
+/*&nbsp;**************************&nbsp;OPFVF&nbsp;(Move&nbsp;Instruction)&nbsp;***************************&nbsp;*/<br>
+/*&nbsp;This&nbsp;instruction&nbsp;shares&nbsp;the&nbsp;encoding&nbsp;with&nbsp;vfmerge.vfm,&nbsp;but&nbsp;with&nbsp;vm=1&nbsp;and&nbsp;vs2=v0&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VFMV&nbsp;:&nbsp;(regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VFMV(rs1,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b010111&nbsp;@&nbsp;0b1&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b101&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VFMV(rs1,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;LMUL_pow&nbsp;=&nbsp;get_lmul_pow();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(LMUL_pow,&nbsp;SEW);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_fp_vd_unmasked(SEW,&nbsp;rm_3b)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+&nbsp;&nbsp;assert(SEW&nbsp;!=&nbsp;8);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;rs1_val&nbsp;:&nbsp;bits('m)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_scalar_fp(rs1,&nbsp;'m);<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;0b1,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;0&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;mask[i]&nbsp;then&nbsp;result[i]&nbsp;=&nbsp;rs1_val<br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW,&nbsp;LMUL_pow,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VFMV(rs1,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vfmv.v.f&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;reg_name(rs1)<br>
+<br>
+/*&nbsp;******************************&nbsp;OPFVF&nbsp;(VRFUNARY0)&nbsp;******************************&nbsp;*/<br>
+union&nbsp;clause&nbsp;ast&nbsp;=&nbsp;VFMVSF&nbsp;:&nbsp;(regidx,&nbsp;regidx)<br>
+<br>
+mapping&nbsp;clause&nbsp;encdec&nbsp;=&nbsp;VFMVSF(rs1,&nbsp;vd)&nbsp;if&nbsp;haveVExt()<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;<span style="background-color: hsl(0, 85%, 80%)">0b010000&nbsp;@&nbsp;0b1&nbsp;@&nbsp;0b00000&nbsp;@&nbsp;rs1&nbsp;@&nbsp;0b101&nbsp;@&nbsp;vd&nbsp;@&nbsp;0b1010111</span>&nbsp;if&nbsp;<span style="background-color: hsl(0, 85%, 80%)">haveVExt()</span><br>
+<br>
+function&nbsp;clause&nbsp;execute(VFMVSF(rs1,&nbsp;vd))&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;let&nbsp;rm_3b&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fcsr.FRM();<br>
+&nbsp;&nbsp;let&nbsp;SEW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_sew();<br>
+&nbsp;&nbsp;let&nbsp;num_elem&nbsp;=&nbsp;get_num_elem(0,&nbsp;SEW);<br>
+<br>
+&nbsp;&nbsp;if&nbsp;illegal_fp_vd_unmasked(SEW,&nbsp;rm_3b)&nbsp;then&nbsp;{&nbsp;handle_illegal();&nbsp;return&nbsp;RETIRE_FAIL&nbsp;};<br>
+&nbsp;&nbsp;assert(num_elem&nbsp;&gt;&nbsp;0&nbsp;&&nbsp;SEW&nbsp;!=&nbsp;8);<br>
+<br>
+&nbsp;&nbsp;let&nbsp;'n&nbsp;=&nbsp;num_elem;<br>
+&nbsp;&nbsp;let&nbsp;'m&nbsp;=&nbsp;SEW;<br>
+<br>
+&nbsp;&nbsp;let&nbsp;vm_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;read_vmask(num_elem,&nbsp;0b1,&nbsp;0b00000);<br>
+&nbsp;&nbsp;let&nbsp;rs1_val&nbsp;:&nbsp;bits('m)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;get_scalar_fp(rs1,&nbsp;'m);<br>
+&nbsp;&nbsp;let&nbsp;vd_val&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;read_vreg(num_elem,&nbsp;SEW,&nbsp;0,&nbsp;vd);<br>
+&nbsp;&nbsp;result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bits('m))&nbsp;=&nbsp;undefined;<br>
+&nbsp;&nbsp;mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;vector('n,&nbsp;dec,&nbsp;bool)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;undefined;<br>
+<br>
+&nbsp;&nbsp;(result,&nbsp;mask)&nbsp;=&nbsp;init_masked_result(num_elem,&nbsp;SEW,&nbsp;0,&nbsp;vd_val,&nbsp;vm_val);<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;one&nbsp;body&nbsp;element&nbsp;*/<br>
+&nbsp;&nbsp;if&nbsp;mask[0]&nbsp;then&nbsp;result[0]&nbsp;=&nbsp;rs1_val;<br>
+<br>
+&nbsp;&nbsp;/*&nbsp;others&nbsp;treated&nbsp;as&nbsp;tail&nbsp;elements&nbsp;*/<br>
+&nbsp;&nbsp;let&nbsp;tail_ag&nbsp;:&nbsp;agtype&nbsp;=&nbsp;get_vtype_vta();<br>
+&nbsp;&nbsp;foreach&nbsp;(i&nbsp;from&nbsp;1&nbsp;to&nbsp;(num_elem&nbsp;-&nbsp;1))&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result[i]&nbsp;=&nbsp;match&nbsp;tail_ag&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNDISTURBED&nbsp;=&gt;&nbsp;vd_val[i],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AGNOSTIC&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;vd_val[i]&nbsp;/*&nbsp;TODO:&nbsp;configuration&nbsp;support&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;};<br>
+<br>
+&nbsp;&nbsp;write_vreg(num_elem,&nbsp;SEW,&nbsp;0,&nbsp;vd,&nbsp;result);<br>
+&nbsp;&nbsp;vstart&nbsp;=&nbsp;zeros();<br>
+&nbsp;&nbsp;RETIRE_SUCCESS<br>
+}<br>
+<br>
+mapping&nbsp;clause&nbsp;assembly&nbsp;=&nbsp;VFMVSF(rs1,&nbsp;vd)<br>
+&nbsp;&nbsp;&lt;-&gt;&nbsp;&quot;vfmv.s.f&quot;&nbsp;^&nbsp;spc()&nbsp;^&nbsp;vreg_name(vd)&nbsp;^&nbsp;sep()&nbsp;^&nbsp;freg_name(rs1)<br>
+</code>
+</body>
+</html>
