@@ -91,6 +91,9 @@ ALL_TESTS = [
 
 TESTDIR = Path("tests")
 
+SAILCOV_SOURCES = list(Path("../sail-riscv/model/").glob("*.sail"))
+SAILCOV_BANCHES = Path("../sail-riscv/generated_definitions/c/all_branches")
+
 # ------------------------------------------------------------------------------
 # Emulators
 # ------------------------------------------------------------------------------
@@ -98,8 +101,8 @@ TESTDIR = Path("tests")
 
 class Emulator(ABC):
     @abstractmethod
-    def run(self, executable: Path, logfile: Path) -> bool:
-        """Run test `executable`, log to `logfile` and return success/failure"""
+    def run(self, executable: Path, outdir: Path) -> bool:
+        """Run test `executable`, log to `outdir/trace.log` and return success/failure"""
         pass
 
     @abstractmethod
@@ -117,8 +120,14 @@ class SailCSim(Emulator):
     ]
     timeout = 5
 
-    def run(self, executable: Path, logfile: Path) -> bool:
-        cmd = f"{self.sim} {' '.join(self.simflags)} {executable}"
+    def __init__(self, cov: bool) -> None:
+        self.cov = cov
+        super().__init__()
+
+    def run(self, executable: Path, outdir: Path) -> bool:
+        covflag = f"-c {outdir.joinpath('sail_model.cov')}" if self.cov else ""
+        cmd = f"{self.sim} {' '.join(self.simflags)} {covflag} {executable}"
+        logfile = outdir.joinpath("trace.log")
         log.debug(f"Emulator cmd: \"{cmd}\"")
         try:
             with open(logfile, "wb") as logf:
@@ -148,8 +157,9 @@ class SailOSim(Emulator):
     ]
     timeout = 5
 
-    def run(self, executable: Path, logfile: Path) -> bool:
+    def run(self, executable: Path, outdir: Path) -> bool:
         cmd = f"{self.sim} {' '.join(self.simflags)} {executable}"
+        logfile = outdir.joinpath("trace.log")
         log.debug(f"Emulator cmd: \"{cmd}\"")
         try:
             with open(logfile, "wb") as logf:
@@ -179,8 +189,9 @@ class Spike(Emulator):
     }
     timeout = 5
 
-    def run(self, executable: Path, logfile: Path) -> bool:
+    def run(self, executable: Path, outdir: Path) -> bool:
         cmd = f"{self.sim} {' '.join(self.simflags)} {executable}"
+        logfile = outdir.joinpath("trace.log")
         log.debug(f"Emulator cmd: \"{cmd}\"")
         try:
             with open(logfile, "wb") as logf:
@@ -207,8 +218,9 @@ class Qemu(Emulator):
     ]
     timeout = 5
 
-    def run(self, executable: Path, logfile: Path) -> bool:
+    def run(self, executable: Path, outdir: Path) -> bool:
         cmd = f"{self.sim} {' '.join(self.simflags)} -bios {executable}"
+        logfile = outdir.joinpath("trace.log")
         log.debug(f"Emulator cmd: \"{cmd}\"")
         try:
             with open(logfile, "wb") as logf:
@@ -229,7 +241,7 @@ class Qemu(Emulator):
 # ------------------------------------------------------------------------------
 
 
-def main(tests: List[str], c: bool, b: bool, d: bool, r: bool, e: Emulator):
+def main(tests: List[str], c: bool, b: bool, d: bool, r: bool, e: Emulator, cov: bool):
     success = True
     print(f"---------------------")
     # Clean tests
@@ -238,7 +250,7 @@ def main(tests: List[str], c: bool, b: bool, d: bool, r: bool, e: Emulator):
     # Build tests
     if b:
         for test in tests:
-            success &= build(test, emul.build_vars())
+            success &= build(test, e.build_vars())
         print(f"---------------------")
     # Objdump tests
     if d:
@@ -249,7 +261,7 @@ def main(tests: List[str], c: bool, b: bool, d: bool, r: bool, e: Emulator):
         passed = 0
         failed = 0
         for test in tests:
-            if run(test, emul):
+            if run(test, e):
                 passed += 1
             else:
                 failed += 1
@@ -260,6 +272,10 @@ def main(tests: List[str], c: bool, b: bool, d: bool, r: bool, e: Emulator):
         print(f"  Total:  {len(tests)}")
         print(f"---------------------")
         success &= (len(tests) == passed)
+    # Create coverage report
+    if cov:
+        for test in tests:
+            success &= coverage(test, SAILCOV_SOURCES, SAILCOV_BANCHES)
     # Exit this script
     if success:
         exit(0)
@@ -309,18 +325,34 @@ def clean() -> bool:
     log.info("Removing all logs")
     subprocess.run("find . -name '*.log' -type f -delete",
                    shell=True)
+    # Delete coverage info
+    log.info("Removing coverage info")
+    subprocess.run("find . -name '*.cov' -type f -delete",
+                   shell=True)
     # Always return success
+    return True
+
+
+def coverage(test: str, model_src: List[Path], branch_all: Path) -> bool:
+    """Build coverage raport for test"""
+    branch_taken = TESTDIR.joinpath(test, "sail_model.cov").absolute()
+    branch_all = branch_all.absolute()
+
+    cmd = f"mkdir -p tests/{test}/cov "
+    cmd += f"&& cd tests/{test}/cov "
+    cmd += f"&& sailcov -a {branch_all} -t {branch_taken} --nesting-darkness 1 --index index {' '.join([ str(src.absolute()) for src in model_src])}"
+    subprocess.run(cmd, shell=True)
     return True
 
 
 def run(test: str, emul: Emulator) -> bool:
     """Run test on specified emulator, return True on success"""
     elf = TESTDIR.joinpath(test, f"{test}.elf")
-    out = TESTDIR.joinpath(test, f"{test}.log")
+    outdir = TESTDIR.joinpath(test)
     if not elf.exists():
         log.error(f"Could not find {elf}")
         pass
-    res = emul.run(elf, out)
+    res = emul.run(elf, outdir)
 
     if res:
         print(f"[TEST] {test} - \x1b[32mPassed\x1b[0m")
@@ -384,6 +416,8 @@ if __name__ == "__main__":
                         help="Run test executables")
     parser.add_argument("-e", "--emulator", type=str,
                         help="Run with specific emulator (default: %(default)s)", default="sail-csim")
+    parser.add_argument("--cov", action='store_true',
+                        help="Collect coverage info (sail-csim only)")
     parser.add_argument('-t', '--tests', nargs='+',
                         help="Run specific tests", default=ALL_TESTS)
     parser.add_argument("-v", action="count", default=0,
@@ -399,7 +433,7 @@ if __name__ == "__main__":
     match args.emulator:
         case "sail-csim":
             log.info("Using sail C emulator")
-            emul = SailCSim()
+            emul = SailCSim(args.cov)
         case "sail-osim":
             log.info("Using sail OCaml emulator")
             emul = SailOSim()
@@ -414,4 +448,5 @@ if __name__ == "__main__":
             exit(-1)
 
     # Run main function (after argument parsing is complete)
-    main(args.tests, args.clean, args.build, args.dump, args.run, e=emul)
+    main(args.tests, args.clean, args.build,
+         args.dump, args.run, e=emul, cov=args.cov)

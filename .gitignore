@@ -8,5 +8,9 @@
 # Log files
 *.log
 
+# Coverage info
+*.cov
+*.html
+
 # Editor specific
 .vscode
