@@ -274,8 +274,7 @@ def main(tests: List[str], c: bool, b: bool, d: bool, r: bool, e: Emulator, cov:
         success &= (len(tests) == passed)
     # Create coverage report
     if cov:
-        for test in tests:
-            success &= coverage(test, SAILCOV_SOURCES, SAILCOV_BANCHES)
+        success &= coverage(tests, SAILCOV_SOURCES, SAILCOV_BANCHES)
     # Exit this script
     if success:
         exit(0)
@@ -329,18 +328,22 @@ def clean() -> bool:
     log.info("Removing coverage info")
     subprocess.run("find . -name '*.cov' -type f -delete",
                    shell=True)
+    subprocess.run("find . -name '*.html' -type f -delete",
+                   shell=True)
     # Always return success
     return True
 
 
-def coverage(test: str, model_src: List[Path], branch_all: Path) -> bool:
+def coverage(tests: List[str], model_src: List[Path], branch_all: Path) -> bool:
     """Build coverage raport for test"""
-    branch_taken = TESTDIR.joinpath(test, "sail_model.cov").absolute()
-    branch_all = branch_all.absolute()
+    branches_taken = [TESTDIR.joinpath(
+        test, 'sail_model.cov').absolute() for test in tests]
+    branches_all = branch_all.absolute()
 
-    cmd = f"mkdir -p tests/{test}/cov "
-    cmd += f"&& cd tests/{test}/cov "
-    cmd += f"&& sailcov -a {branch_all} -t {branch_taken} --nesting-darkness 1 --index index {' '.join([ str(src.absolute()) for src in model_src])}"
+    cmd = f"mkdir -p coverage"
+    cmd += f" && cd coverage"
+    cmd += f" && sailcov -a {branches_all} {' '.join([f'-t {t}' for t in branches_taken])}"
+    cmd += f" --nesting-darkness 1 --index index {' '.join([ str(src.absolute()) for src in model_src])}"
     subprocess.run(cmd, shell=True)
     return True
 
