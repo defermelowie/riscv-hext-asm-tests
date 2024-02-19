@@ -343,8 +343,12 @@ def coverage(tests: List[str], model_src: List[Path], branch_all: Path) -> bool:
     cmd = f"mkdir -p coverage"
     cmd += f" && cd coverage"
     cmd += f" && sailcov -a {branches_all} {' '.join([f'-t {t}' for t in branches_taken])}"
-    cmd += f" --nesting-darkness 1 --index index {' '.join([ str(src.absolute()) for src in model_src])}"
-    subprocess.run(cmd, shell=True)
+    cmd += f" --nesting-darkness 1 --index index --histogram"
+    cmd += f" {' '.join([ str(src.absolute()) for src in model_src])}"
+    res = subprocess.run(cmd, shell=True, capture_output=True)
+    log.debug(cmd)
+    if res.returncode != 0:
+        log.error(f"Sailcov error during \"{cmd}\"\n\n{res.stderr.decode('utf-8')}")
     return True
 
 
