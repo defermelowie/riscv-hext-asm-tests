@@ -3,7 +3,7 @@ variables:
 
 build_tests_spike:
   stage: build
-  image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env/toolchain:latest
+  image: registry.gitlab.kuleuven.be/distrinet/users/lowie-deferme/risc-v-hypervisor-extension/riscv-ci-env/toolchain:latest
   script:
     # Build tests for spike
     - ./run_tests.py --clean --build --emulator spike
@@ -16,7 +16,7 @@ build_tests_spike:
 
 verif_tests_spike:
   stage: test
-  image: registry.gitlab.kuleuven.be/u0165022/riscv-ci-env/spike:latest
+  image: registry.gitlab.kuleuven.be/distrinet/users/lowie-deferme/risc-v-hypervisor-extension/riscv-ci-env/spike:latest
   needs:
     - build_tests_spike
   script:
