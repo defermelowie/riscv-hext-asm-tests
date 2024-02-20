@@ -61,6 +61,8 @@ ALL_TESTS = [
     "slat_VS_39_pseudoinst",
     "slat_HS_39_VS_VU_48",
     # "slat_HS_39_VS_VU_57", # Unsupported by Sail
+    "slat_HS_48_VS_VU_39",
+    "slat_HS_48_VS_VU_48",
     "hlv_M",
     "hlv_HS_spvp_0",
     "hlv_HS_spvp_1",
