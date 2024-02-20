@@ -30,6 +30,7 @@ la a0, gpt
 la a1, .text.init
 la a2, .data
 la a3, .data.pt # AT structure superpage
+li a4, 3
 jal setup_gpt
 la t1, gpt
 srl t1, t1, RISCV_PGSHIFT
@@ -42,8 +43,9 @@ csrw satp, t0 # Reuse G-stage pages for S-stage AT
 # Setup test data
 # ---------------------------
 j 1f
-testdata: .dword 0xaaaaaaaaaaaaaaaa
-1:la a0, testdata
+.align 3 // Double word should be aligned to 8 bytes
+testcode: .dword 0xaaaaaaaaaaaaaaaa
+1:la a0, testcode
   ld s0, 0(a0)
   # Calc masked data (zero extended)
   li t1, 0x00000000ffffffff
@@ -59,7 +61,7 @@ testdata: .dword 0xaaaaaaaaaaaaaaaa
 li t0, HSTATUS_SPVP
 csrc hstatus, t0
 # Convert address to VU-mode code addr
-la a0, testdata
+la a0, testcode
 SPA2GPA_VCODE(a0)
 PA2VA_UCODE(a0)
 
@@ -77,7 +79,7 @@ bne t0, s1, fail
 li t0, HSTATUS_SPVP
 csrs hstatus, t0
 # Convert address to vs-mode code addr
-la a0, testdata
+la a0, testcode
 SPA2GPA_VCODE(a0)
 PA2VA_SCODE(a0)
 
@@ -104,7 +106,7 @@ mtvec_handler:
   csrr t0, htval
   csrr t0, htinst
   # Load test data so their value is visible in debug traces
-  la t0, testdata
+  la t0, testcode
   ld t0, 0(t0)
   # Exception occured => test failed
   j fail

@@ -130,23 +130,30 @@ void setup_vspt(pte_t pt[9][PTECOUNT], unsigned long paddr_base,
  * @param paddr_data_base Supervisor physical base address of data
  * @param paddr_slat_base Supervisor physical base address of VS-stage page
  * table
+ * @param levels Amount of levels in page walk
  */
 void setup_gpt(pte_t pt[3][PTECOUNT], unsigned long paddr_code_base,
-               unsigned long paddr_data_base, unsigned long paddr_slat_base) {
-  pt[0][0] = ((pte_t)pt[1] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_BITS_PTR;
-  pt[1][0] = ((pte_t)pt[2] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_BITS_PTR;
-  pt[1][1] = ((pte_t)paddr_slat_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
-             PTE_BITS_TDATA;
-  pt[2][0] = ((pte_t)paddr_code_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
-             PTE_BITS_VCODE;
-  pt[2][1] = ((pte_t)paddr_code_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
-             PTE_BITS_HCODE;
-  pt[2][2] = ((pte_t)paddr_data_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
-             PTE_BITS_HDATA;
-  pt[2][3] = ((pte_t)paddr_data_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
-             PTE_BITS_VDATA;
-  pt[2][4] = ((pte_t)paddr_code_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
-             PTE_BITS_UCODE;
-  pt[2][5] = ((pte_t)paddr_data_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
-             PTE_BITS_UDATA;
+               unsigned long paddr_data_base, unsigned long paddr_slat_base,
+               unsigned int levels) {
+  unsigned int rp = 0;          // Root page
+  unsigned int tp = levels - 2; // Superpage for VS-level AT structures
+  unsigned int lp = levels - 1; // Leaf pages
+
+  pt[rp][0] = ((pte_t)pt[1] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_BITS_PTR;
+  pt[1][0] = ((pte_t)pt[2] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
+             PTE_BITS_PTR; // TODO build pointer pages
+  pt[tp][1] = ((pte_t)paddr_slat_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
+              PTE_BITS_TDATA;
+  pt[lp][0] = ((pte_t)paddr_code_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
+              PTE_BITS_VCODE;
+  pt[lp][1] = ((pte_t)paddr_code_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
+              PTE_BITS_HCODE;
+  pt[lp][2] = ((pte_t)paddr_data_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
+              PTE_BITS_HDATA;
+  pt[lp][3] = ((pte_t)paddr_data_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
+              PTE_BITS_VDATA;
+  pt[lp][4] = ((pte_t)paddr_code_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
+              PTE_BITS_UCODE;
+  pt[lp][5] = ((pte_t)paddr_data_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
+              PTE_BITS_UDATA;
 }
