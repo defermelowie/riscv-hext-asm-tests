@@ -140,8 +140,9 @@ void setup_gpt(pte_t pt[3][PTECOUNT], unsigned long paddr_code_base,
   unsigned int lp = levels - 1; // Leaf pages
 
   pt[rp][0] = ((pte_t)pt[1] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_BITS_PTR;
-  pt[1][0] = ((pte_t)pt[2] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
-             PTE_BITS_PTR; // TODO build pointer pages
+  for (int i = rp + 1; i < lp; i++)
+    pt[i][0] = ((pte_t)pt[i + 1] >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
+               PTE_BITS_PTR; // TODO build pointer pages
   pt[tp][1] = ((pte_t)paddr_slat_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |
               PTE_BITS_TDATA;
   pt[lp][0] = ((pte_t)paddr_code_base >> RISCV_PGSHIFT << PTE_PPN_SHIFT) |

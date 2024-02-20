@@ -35,7 +35,7 @@ la a0, gpt
 la a1, .text.init
 la a2, .data
 la a3, .data.pt # AT structure superpage
-li a4, 3
+li a4, VMEM_SV39x4_LEVELS
 jal setup_gpt
 la t1, gpt
 srl t1, t1, RISCV_PGSHIFT

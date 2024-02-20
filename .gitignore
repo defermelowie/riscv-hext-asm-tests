@@ -9,6 +9,7 @@
 *.log
 
 # Coverage info
+sail_coverage
 *.cov
 *.html
 
