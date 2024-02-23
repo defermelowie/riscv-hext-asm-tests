@@ -216,6 +216,7 @@ t10_pre:
   li a1, (PTE_V | PTE_R | PTE_W | PTE_X | !PTE_U | PTE_D | PTE_A)
   UPDATE_PTE_BITS(a0, a1)
   HFENCE_GVMA(zero, zero)
+  HFENCE_VVMA(zero, zero) # hfence.vvma since VS-stage page walk has to happen in order to access slat pte
   j ret_vs
 t10_post:
   la t1, pte_data

@@ -58,7 +58,6 @@ t_spf_post:
   ld t0, 0(t1)
   la a0, SDATA_LEAF_PTE
   sd t0, 0(a0)
-  sfence.vma
 
 # Cause store-access-faults
 t_saf_pre:
@@ -86,7 +85,6 @@ t_saf_post:
   csrw pmpcfg0, t0
   ld t0, 8(t1)
   csrw pmpaddr0, t0
-  sfence.vma
 
 # Cause store-guest-page-faults
 t_sgpf_pre:
@@ -102,14 +100,16 @@ t_sgpf_post:
   ld t0, 0(t1)
   la a0, VDATA_LEAF_PTE
   sd t0, 0(a0)
-  sfence.vma
 
 j pass # All tests finished, exit success
 
 # ------------------------
 
 test_entry:
-  sfence.vma
+  // Flush TLBs
+  HFENCE_GVMA(zero, zero)
+  HFENCE_VVMA(zero, zero)
+  // Jump to VS-mode test
   la a0, test_amo
   SPA2GPA_VCODE(a0)
   PA2VA_SCODE(a0)

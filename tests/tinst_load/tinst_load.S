@@ -1,4 +1,5 @@
 #include "riscv_test.h"
+#include "riscv_util.h"
 #include "vmem_common.h"
 #include "vmem_utils.h"
 
@@ -57,7 +58,6 @@ t_lpf_post:
   ld t0, 0(t1)
   la a0, SDATA_LEAF_PTE
   sd t0, 0(a0)
-  sfence.vma
 
 # Cause load-access-fault on loads
 t_laf_pre:
@@ -85,7 +85,6 @@ t_laf_post:
   csrw pmpcfg0, t0
   ld t0, 8(t1)
   csrw pmpaddr0, t0
-  sfence.vma
 
 # Cause load-guest-page-fault on loads
 t_lgpf_pre:
@@ -99,16 +98,18 @@ t_lgpf_pre:
 t_lgpf_post:
   la t1, cfg_data
   ld t0, 0(t1)
-  la a0, SDATA_LEAF_PTE
+  la a0, VDATA_LEAF_PTE
   sd t0, 0(a0)
-  sfence.vma
 
 j pass # All tests finished, exit success
 
 # ------------------------
 
 test_entry:
-  sfence.vma
+  // Flush TLBs
+  HFENCE_GVMA(zero, zero)
+  HFENCE_VVMA(zero, zero)
+  // Jump to VS-mode test
   la a0, test_loads
   SPA2GPA_VCODE(a0)
   PA2VA_SCODE(a0)
