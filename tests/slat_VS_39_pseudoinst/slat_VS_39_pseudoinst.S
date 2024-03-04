@@ -192,7 +192,7 @@ mtvec_handler:
   li t1, CAUSE_FETCH_GUEST_PAGE_FAULT  # Cause is fetch-guest-page-fault
   bne t1, a0, fail
   bne s0, a1, fail                     # Exception pc corresponds with nop inst
-  li t1, 0x0003000                     # Pseudoinst is RV32 read
+  li t1, 0x0003000                     # Pseudoinst is RV64 read
   bne t1, a4, fail
   bne zero, a5, fail                  # htval was not set (trap into M-mode)
   bne zero, a6, fail                  # htinst was not set (trap into M-mode)
