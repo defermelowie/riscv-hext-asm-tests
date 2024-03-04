@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/hfence_gvma_virt_inst/hfence_gvma_virt_inst.elf

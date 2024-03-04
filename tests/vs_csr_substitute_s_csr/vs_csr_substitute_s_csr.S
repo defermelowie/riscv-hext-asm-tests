@@ -4,7 +4,7 @@
 RVTEST_RV64M
 RVTEST_CODE_BEGIN
 
-# Todo: Test *atp registers after 2-stage address translation is implemented
+# TODO: Test *atp registers seperatly since they cause AT to change and therefore complicate the execution path
 
 # Enable delegation because otherwise sip, sie, vsip & vsie are not writable
 // Do not enable software interrupts to prevent them from firing during test

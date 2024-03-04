@@ -1,0 +1,3 @@
+makefile:
+  path: common/makefiles/asm-phys.mk
+  target: tests/hsv_ill_inst/hsv_ill_inst.elf

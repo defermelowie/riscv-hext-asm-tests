@@ -1,6 +1,6 @@
 /**
- * File: hfence_vvma_virt_inst.S
- * Description: Verify that `hfence.vvma` from VS-mode & from VU-mode causes an illegal instruction exception
+ * File: hlv_ill_inst.S
+ * Description: Verify that `hlv` from U-mode causes an illegal instruction exception
  */
 
 #include "riscv_test.h"
@@ -10,18 +10,13 @@ RVTEST_RV64M
 RVTEST_CODE_BEGIN
 .align 2
 
-vs_test:
-  li TESTNUM, 1
-  la a0, testcode
-  RVTEST_MRET_VS(a0)
-
-vu_test:
-  li TESTNUM, 2
-  la a0, testcode
-  RVTEST_MRET_VU(a0)
+li TESTNUM, 1
+la a0, testcode
+la a1, testdata
+RVTEST_MRET_U(a0)
 
 testcode:
-  HFENCE_VVMA(zero, zero)
+  HLV_D(a1,a0)
   j fail
 
 mtvec_handler:
@@ -31,15 +26,8 @@ mtvec_handler:
   csrr a1, mepc
   # Check TESTNUM, exeception cause and exception program counter
   li t0, 1
-  bne t0, TESTNUM, 1f
-  li t0, CAUSE_VIRTUAL_INSTRUCTION
-  bne t0, a0, f
-  la t0, testcode
-  bne t0, a1, f
-  j vu_test
-1:li t0, 2
   bne t0, TESTNUM, f
-  li t0, CAUSE_VIRTUAL_INSTRUCTION
+  li t0, CAUSE_ILLEGAL_INSTRUCTION
   bne t0, a0, f
   la t0, testcode
   bne t0, a1, f
@@ -50,6 +38,7 @@ RVTEST_PASSFAIL
 RVTEST_CODE_END
 
 .data
+testdata: .dword 0x0
 
 # Output data section.
 RVTEST_DATA_BEGIN
