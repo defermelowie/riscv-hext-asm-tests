@@ -20,7 +20,7 @@ verif_tests_spike:
   needs:
     - build_tests_spike
   script:
-    - apt-get install python3-full -y
+    - apt-get update && apt-get install python3-full -y
     - python3 -m venv venv && source venv/bin/activate
     - pip3 install pyyaml
     - ./run_tests.py --run --emulator spike
