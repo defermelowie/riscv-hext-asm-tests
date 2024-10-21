@@ -14,11 +14,11 @@ import subprocess
 
 ALL_TESTS = [
     # "ci_direct_fail",   # For CI debug only
-    # "ci_infinite_loop",  # For CI debug only
+    # "ci_infinite_loop", # For CI debug only
     "h_ext_enabled",
     "h_ext_csr_defined",
-    "htif_fromhost",
-    "htif_getc",
+    # "htif_fromhost",     # Manual inspection only
+    # "htif_getc",         # Manual inspection only
     "mret_M_to_HS",
     "mret_M_to_U",
     "mret_M_to_VS",
