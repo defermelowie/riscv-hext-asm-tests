@@ -124,7 +124,7 @@ class Emulator(ABC):
 class SailCSim(Emulator):
     sim = Path("../sail-riscv/c_emulator/riscv_sim_RV64")
     simflags = [
-        "--enable-pmp",
+        # "--enable-pmp",
         "--enable-dirty-update",
         "--mtval-has-illegal-inst-bits",
         "--xtinst-has-transformed-inst",
