@@ -102,8 +102,8 @@ ALL_TESTS = [
 
 TESTDIR = Path("tests")
 
-SAILCOV_SOURCES = list(Path("../sail-riscv/model/").glob("*.sail"))
-SAILCOV_BANCHES = Path("../sail-riscv/generated_definitions/c/all_branches")
+SAILCOV_SOURCES = list(Path("../sail-riscv-cleanup/model/").glob("*.sail"))
+SAILCOV_BANCHES = Path("../sail-riscv-cleanup/generated_definitions/c/all_branches")
 
 # ------------------------------------------------------------------------------
 # Emulators
@@ -122,12 +122,12 @@ class Emulator(ABC):
 
 
 class SailCSim(Emulator):
-    sim = Path("../sail-riscv/c_emulator/riscv_sim_RV64")
+    sim = Path("../sail-riscv-cleanup/c_emulator/riscv_sim_RV64")
     simflags = [
-        # "--enable-pmp",
+        "--pmp-count 16",
+        "--enable-hext",
         "--enable-dirty-update",
         "--mtval-has-illegal-inst-bits",
-        "--xtinst-has-transformed-inst",
     ]
     timeout = 5
 
@@ -155,39 +155,6 @@ class SailCSim(Emulator):
     def build_vars(self):
         # No special environment variables required for sail
         return {}
-
-
-class SailOSim(Emulator):
-    sim = Path("../sail-riscv/ocaml_emulator/riscv_ocaml_sim_RV64")
-    simflags = [
-        "-enable-hext",
-        "-enable-pmp",
-        "-enable-dirty-update",
-        "-mtval-has-illegal-inst-bits",
-        "-xtinst-has-transformed-inst",
-    ]
-    timeout = 5
-
-    def run(self, executable: Path, outdir: Path) -> bool:
-        cmd = f"{self.sim} {' '.join(self.simflags)} {executable}"
-        logfile = outdir.joinpath("trace.log")
-        log.debug(f"Emulator cmd: \"{cmd}\"")
-        try:
-            with open(logfile, "wb") as logf:
-                subprocess.run(cmd, shell=True, stderr=logf,
-                               stdout=logf, timeout=self.timeout, input=b"hello\n")
-            with open(logfile, "r") as logf:
-                return ("SUCCESS" in logf.read())
-        except subprocess.TimeoutExpired:
-            log.debug(f"{cmd} timed out")
-            with open(logfile, "a") as logf:
-                logf.write(f"TIMEOUT: {self.timeout}")
-            return False
-
-    def build_vars(self):
-        # No special environment variables required for sail
-        return {}
-
 
 class Spike(Emulator):
     sim = Path("spike")
@@ -452,9 +419,6 @@ if __name__ == "__main__":
         case "sail-csim":
             log.info("Using sail C emulator")
             emul = SailCSim(args.cov)
-        case "sail-osim":
-            log.info("Using sail OCaml emulator")
-            emul = SailOSim()
         case "spike":
             log.info("Using spike emulator")
             emul = Spike()
